@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Retail & Distribution</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      /* SHOCK MODAL STYLES */
+      .shock-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,21,78,0.9); backdrop-filter:blur(5px); z-index:9999; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+      .shock-overlay.active { opacity:1; pointer-events:all; }
+      .shock-modal { background:#fff; width:90%; max-width:650px; border-radius:12px; overflow:hidden; box-shadow:0 25px 50px rgba(0,0,0,0.5); transform:translateY(20px); transition:transform 0.3s; }
+      .shock-overlay.active .shock-modal { transform:translateY(0); }
+      .shock-header { background:#D51635; color:#fff; padding:20px; font-weight:700; font-size:1.2rem; display:flex; justify-content:space-between; align-items:center; }
+      .shock-body { padding:30px; }
+      
+      .retail-shock-grid { display:flex; gap:20px; margin-bottom:20px; }
+      .retail-kpi { flex:1; background:#f5f5f5; padding:15px; border-radius:6px; border-top:4px solid #D51635; text-align:center; }
+      .retail-kpi h4 { margin:0 0 5px 0; font-size:0.8rem; color:#666; text-transform:uppercase; }
+      .retail-kpi .val { font-size:2rem; font-weight:800; color:#02154e; }
+      
+      .shock-desc { font-size:1rem; color:#333; line-height:1.5; margin-bottom:20px; }
+      
+      .shock-actions { margin-top:20px; display:flex; gap:10px; justify-content:flex-end; }
+      .shock-btn { padding:12px 24px; border-radius:6px; font-weight:600; cursor:pointer; border:none; }
+      .shock-btn.primary { background:#02154e; color:#fff; }
+    </style>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Zero@Production <span class="title-at">Ecosystem</span> — Retail & Distribution by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+        </div>
+    </div>
+</header>
+    <main class="container">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="row" style="justify-content: space-between; align-items: center;">
+          <div>
+            <h3>Retail & Distribution — Downstream Impact</h3>
+            <p class="muted">CBAM Liability & Distribution Footprint</p>
+          </div>
+          <div class="row" style="gap:8px; align-items:center;">
+             <button class="btn">Filter</button>
+          </div>
+        </div>
+        <div class="row" style="gap:32px; align-items:flex-start;">
+          <div class="card" style="min-width:260px;">
+            <h3 style="color:#D51635">High</h3>
+            <p class="muted">CBAM Liability Risk</p>
+          </div>
+          <div class="card" style="min-width:260px;">
+            <h3>23%</h3>
+            <p class="muted">Air Freight Usage</p>
+          </div>
+        </div>
+      </div>
+
+      <section class="card" style="margin-bottom: 24px;">
+        <h3>Market Reality</h3>
+        <div class="muted">Live POS Feed: Active</div>
+      </section>
+
+      <!-- Consistent Charts Section (ZaE Theme) -->
+      <section class="card" style="margin: 24px;">
+        <h3>Charts</h3>
+        <div class="row" style="gap:16px; flex-wrap:wrap;">
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Transport Mode Split</h4>
+            <canvas id="chartDomain" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Return Rates Impact</h4>
+            <canvas id="chartScope" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>CBAM Liability Trend</h4>
+            <canvas id="chartTrend" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Margin Erosion</h4>
+            <canvas id="chartCompare" height="140"></canvas>
+          </div>
+        </div>
+      </section>
+      
+      <!-- SHOCK MODAL HTML -->
+      <div id="shockModal" class="shock-overlay">
+          <div class="shock-modal">
+              <div class="shock-header">
+                  <span>📉 SALES ALERT: MARGIN COLLAPSE</span>
+                  <button onclick="document.getElementById('shockModal').classList.remove('active')" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;">&times;</button>
+              </div>
+              <div class="shock-body">
+                  <div class="retail-shock-grid">
+                      <div class="retail-kpi">
+                          <h4>Air Freight Ratio</h4>
+                          <div class="val" style="color:#D51635">23%</div>
+                      </div>
+                      <div class="retail-kpi">
+                          <h4>CBAM Liability</h4>
+                          <div class="val">High</div>
+                      </div>
+                      <div class="retail-kpi">
+                          <h4>Return Rate</h4>
+                          <div class="val">18%</div>
+                      </div>
+                  </div>
+                  
+                  <div class="shock-desc">
+                      <strong>Executive Summary:</strong> High reliance on Air Freight for "Fast Fashion" replenishment is triggering excessive CBAM liabilities. Combined with an 18% return rate, the <strong>downstream carbon cost is destroying product margin</strong>.
+                  </div>
+                  
+                  <div class="shock-actions">
+                      <button class="shock-btn" onclick="document.getElementById('shockModal').classList.remove('active')">Ignore</button>
+                      <button class="shock-btn primary" onclick="alert('Initiating Logistics Review...')">⚡ Trigger Logistics Review</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <script>
+        (function(){
+            // CHECK FOR SHOCK PARAM
+            const p = new URLSearchParams(window.location.search);
+            if(p.get("demo") === "retail_margin_shock") {
+                setTimeout(() => {
+                    document.getElementById('shockModal').classList.add('active');
+                }, 800);
+            }
+
+          if(!window.Chart) return;
+          try {
+            var ctxDomain = document.getElementById('chartDomain');
+            if (ctxDomain) {
+              new Chart(ctxDomain, {
+                type: 'pie',
+                data: {
+                  labels: ['Road', 'Sea', 'Air'],
+                  datasets: [{ data: [45, 32, 23], backgroundColor: ['#005530','#02154e','#D51635'] }]
+                },
+                options: { plugins: { legend: { position: 'bottom' } } }
+              });
+            }
+            var ctxScope = document.getElementById('chartScope');
+            if (ctxScope) {
+              new Chart(ctxScope, {
+                type: 'bar',
+                data: {
+                  labels: ['Q1','Q2','Q3','Q4'],
+                  datasets: [{ label: 'Return Rate %', data: [12, 14, 15, 18], backgroundColor: '#f9ba00' }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+              });
+            }
+            var ctxTrend = document.getElementById('chartTrend');
+            if (ctxTrend) {
+              new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                  labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                  datasets: [{ label: 'CBAM Exposure (€)', data: [1200,1300,1500,1800,2200,2500,2800,3000,3200,3500,3800,4200], borderColor: '#D51635', backgroundColor: 'rgba(213,22,53,0.1)', fill:true }]
+                },
+                options: { plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
+              });
+            }
+            var ctxCompare = document.getElementById('chartCompare');
+            if (ctxCompare) {
+              new Chart(ctxCompare, {
+                type: 'bar',
+                data: {
+                  labels: ['Standard', 'Express', 'Air Rush'],
+                  datasets: [
+                    { label: 'Margin %', data: [25, 15, -5], backgroundColor: ['#005530','#f9ba00','#D51635'] }
+                  ]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: false } } }
+              });
+            }
+          } catch(e) {}
+        })();
+      </script>
+    </main>
+  <a href="/" class="zero-back-btn">← Back</a>
+<style>
+.zero-back-btn{
+  position:fixed; top:16px; right:16px; z-index:9999;
+  display:inline-block; padding:10px 14px;
+  font-size:13px; font-weight:700;
+  color:#ffffff; background:#005530;
+  border:2px solid #005530; border-radius:10px;
+  text-decoration:none; letter-spacing:.4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+  transition:transform .12s ease, filter .12s ease;
+}
+.zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
+</style>
+</body>
+</html>

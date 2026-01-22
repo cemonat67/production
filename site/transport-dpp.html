@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Employee Transport</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      /* SHOCK MODAL STYLES */
+      .shock-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,21,78,0.95); backdrop-filter:blur(5px); z-index:9999; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+      .shock-overlay.active { opacity:1; pointer-events:all; }
+      .shock-modal { background:#fff; width:90%; max-width:800px; border-radius:12px; overflow:hidden; box-shadow:0 25px 50px rgba(0,0,0,0.5); transform:translateY(20px); transition:transform 0.3s; }
+      .shock-overlay.active .shock-modal { transform:translateY(0); }
+      .shock-header { background:#02154e; color:#fff; padding:20px; font-weight:700; font-size:1.2rem; display:flex; justify-content:space-between; align-items:center; }
+      .shock-body { padding:30px; }
+      
+      .alloc-grid { display:grid; grid-template-columns: 1fr 1fr; gap:30px; margin-top:20px; }
+      .alloc-step { background:#f9f9f9; padding:20px; border-radius:8px; border:1px solid #eee; }
+      .alloc-step h4 { margin:0 0 10px 0; color:#02154e; font-size:1rem; display:flex; align-items:center; gap:8px; }
+      .alloc-val { font-size:1.5rem; font-weight:700; color:#f9ba00; margin-bottom:5px; }
+      .alloc-desc { font-size:0.85rem; color:#666; line-height:1.4; }
+      
+      .shock-actions { margin-top:30px; display:flex; gap:10px; justify-content:flex-end; border-top:1px solid #eee; padding-top:20px; }
+      .shock-btn { padding:12px 24px; border-radius:6px; font-weight:600; cursor:pointer; border:none; }
+      .shock-btn.primary { background:#f9ba00; color:#02154e; }
+    </style>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Zero@Production <span class="title-at">Ecosystem</span> — Employee Transport by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+        </div>
+    </div>
+</header>
+    <main class="container">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="row" style="justify-content: space-between; align-items: center;">
+          <div>
+            <h3>Employee Transport — Allocation Engine</h3>
+            <p class="muted">Privacy-First Scope 3 Calculation</p>
+          </div>
+          <div class="row" style="gap:8px; align-items:center;">
+             <button class="btn">Filter</button>
+          </div>
+        </div>
+        <div class="row" style="gap:32px; align-items:flex-start;">
+          <div class="card" style="min-width:260px;">
+            <h3>450 tCO₂e</h3>
+            <p class="muted">Total Commute Emissions</p>
+          </div>
+          <div class="card" style="min-width:260px;">
+            <h3>0.02 kg</h3>
+            <p class="muted">Allocated per Order Item</p>
+          </div>
+        </div>
+      </div>
+
+      <section class="card" style="margin-bottom: 24px;">
+        <h3>Allocation Trend</h3>
+        <div class="muted">Algorithm: Facility Output / Total Shift Volume</div>
+      </section>
+
+      <!-- Consistent Charts Section (ZaE Theme) -->
+      <section class="card" style="margin: 24px;">
+        <h3>Charts</h3>
+        <div class="row" style="gap:16px; flex-wrap:wrap;">
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Modal Split</h4>
+            <canvas id="chartDomain" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Shift Distribution</h4>
+            <canvas id="chartScope" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Emissions per Unit</h4>
+            <canvas id="chartTrend" height="140"></canvas>
+          </div>
+        </div>
+      </section>
+      
+      <!-- SHOCK MODAL HTML -->
+      <div id="shockModal" class="shock-overlay">
+          <div class="shock-modal">
+              <div class="shock-header">
+                  <span>🚀 OPS INTEL: THE ALLOCATION ENGINE</span>
+                  <button onclick="document.getElementById('shockModal').classList.remove('active')" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;">&times;</button>
+              </div>
+              <div class="shock-body">
+                  <div style="margin-bottom:20px; font-size:1.1rem; color:#333;">
+                      <strong>The Problem:</strong> You can't put GPS trackers on every employee. <br>
+                      <strong>The Solution:</strong> Privacy-Safe Allocation Logic.
+                  </div>
+                  
+                  <div class="alloc-grid">
+                      <div class="alloc-step">
+                          <h4>1. INPUT: Service Invoices</h4>
+                          <div class="alloc-val">220 Routes</div>
+                          <div class="alloc-desc">We ingest raw service bus invoices and fuel data (diesel/electric mix).</div>
+                      </div>
+                      <div class="alloc-step">
+                          <h4>2. INPUT: Production Output</h4>
+                          <div class="alloc-val">1.2M Units</div>
+                          <div class="alloc-desc">Daily production volume from the facility ERP.</div>
+                      </div>
+                      <div class="alloc-step">
+                          <h4>3. LOGIC: The Division</h4>
+                          <div class="alloc-val">CO₂ / Output</div>
+                          <div class="alloc-desc">Total Transport CO₂ divided by Total Units Produced per shift.</div>
+                      </div>
+                      <div class="alloc-step">
+                          <h4>4. RESULT: Unit Cost</h4>
+                          <div class="alloc-val">0.02 kgCO₂</div>
+                          <div class="alloc-desc">Audit-proof carbon cost stamped on every single T-Shirt.</div>
+                      </div>
+                  </div>
+                  
+                  <div class="shock-actions">
+                      <button class="shock-btn" onclick="document.getElementById('shockModal').classList.remove('active')">Close</button>
+                      <button class="shock-btn primary" onclick="alert('Audit Trail Downloaded')">📥 Download Audit Formula</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <script>
+        (function(){
+            // CHECK FOR SHOCK PARAM
+            const p = new URLSearchParams(window.location.search);
+            if(p.get("demo") === "allocation_story") {
+                setTimeout(() => {
+                    document.getElementById('shockModal').classList.add('active');
+                }, 800);
+            }
+
+          if(!window.Chart) return;
+          try {
+            var ctxDomain = document.getElementById('chartDomain');
+            if (ctxDomain) {
+              new Chart(ctxDomain, {
+                type: 'pie',
+                data: {
+                  labels: ['Service Bus (Diesel)', 'Service Bus (EV)', 'Private Car'],
+                  datasets: [{ data: [65, 25, 10], backgroundColor: ['#D51635','#005530','#02154e'] }]
+                },
+                options: { plugins: { legend: { position: 'bottom' } } }
+              });
+            }
+            var ctxScope = document.getElementById('chartScope');
+            if (ctxScope) {
+              new Chart(ctxScope, {
+                type: 'bar',
+                data: {
+                  labels: ['Shift A','Shift B','Shift C'],
+                  datasets: [{ label: 'Passenger Vol', data: [450, 420, 150], backgroundColor: '#02154e' }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+              });
+            }
+            var ctxTrend = document.getElementById('chartTrend');
+            if (ctxTrend) {
+              new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                  labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                  datasets: [{ label: 'kgCO₂ per Unit', data: [0.025, 0.024, 0.022, 0.020, 0.019, 0.018, 0.018, 0.019, 0.020, 0.021, 0.022, 0.023], borderColor: '#f9ba00', backgroundColor: 'rgba(249,186,0,0.1)', fill:true }]
+                },
+                options: { plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
+              });
+            }
+          } catch(e) {}
+        })();
+      </script>
+    </main>
+  <a href="/" class="zero-back-btn">← Back</a>
+<style>
+.zero-back-btn{
+  position:fixed; top:16px; right:16px; z-index:9999;
+  display:inline-block; padding:10px 14px;
+  font-size:13px; font-weight:700;
+  color:#ffffff; background:#005530;
+  border:2px solid #005530; border-radius:10px;
+  text-decoration:none; letter-spacing:.4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+  transition:transform .12s ease, filter .12s ease;
+}
+.zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
+</style>
+</body>
+</html>

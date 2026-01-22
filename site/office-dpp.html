@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Office DPP</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      /* SHOCK MODAL STYLES */
+      .shock-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,21,78,0.9); backdrop-filter:blur(5px); z-index:9999; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+      .shock-overlay.active { opacity:1; pointer-events:all; }
+      .shock-modal { background:#fff; width:90%; max-width:700px; border-radius:12px; overflow:hidden; box-shadow:0 25px 50px rgba(0,0,0,0.5); transform:translateY(20px); transition:transform 0.3s; border-top:6px solid #D51635; }
+      .shock-overlay.active .shock-modal { transform:translateY(0); }
+      .shock-header { background:#fff; color:#02154e; padding:25px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center; }
+      .shock-header h2 { margin:0; font-size:1.4rem; font-weight:300; }
+      .shock-body { padding:30px; display:flex; gap:30px; }
+      .shock-left { flex:1; border-right:1px solid #eee; padding-right:20px; }
+      .shock-right { flex:1; display:flex; flex-direction:column; justify-content:center; }
+      
+      .kpi-box { margin-bottom:20px; }
+      .kpi-val { font-size:2.5rem; font-weight:800; color:#D51635; line-height:1; }
+      .kpi-lbl { font-size:0.8rem; text-transform:uppercase; color:#888; letter-spacing:1px; margin-top:5px; }
+      
+      .gov-alert { background:#FFF4F4; padding:15px; border-radius:6px; border-left:4px solid #D51635; margin-bottom:15px; }
+      .gov-alert strong { color:#D51635; display:block; margin-bottom:4px; }
+      
+      .shock-actions { padding:20px 30px; background:#f9f9f9; display:flex; justify-content:flex-end; gap:10px; }
+      .shock-btn { padding:10px 20px; border-radius:4px; font-weight:600; cursor:pointer; border:none; }
+      .shock-btn.primary { background:#02154e; color:#fff; }
+    </style>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Zero@Production <span class="title-at">Ecosystem</span> — Office DPP by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+        </div>
+    </div>
+</header>
+    <main class="container">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="row" style="justify-content: space-between; align-items: center;">
+          <div>
+            <h3>Office — Corporate Governance</h3>
+            <p class="muted">Governance, Policy Compliance & Footprint</p>
+          </div>
+          <div class="row" style="gap:8px; align-items:center;">
+             <button class="btn">Filter</button>
+          </div>
+        </div>
+        <div class="row" style="gap:32px; align-items:flex-start;">
+          <div class="card" style="min-width:260px;">
+            <h3 style="color:#D51635">CRITICAL</h3>
+            <p class="muted">Governance Status</p>
+          </div>
+          <div class="card" style="min-width:260px;">
+            <h3>42%</h3>
+            <p class="muted">Policy Compliance</p>
+          </div>
+        </div>
+      </div>
+
+      <section class="card" style="margin-bottom: 24px;">
+        <h3>Board View</h3>
+        <div class="muted">Live Governance Feed: Active</div>
+      </section>
+
+      <!-- Consistent Charts Section (ZaE Theme) -->
+      <section class="card" style="margin: 24px;">
+        <h3>Charts</h3>
+        <div class="row" style="gap:16px; flex-wrap:wrap;">
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Risk Distribution</h4>
+            <canvas id="chartDomain" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Compliance Trend</h4>
+            <canvas id="chartScope" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Audit Gaps (Monthly)</h4>
+            <canvas id="chartTrend" height="140"></canvas>
+          </div>
+        </div>
+      </section>
+      
+      <!-- SHOCK MODAL HTML -->
+      <div id="shockModal" class="shock-overlay">
+          <div class="shock-modal">
+              <div class="shock-header">
+                  <h2>⚠️ CEO BRIEF: GOVERNANCE FAILURE</h2>
+                  <button onclick="document.getElementById('shockModal').classList.remove('active')" style="background:none;border:none;font-size:1.5rem;cursor:pointer;">&times;</button>
+              </div>
+              <div class="shock-body">
+                  <div class="shock-left">
+                      <div class="kpi-box">
+                          <div class="kpi-val">LOW</div>
+                          <div class="kpi-lbl">Policy Compliance Score</div>
+                      </div>
+                      <div class="kpi-box">
+                          <div class="kpi-val">HIGH</div>
+                          <div class="kpi-lbl">Regulatory Exposure</div>
+                      </div>
+                  </div>
+                  <div class="shock-right">
+                      <div class="gov-alert">
+                          <strong>Board Action Required</strong>
+                          Sustainability is not just a factory metric—it is a governance discipline. Current gaps expose the board to liability.
+                      </div>
+                      <p style="font-size:0.9rem; color:#666; line-height:1.5;">
+                          Automated analysis detects significant deviations in Scope 3 reporting and policy adherence across 3 facilities.
+                      </p>
+                  </div>
+              </div>
+              <div class="shock-actions">
+                  <button class="shock-btn" onclick="document.getElementById('shockModal').classList.remove('active')">Review Later</button>
+                  <button class="shock-btn primary" onclick="alert('Generating Board Slide...')">📄 Generate Board Slide</button>
+              </div>
+          </div>
+      </div>
+
+      <script>
+        (function(){
+            // CHECK FOR SHOCK PARAM
+            const p = new URLSearchParams(window.location.search);
+            if(p.get("demo") === "office_governance_shock") {
+                setTimeout(() => {
+                    document.getElementById('shockModal').classList.add('active');
+                }, 800);
+            }
+
+          if(!window.Chart) return;
+          try {
+            var ctxDomain = document.getElementById('chartDomain');
+            if (ctxDomain) {
+              new Chart(ctxDomain, {
+                type: 'doughnut',
+                data: {
+                  labels: ['Compliant', 'At Risk', 'Critical'],
+                  datasets: [{ data: [42, 30, 28], backgroundColor: ['#005530','#f9ba00','#D51635'] }]
+                },
+                options: { plugins: { legend: { position: 'bottom' } } }
+              });
+            }
+            var ctxScope = document.getElementById('chartScope');
+            if (ctxScope) {
+              new Chart(ctxScope, {
+                type: 'bar',
+                data: {
+                  labels: ['Q1','Q2','Q3','Q4'],
+                  datasets: [{ label: 'Compliance %', data: [85, 70, 55, 42], backgroundColor: '#D51635' }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true, max:100 } } }
+              });
+            }
+            var ctxTrend = document.getElementById('chartTrend');
+            if (ctxTrend) {
+              new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                  labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                  datasets: [{ label: 'Audit Gaps', data: [2,2,3,5,8,12,15,14,16,18,20,22], borderColor: '#D51635', backgroundColor: 'rgba(213,22,53,0.1)', fill:true }]
+                },
+                options: { plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
+              });
+            }
+          } catch(e) {}
+        })();
+      </script>
+    </main>
+  <a href="/" class="zero-back-btn">← Back</a>
+<style>
+.zero-back-btn{
+  position:fixed; top:16px; right:16px; z-index:9999;
+  display:inline-block; padding:10px 14px;
+  font-size:13px; font-weight:700;
+  color:#ffffff; background:#005530;
+  border:2px solid #005530; border-radius:10px;
+  text-decoration:none; letter-spacing:.4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+  transition:transform .12s ease, filter .12s ease;
+}
+.zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
+</style>
+</body>
+</html>

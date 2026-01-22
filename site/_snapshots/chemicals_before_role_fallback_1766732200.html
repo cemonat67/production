@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Chemicals & Dye DPP</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <!-- Chart.js removed for native implementation -->
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      #chemStackLegend .lg{
+        display:inline-flex; align-items:center; gap:8px;
+        padding:6px 10px; border:1px solid #eef2f7; border-radius:999px;
+        background:#fff;
+      }
+      #chemStackLegend .dot{ width:10px; height:10px; border-radius:3px; display:inline-block; }
+      .exec-lenses, .exec-grid, .exec-card{position:relative; z-index:5;}
+      .exec-card{pointer-events:auto !important; cursor:pointer;}
+      .zero-modal{z-index:9999;}
+      .exec-card.is-focus{outline:3px solid #f9ba00; box-shadow:0 0 0 6px rgba(249,186,0,.18);}
+      .exec-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; } 
+      .exec-card{ background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:14px; cursor:pointer; pointer-events:auto; } 
+      .zero-modal{ position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; z-index:9999; } 
+      .zero-modal[aria-hidden="false"]{ display:flex; } 
+      .zero-modal-box{ background:#fff; margin:auto; padding:20px; max-width:520px; width:90%; border-radius:10px; }
+      .exec-metric { font-size: 24px; font-weight: 800; color: #02154e; margin: 8px 0; }
+      .exec-sub { font-size: 12px; color: #666; }
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .app-header, .zero-color-bar, .container, .zero-modal, .btn, #chemicalsClearFilter, #chemicalsTimeframe { display: none !important; }
+        .print-only-report { display: block !important; }
+        .print-page { width: 210mm; height: 297mm; padding: 20mm; page-break-after: always; position: relative; box-sizing: border-box;}
+        .print-page:last-child { page-break-after: auto; }
+        .print-header { border-bottom: 2px solid #02154e; margin-bottom: 20px; padding-bottom: 10px; }
+        .print-logo { height: 40px; }
+        .print-title { font-size: 24px; font-weight: 800; color: #02154e; }
+        .print-sub { font-size: 14px; color: #666; margin-top: 5px; }
+        .print-section { margin-top: 30px; }
+        .print-section h3 { color: #02154e; border-left: 4px solid #f9ba00; padding-left: 10px; }
+        .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .print-card { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #eee; }
+        .print-metric { font-size: 20px; font-weight: bold; color: #02154e; }
+        .print-label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+        .risk-high { color: #D51635; }
+        .risk-safe { color: #005530; }
+      }
+      .print-only-report { display: none; }
+    </style>
+  </head>
+  <body>
+    <!-- Snapshot content omitted for brevity -->
+  <a href="/" class="zero-back-btn">← Back</a>
+<style>
+.zero-back-btn{
+  position:fixed; top:16px; right:16px; z-index:9999;
+  display:inline-block; padding:10px 14px;
+  font-size:13px; font-weight:700;
+  color:#ffffff; background:#005530;
+  border:2px solid #005530; border-radius:10px;
+  text-decoration:none; letter-spacing:.4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+  transition:transform .12s ease, filter .12s ease;
+}
+.zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
+</style>
+</body>
+</html>

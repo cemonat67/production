@@ -1,0 +1,99 @@
+(async function () {
+  const SUPABASE_URL = window.SUPABASE_URL;
+  const ANON = window.SUPABASE_ANON_KEY;
+  const SCHEMA = window.SUPABASE_SCHEMA || "public";
+
+  if (!SUPABASE_URL || !ANON) {
+    console.warn("[FABRICS] Missing SUPABASE_URL or SUPABASE_ANON_KEY");
+    return;
+  }
+
+  // Prefer the VIEW (already includes CO2 columns in your screenshots)
+  const selectCols = [
+    "id",
+    "supplier","collection","theme","season","base_code",
+    "fabric_name","structure","composition",
+    "width_cm","weight_gsm","stretch",
+    "sustainability_tags","end_use","certifications",
+    "notes","source_doc","image_url",
+    "data_quality","ml_ready",
+    "co2_kg_per_kg","co2_method","co2_source","co2_confidence","co2_breakdown",
+    "created_at","updated_at"
+  ].join(",");
+
+  const url =
+    `${SUPABASE_URL}/rest/v1/v_fabrics` +
+    `?select=${encodeURIComponent(selectCols)}` +
+    `&order=${encodeURIComponent("updated_at.desc")}` +
+    `&limit=1000`;
+
+  const headers = {
+    "apikey": ANON,
+    "Authorization": `Bearer ${ANON}`,
+    "Accept": "application/json",
+    // critical for non-public schema:
+    "Accept-Profile": SCHEMA
+  };
+
+  try {
+    const res = await fetch(url, { headers });
+    if (!res.ok) {
+      const t = await res.text();
+      console.error("[FABRICS] Fetch failed:", res.status, t);
+      return;
+    }
+    const rows = await res.json();
+    window.__FABRICS__ = rows;
+
+    console.log(`[FABRICS] Loaded ${rows.length} rows from Supabase`);
+
+    // If your page already has a renderer, use it:
+    if (typeof window.renderFabrics === "function") {
+      window.renderFabrics(rows);
+      return;
+    }
+    if (typeof window.setFabrics === "function") {
+      window.setFabrics(rows);
+      return;
+    }
+
+    // Fallback: dump into a simple table if container exists
+    const host = document.querySelector("[data-fabrics-table]") || document.querySelector("#fabricsTable");
+    if (host) {
+      host.innerHTML = `
+        <div style="font-weight:700;margin:8px 0;">Loaded Fabrics: ${rows.length}</div>
+        <div style="overflow:auto;border:1px solid #eee;border-radius:10px;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="background:#fafafa;">
+                <th style="text-align:left;padding:8px;border-bottom:1px solid #eee;">Collection</th>
+                <th style="text-align:left;padding:8px;border-bottom:1px solid #eee;">Fabric</th>
+                <th style="text-align:left;padding:8px;border-bottom:1px solid #eee;">Composition</th>
+                <th style="text-align:right;padding:8px;border-bottom:1px solid #eee;">GSM</th>
+                <th style="text-align:right;padding:8px;border-bottom:1px solid #eee;">CO₂ (kg/kg)</th>
+                <th style="text-align:right;padding:8px;border-bottom:1px solid #eee;">Conf.</th>
+                <th style="text-align:left;padding:8px;border-bottom:1px solid #eee;">Method</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows.slice(0,200).map(r => `
+                <tr>
+                  <td style="padding:8px;border-bottom:1px solid #f1f1f1;">${r.collection ?? ""}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f1f1f1;">${r.fabric_name ?? ""}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f1f1f1;">${r.composition ?? ""}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f1f1f1;text-align:right;">${r.weight_gsm ?? ""}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f1f1f1;text-align:right;">${r.co2_kg_per_kg ?? ""}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f1f1f1;text-align:right;">${r.co2_confidence ?? ""}</td>
+                  <td style="padding:8px;border-bottom:1px solid #f1f1f1;">${r.co2_method ?? ""}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+        <div style="opacity:.7;margin-top:6px;">Showing first 200 rows.</div>
+      `;
+    }
+  } catch (e) {
+    console.error("[FABRICS] Exception:", e);
+  }
+})();

@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Fiber DPP</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <!-- Native implementation only - no Chart.js -->
+    <script defer src="assets/js/main.min.js"></script>
+    <!-- <script defer src="assets/js/inject-backlink.js"></script> -->
+    <!-- <script defer src="assets/js/agent.js"></script> -->
+    <!-- <script defer src="assets/js/agent-ui.js"></script> -->
+    <!-- <script defer src="assets/js/trend.js"></script> -->
+<style>
+/* ZERO_EXEC_LENSES v1 (Safari-safe) */
+.exec-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
+  margin:14px 0 18px;
+}
+.exec-card{
+  border:1px solid var(--zero-gray-light,#e0e0e0);
+  border-radius:8px;
+  padding:14px;
+  background:#fff;
+}
+.exec-card h4{
+  margin:0 0 6px;
+  font-size:14px;
+  color:var(--zero-navy,#02154e);
+  font-weight:700;
+}
+.exec-metric{
+  font-size:20px;
+  font-weight:800;
+  color:var(--zero-navy,#02154e);
+  line-height:1.15;
+}
+.exec-sub{
+  font-size:12px;
+  color:var(--zero-gray-dark,#666);
+  margin-top:4px;
+}
+.exec-mini{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.exec-pill{
+  font-size:12px;
+  border:1px solid #e0e0e0;
+  border-radius:999px;
+  padding:4px 10px;
+  background:#fafafa;
+}
+</style>
+  <style>
+/* ZERO_EXEC_CLICKFIX_FIBRE v3 */
+.exec-grid, .exec-card{position:relative; z-index:50;}
+.exec-card{pointer-events:auto !important; cursor:pointer;}
+.exec-card.is-focus{outline:3px solid #f9ba00; box-shadow:0 0 0 6px rgba(249,186,0,.18);}
+</style>
+  <script src="assets/js/chart.umd.min.js?v=CHART_HEAD1" onload="console.error(\"[CHART] onload typeof Chart=\", typeof window.Chart)" onerror="console.error(\"[CHART] onerror\")"></script>
+</head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" onclick="try{if(window.top&&window.top!==window){window.top.location.href='index.html';return false;}}catch(e){}" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Zero <span class="title-at">Ecosystem</span> — Fibre DPP by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+        </div>
+    </div>
+</header>
+    <main class="container">
+<!-- ZERO_EXEC_LENSES v1 (Fibre) -->
+<section class="exec-lenses" id="execLenses">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:14px;color:#02154e;font-weight:800;">Executive Decision Lenses — Fibre</div>
+      <div class="muted" style="max-width:900px;">Same data, different executive lens. ML-Ready.</div>
+    </div>
+  </div>
+
+  <div class="exec-grid">
+    <div class="exec-card" id="lensCEO">
+      <h4>CEO — Risk Exposure</h4>
+      <div class="exec-metric" id="ceoRisk">—</div>
+      <div class="exec-mini">
+        <span class="exec-pill" id="ceoPremium">Premium: —</span>
+        <span class="exec-pill" id="ceoHighRisk">High-Risk: —</span>
+      </div>
+      <div class="exec-sub" id="ceoNote">—</div>
+    </div>
+
+    <div class="exec-card" id="lensCFO">
+      <h4>CFO — Financial Exposure</h4>
+      <div class="exec-metric" id="cfoExposure">—</div>
+      <div class="exec-mini">
+        <span class="exec-pill" id="cfoAvg">Avg monthly proxy: —</span>
+        <span class="exec-pill" id="cfoCount">High-risk items: —</span>
+      </div>
+      <div class="exec-sub">Do-nothing scenario, shadow carbon price proxy.</div>
+    </div>
+
+    <div class="exec-card" id="lensCTO">
+      <h4>CTO — Data Readiness</h4>
+      <div class="exec-metric" id="ctoReady">ML-Ready: YES</div>
+      <div class="exec-mini">
+        <span class="exec-pill" id="ctoComplete">Completeness: —</span>
+        <span class="exec-pill" id="ctoN">Records: —</span>
+      </div>
+      <div class="exec-sub">Structurally ready for optimization + anomaly detection.</div>
+    </div>
+
+    <div class="exec-card" id="lensMD">
+      <h4>MD/COO — Operations</h4>
+      <div class="exec-metric" id="mdSplit">—</div>
+      <div class="exec-mini">
+        <span class="exec-pill" id="mdTech">Technical: —</span>
+        <span class="exec-pill" id="mdStable">Stable: —</span>
+      </div>
+      <div class="exec-sub">Operational fragility snapshot (risk + technical load).</div>
+    </div>
+  </div>
+</section>
+      <div class="card" style="margin-bottom: 24px;">
+        <h3>RAW MATERIALS</h3>
+        <p class="muted">Track raw fiber sourcing, quality control, and supplier sustainability.</p>
+        <div class="row" style="gap:16px; flex-wrap:wrap;">
+          <div class="card" style="min-width:220px;">
+            <h3>847</h3>
+            <p class="muted">Active Batches</p>
+          </div>
+          <div class="card" style="min-width:220px;">
+            <h3>12.5t</h3>
+            <p class="muted">CO₂ / Month</p>
+          </div>
+          <div class="card" style="min-width:220px;">
+            <h3>€85K</h3>
+            <p class="muted">Monthly Cost</p>
+          </div>
+          <div class="card" style="min-width:220px;">
+            <h3><span class="badge">Active</span></h3>
+            <p class="muted">Status</p>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom: 24px;">
+        <h3>Trend</h3>
+        <div class="row" style="gap:8px; flex-wrap:wrap;">
+          <div id="fibreTrendSummary" class="muted" style="min-width:280px;">—</div>
+          <div id="fibreTrendCostSummary" class="muted" style="min-width:280px;">—</div>
+        </div>
+      </div>
+
+      <section class="card" style="margin-bottom: 24px;">
+        <h3>Fibre CO₂ (Monthly)</h3>
+        <div class="zero-chart-box">
+  <canvas id="fibreChart"></canvas>
+</div>
+      </section>
+    <section class="card" style="margin-top:22px;">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+    <h3 style="margin:0;">Fibre Library</h3>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <select id="fibreGroupFilter" class="input" style="min-width:220px;">
+        <option value="ALL">All groups</option>
+        <option value="Cotton">Cotton</option>
+        <option value="Cellulosic">Cellulosic</option>
+        <option value="Blends">Blends</option>
+      </select>
+      <input id="fibreSearch" class="input" placeholder="Search fibre..." style="min-width:220px;" />
+    </div>
+  </div>
+
+  <div id="fibreCardsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:14px;"></div>
+</section>
+
+<script>
+/* ZERO: Fibre Cards v1 (local json) */
+(async function(){
+  const grid = document.getElementById("fibreCardsGrid");
+  const sel  = document.getElementById("fibreGroupFilter");
+  const q    = document.getElementById("fibreSearch");
+  if(!grid || !sel || !q) return;
+
+  let cards = [];
+  try{
+    const res = await fetch("assets/data/fibre-cards.json", {cache:"no-store"});
+    const json = await res.json();
+    cards = Array.isArray(json.cards) ? json.cards : [];
+  }catch(e){
+    grid.innerHTML = "<div class=\"muted\">Fibre library data not found.</div>";
+    return;
+  }
+
+  const badge = (txt)=>`<span style="display:inline-block;padding:2px 8px;border:1px solid #e0e0e0;border-radius:999px;font-size:12px;opacity:.9;">${txt}</span>`;
+  const riskColor = (r)=> r>=65? "#D51635" : (r>=45? "#f9ba00" : "#005530");
+
+  function getHeaderHTML(c){
+    const name = (c.name || "").toLowerCase();
+    const comp = (c.composition || "").toLowerCase();
+    const group = (c.group || "").toLowerCase();
+    const risk = (c.risk_score ?? c.risk ?? 0);
+
+    // A) PREMIUM (NAVY) — highest priority
+    if (/(turkish|african|giza|supima)/i.test(name + " " + comp)) {
+      return '<div class="fibre-origin-header header-premium">PREMIUM ORIGIN</div>';
+    }
+
+    // B) RISK (RED)
+    if (risk >= 40 || group === "technical") {
+      return '<div class="fibre-origin-header header-risk">ATTENTION</div>';
+    }
+
+    // C) SUSTAINABLE (ORANGE)
+    if (/(organic|bci|regenerative|recycled|grs|gots)/i.test(name + " " + comp)) {
+      return '<div class="fibre-origin-header header-sustainable">SUSTAINABLE</div>';
+    }
+
+    return '';
+  }
+
+  const render = ()=>{
+    const group = sel.value;
+    const term = (q.value||"").toLowerCase().trim();
+    const filtered = cards.filter(c=>{
+      const gOK = (group==="ALL") || (c.group===group);
+      const tOK = !term || (c.name||"").toLowerCase().includes(term) || (c.id||"").toLowerCase().includes(term);
+      return gOK && tOK;
+    });
+
+    grid.innerHTML = filtered.map(c=>{
+      const certs = (c.certs||[]).slice(0,4).map(badge).join(" ");
+      
+      return `
+        <div class="card" style="padding:14px;border:1px solid #e0e0e0;">
+          ${getHeaderHTML(c)}
+          <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;">
+            <div>
+              <div style="font-weight:600;color:#02154e;">${c.name}</div>
+              <div class="muted" style="font-size:12px;">${c.group} • ${c.id}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;color:${riskColor(c.risk)};">Risk ${c.risk}</div>
+              <div class="muted" style="font-size:12px;">0–100</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">${certs || ""}</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+            <div class="card" style="padding:10px;">
+              <div class="muted" style="font-size:12px;">CO₂</div>
+              <div style="font-weight:700;">${c.co2_kgkg.toFixed(2)} kg/kg</div>
+            </div>
+            <div class="card" style="padding:10px;">
+              <div class="muted" style="font-size:12px;">Water</div>
+              <div style="font-weight:700;">${Math.round(c.water_lkg)} L/kg</div>
+            </div>
+            <div class="card" style="padding:10px;">
+              <div class="muted" style="font-size:12px;">Energy</div>
+              <div style="font-weight:700;">${c.energy_kwhkg.toFixed(1)} kWh/kg</div>
+            </div>
+            <div class="card" style="padding:10px;">
+              <div class="muted" style="font-size:12px;">Note</div>
+              <div style="font-size:12px;">${c.note || "—"}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("") || `<div class="muted">No fibres match your filter.</div>`;
+  };
+
+  sel.addEventListener("change", render);
+  q.addEventListener("input", render);
+  render();
+})();
+</script>
+
+</main>
+    <!-- ZERO: Charts Section -->
+    <section class="card" style="margin: 24px;">
+      <h3>Sustainability Analytics</h3>
+      <div class="row" style="gap:16px; flex-wrap:wrap;">
+        <div class="card" style="min-width:280px; flex:1;">
+          <h4>Distribution by Area</h4>
+          <canvas id="chartDomain" style="width:100%;height:180px;display:block;"></canvas>
+        </div>
+        <div class="card" style="min-width:280px; flex:1;">
+          <h4>Scope 1/2/3</h4>
+          <canvas id="chartScope" style="width:100%;height:180px;display:block;"></canvas>
+        </div>
+        <div class="card" style="min-width:280px; flex:1;">
+          <h4>CO₂ vs Cost</h4>
+          <canvas id="chartCompare" style="width:100%;height:180px;display:block;"></canvas>
+        </div>
+      </div>
+    </section>
+    <script>
+      /* ZERO_NATIVE_CHARTS v1 */
+      (function(){
+        // --- Utils ---
+        function prepCanvas(c){
+          if(!c) return null;
+          var dpr = Math.max(1, window.devicePixelRatio||1);
+          var rect = c.getBoundingClientRect();
+          var w = Math.floor(rect.width);
+          var h = Math.floor(rect.height);
+          c.width = w*dpr;
+          c.height = h*dpr;
+          var ctx = c.getContext("2d");
+          ctx.setTransform(dpr,0,0,dpr,0,0);
+          return {ctx:ctx,w:w,h:h};
+        }
+
+        // --- Pie Chart ---
+        function drawPie(id, labels, data, colors){
+          var c=document.getElementById(id); if(!c) return;
+          var box=prepCanvas(c); if(!box) return;
+          var ctx=box.ctx, w=box.w, h=box.h;
+          
+          var total = data.reduce((a,b)=>a+b,0);
+          var cx = w/2, cy = h/2, r = Math.min(w,h)/2 - 20;
+          var start = -Math.PI/2;
+          
+          data.forEach((val,i)=>{
+             var slice = (val/total)*2*Math.PI;
+             ctx.beginPath();
+             ctx.moveTo(cx,cy);
+             ctx.arc(cx,cy,r,start,start+slice);
+             ctx.fillStyle = colors[i%colors.length];
+             ctx.fill();
+             
+             // label
+             var mid = start + slice/2;
+             var lx = cx + (r+10)*Math.cos(mid);
+             var ly = cy + (r+10)*Math.sin(mid);
+             ctx.fillStyle = "#444";
+             ctx.font = "10px sans-serif";
+             ctx.textAlign = lx>cx?"left":"right";
+             ctx.fillText(labels[i], lx, ly);
+             
+             start += slice;
+          });
+        }
+
+        // --- Bar Chart ---
+        function drawBar(id, labels, data, colors){
+          var c=document.getElementById(id); if(!c) return;
+          var box=prepCanvas(c); if(!box) return;
+          var ctx=box.ctx, w=box.w, h=box.h;
+          
+          var pad = 30;
+          var gw = w - pad*2;
+          var gh = h - pad*2;
+          var max = Math.max(...data)*1.1;
+          
+          // grid
+          ctx.strokeStyle="#eee"; ctx.lineWidth=1;
+          ctx.beginPath();
+          ctx.moveTo(pad,pad); ctx.lineTo(pad,h-pad); ctx.lineTo(w-pad,h-pad);
+          ctx.stroke();
+          
+          var step = gw / data.length;
+          var barW = step * 0.6;
+          
+          data.forEach((val,i)=>{
+            var bh = (val/max)*gh;
+            var x = pad + step*i + step*0.2;
+            var y = h - pad - bh;
+            
+            ctx.fillStyle = colors[i%colors.length];
+            ctx.fillRect(x,y,barW,bh);
+            
+            // val
+            ctx.fillStyle = "#000"; ctx.textAlign="center"; ctx.font="11px sans-serif";
+            ctx.fillText(val, x+barW/2, y-5);
+            
+            // label
+            ctx.fillStyle = "#666";
+            ctx.fillText(labels[i], x+barW/2, h-pad+15);
+          });
+        }
+
+        // --- Init ---
+        // Domain
+        drawPie("chartDomain", ['Raw Mat', 'Process', 'Logistics'], [48, 37, 15], ['#005530','#f9ba00','#02154e']);
+        
+        // Scope
+        drawBar("chartScope", ['Scope 1','Scope 2','Scope 3'], [3.2, 4.8, 9.1], ['#005530','#f9ba00','#02154e']);
+        
+        // Compare
+        drawBar("chartCompare", ['CO₂ (t)','Cost (€K)'], [12.5, 85], ['#005530','#D51635']);
+        
+        // Expose helpers for other scripts
+        window.ZeroCharts = { prepCanvas: prepCanvas };
+
+      })();
+    </script>
+    <!-- <script type="module">
+      import { loadData, scaleValue } from 'assets/js/data.js';
+      (async function(){
+        const PAGE_KEY = 'fibre';
+        const TIMEFRAME = 'month';
+        try {
+          const DATA = await loadData();
+          const fibre = DATA.modules.find(m => m.key === 'raw_fiber');
+          if (fibre) {
+            const co2Total = scaleValue(fibre.co2_month, TIMEFRAME, DATA.scaling);
+            const costTotal = scaleValue(fibre.cost_month, TIMEFRAME, DATA.scaling);
+            if (window.Trend) {
+              window.Trend.renderSummaryWithReset({
+                pageKey: PAGE_KEY,
+                timeframe: TIMEFRAME,
+                elementId: 'fibreTrendSummary',
+                metricKey: 'co2Total',
+                currentTotal: co2Total,
+                unitLabel: 'tCO₂',
+                locale: 'tr-TR',
+                precision: 2
+              });
+              window.Trend.renderSummaryWithReset({
+                pageKey: PAGE_KEY,
+                timeframe: TIMEFRAME,
+                elementId: 'fibreTrendCostSummary',
+                metricKey: 'costTotal',
+                currentTotal: costTotal,
+                unitLabel: 'K€',
+                locale: 'tr-TR',
+                precision: 1
+              });
+            }
+            // Publish metrics to Agent
+            try { window.Agent && window.Agent.publish('metrics', { page: 'fibre', timeframe: TIMEFRAME, filter: null, co2Total, costTotal }); } catch(_) {}
+            // Chart: prefer real monthly series if available, fallback to synthetic
+            const ctx = document.getElementById('fibreChart');
+            if (ctx && window.Chart) {
+              const base = co2Total;
+              let series = null;
+              try {
+                // Try common locations for a monthly CO₂ series in demo-data.json
+                if (Array.isArray(fibre.series_co2)) series = fibre.series_co2;
+                else if (fibre.series && Array.isArray(fibre.series.co2)) series = fibre.series.co2;
+                else if (DATA.series && DATA.series.fibre && Array.isArray(DATA.series.fibre.co2)) series = DATA.series.fibre.co2;
+                else if (DATA.series && DATA.series.raw_fiber && Array.isArray(DATA.series.raw_fiber.co2)) series = DATA.series.raw_fiber.co2;
+              } catch (_) { /* ignore */ }
+              if (!Array.isArray(series) || series.length === 0) {
+                series = [0.92,0.95,0.98,1.00,1.02,1.04,1.03,1.01,0.99,0.98,0.97,1.00].map(f => Number((base * f).toFixed(2)));
+              }
+              new window.Chart(ctx, {
+                type: 'line',
+                data: {
+                  labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                  datasets: [{ label: 'CO₂ (t)', data: series, borderColor: '#005530', backgroundColor: 'rgba(0,85,48,0.15)', tension: 0.2 }]
+                },
+                options: { responsive: true, plugins: { legend: { display: true }, tooltip: { enabled: true } }, scales: { y: { beginAtZero: false } } }
+              });
+            }
+          }
+        } catch (e) { /* noop */ }
+      })();
+    </script> -->
+  <script>
+/* FIBRE_V1: KPI + trend bootstrap (local demo data) */
+(async function(){
+  const $ = (q)=>document.querySelector(q);
+  const setText = (el, v)=>{ if(!el) return; el.textContent = v; };
+
+  // Try to locate KPI slots by their visible labels (light-touch, no DOM restructure)
+  const kpiCards = Array.from(document.querySelectorAll(".kpi-card, .kpi, .card, .metric"));
+  const findCardByLabel = (label)=>{
+    const L = label.toLowerCase();
+    for(const c of kpiCards){
+      const t = (c.textContent||"").toLowerCase();
+      if(t.includes(L)) return c;
+    }
+    return null;
+  };
+  const setCardValue = (label, value)=>{
+    const c = findCardByLabel(label);
+    if(!c) return;
+    const h3 = c.querySelector("h3");
+    if(h3) h3.textContent = value;
+  };
+
+  // Load local demo data
+  let data = null;
+  try{
+    const res = await fetch("assets/data/fibre-demo.json", { cache: "no-store" });
+    data = await res.json();
+  }catch(e){
+    console.warn("FIBRE_V1: demo data load failed", e);
+    return;
+  }
+
+  const fibre = data?.fibre;
+  if(!fibre) return;
+
+  // KPI updates (match your current labels)
+  setCardValue("Active Batches", String(fibre.active_batches));
+  setCardValue("CO₂ / Month", String(fibre.co2_month_t) + "t");
+  setCardValue("Monthly Cost", "€" + String(Math.round(fibre.monthly_cost_eur/1000)) + "K");
+  setCardValue("Status", fibre.status);
+
+  // Trend summaries
+  const series = Array.isArray(fibre.monthly_series) ? fibre.monthly_series : [];
+  const last = series[series.length-1];
+  const prev = series[series.length-2];
+  const pct = (a,b)=> (b && isFinite(b) && b!==0) ? ((a-b)/b*100) : null;
+
+  if(last && prev){
+    const co2p = pct(last.co2_t, prev.co2_t);
+    const cosp = pct(last.cost_k, prev.cost_k);
+    const co2Txt = (co2p===null)? "—" : (co2p>=0? `↑ ${co2p.toFixed(1)}%` : `↓ ${Math.abs(co2p).toFixed(1)}%`);
+    const cosTxt = (cosp===null)? "—" : (cosp>=0? `↑ ${cosp.toFixed(1)}%` : `↓ ${Math.abs(cosp).toFixed(1)}%`);
+    setText($("#fibreTrendSummary"), `CO₂ MoM: ${co2Txt}`);
+    setText($("#fibreTrendCostSummary"), `Cost MoM: ${cosTxt}`);
+  }
+
+  // Main fibre chart (if canvas exists)
+  const canvas = document.getElementById("fibreChart");
+  if(canvas && window.Chart){
+    const labels = series.map(x=>x.m);
+    const co2 = series.map(x=>x.co2_t);
+    const cost = series.map(x=>x.cost_k);
+
+    try{
+      new Chart(canvas.getContext("2d"), {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            { label: "CO₂ (t)", data: co2, tension: 0.35, fill: true },
+            { label: "Cost (€K)", data: cost, tension: 0.35, fill: false, yAxisID: "y2" }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          resizeDelay: 150,
+          plugins: { legend: { display: true } },
+          scales: {
+            y: { beginAtZero: false, title: { display: true, text: "CO₂ (t)" } },
+            y2: { beginAtZero: false, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "Cost (€K)" } }
+          }
+        }
+      });
+    }catch(e){
+      console.warn("FIBRE_V1: chart init failed", e);
+    }
+  }
+})();
+</script>
+<style>
+/* ZERO: HARD LOCK chart area (prevents infinite growth) */
+.zero-chart-box{height:260px; max-height:260px; overflow:hidden; position:relative;}
+.zero-chart-box canvas{width:100% !important; height:100% !important; display:block;}
+
+/* ZERO: Premium Origin Header */
+.fibre-origin-header {
+  background-color: #02154e;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 6px 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: -14px -14px 14px -14px;
+  border-radius: 4px 4px 0 0; /* Assumes card has similar radius */
+}
+</style>
+<style>
+/* ZERO: TRI-COLOR HEADER SYSTEM */
+.fibre-origin-header{padding:8px 12px;font-weight:600;font-size:13px;letter-spacing:.2px}
+.header-premium{background:#02154e;color:#ffffff}
+.header-sustainable{background:#f9ba00;color:#02154e}
+.header-risk{background:#D51635;color:#ffffff}
+</style>
+<script>
+/* ZERO_EXEC_LENSES v1 (Fibre) */
+(async function(){
+  try{
+    const res = await fetch("assets/data/fibre-cards.json", { cache: "no-store" });
+    const fibres = await res.json();
+    if(!Array.isArray(fibres) || fibres.length === 0) return;
+
+    const pct = function(n,d){ return d ? Math.round((n/d)*100) : 0; };
+
+    const isPremium = function(f){
+      const s = ((f.name||"") + " " + (f.composition||"")).toLowerCase();
+      return (s.indexOf("turkish")>-1 || s.indexOf("african")>-1 || s.indexOf("giza")>-1 || s.indexOf("supima")>-1);
+    };
+
+    const riskVal = function(f){
+      const v = (f.risk_score != null ? f.risk_score : (f.risk != null ? f.risk : 0));
+      const n = Number(v);
+      return isFinite(n) ? n : 0;
+    };
+
+    const isHighRisk = function(f){ return riskVal(f) >= 40; };
+
+    const total = fibres.length;
+    const premiumN = fibres.filter(isPremium).length;
+    const highRiskArr = fibres.filter(isHighRisk);
+    const highRiskN = highRiskArr.length;
+
+    // CFO proxy
+    const shadowPrice = 120;   // €/proxy factor
+    const batchSize = 1000;    // standard batch size proxy
+    const monthly = highRiskArr.map(function(f){
+      const c = Number(f.co2_kg_per_kg || 0);
+      return (isFinite(c) ? c : 0) * shadowPrice;
+    });
+    const avgMonthly = monthly.length ? (monthly.reduce((a,b)=>a+b,0)/monthly.length) : 0;
+    const annualExposure = monthly.reduce((a,b)=>a + (b*batchSize*12), 0);
+
+    // CTO completeness
+    const completeN = fibres.filter(function(f){ return (f.name && f.group); }).length;
+
+    // MD split
+    const techN = fibres.filter(function(f){
+      return String(f.group||"").toLowerCase() === "technical";
+    }).length;
+    const stableN = total - techN;
+
+    const byId = function(id){ return document.getElementById(id); };
+
+    const ceoRisk = byId("ceoRisk");
+    if(ceoRisk) ceoRisk.textContent = pct(highRiskN,total) + "% Elevated Risk";
+
+    const ceoPremium = byId("ceoPremium");
+    if(ceoPremium) ceoPremium.textContent = "Premium: " + pct(premiumN,total) + "%";
+
+    const ceoHighRisk = byId("ceoHighRisk");
+    if(ceoHighRisk) ceoHighRisk.textContent = "High-Risk: " + pct(highRiskN,total) + "%";
+
+    const ceoNote = byId("ceoNote");
+    if(ceoNote) ceoNote.textContent = highRiskN + " of " + total + " fibre sources are currently flagged as elevated-risk.";
+
+    const cfoExposure = byId("cfoExposure");
+    if(cfoExposure) cfoExposure.textContent = "€" + (annualExposure/1e6).toFixed(2) + "M / year";
+
+    const cfoAvg = byId("cfoAvg");
+    if(cfoAvg) cfoAvg.textContent = "Avg monthly proxy: €" + (avgMonthly).toFixed(1) + "k";
+
+    const cfoCount = byId("cfoCount");
+    if(cfoCount) cfoCount.textContent = "High-risk items: " + highRiskN;
+
+    const ctoComplete = byId("ctoComplete");
+    if(ctoComplete) ctoComplete.textContent = "Completeness: " + pct(completeN,total) + "%";
+
+    const ctoN = byId("ctoN");
+    if(ctoN) ctoN.textContent = "Records: " + total;
+
+    const mdSplit = byId("mdSplit");
+    if(mdSplit) mdSplit.textContent = highRiskN + " flagged · " + techN + " technical";
+
+    const mdTech = byId("mdTech");
+    if(mdTech) mdTech.textContent = "Technical: " + techN;
+
+    const mdStable = byId("mdStable");
+    if(mdStable) mdStable.textContent = "Stable: " + stableN;
+
+    /* MODAL WIRING */
+    const modal = document.getElementById("zeroExecModal");
+    const mTitle = document.getElementById("zeroExecModalTitle");
+    const mSub = document.getElementById("zeroExecModalSub");
+    const mBody = document.getElementById("zeroExecModalBody");
+    const mClose = document.getElementById("zeroExecModalClose");
+
+    const openModal = (t, s, h) => {
+      if(!modal) return;
+      mTitle.textContent = t;
+      mSub.textContent = s;
+      mBody.innerHTML = h;
+      modal.classList.add("open");
+    };
+
+    const closeModal = () => {
+      if(modal) modal.classList.remove("open");
+    };
+
+    if(mClose) mClose.onclick = closeModal;
+    if(modal) modal.onclick = (e) => { if(e.target === modal) closeModal(); };
+    document.addEventListener("keydown", (e) => { if(e.key === "Escape") closeModal(); });
+
+    /* ZERO_EXEC_WIRING_FIX v1 */
+    function wire(id, fn){
+       var el = document.getElementById(id);
+       if(!el) return;
+       // expose global
+       window[fn.name] = fn;
+       // bind events
+       el.addEventListener("click", fn);
+       el.addEventListener("touchend", function(e){ e.preventDefault(); fn(); });
+    }
+
+    // CEO Logic
+    function openFibreModalCEO(){
+       const rows = highRiskArr.slice(0, 10).map(f => `
+         <tr>
+           <td><b>${f.name}</b><br><span style="font-size:0.85em;color:#666">${f.composition}</span></td>
+           <td style="text-align:right;color:#D51635;font-weight:bold">${riskVal(f)}</td>
+           <td style="text-align:right">${f.origin||"Unknown"}</td>
+         </tr>
+       `).join("");
+       
+       const html = `
+         <div style="margin-bottom:1rem; padding:1rem; background:#fff5f5; border-left:4px solid #D51635; border-radius:4px;">
+           <strong>High Risk Concentration:</strong> ${pct(highRiskN, total)}% of portfolio (${highRiskN} items) flagged above threshold (40).
+         </div>
+         <table style="width:100%; border-collapse:collapse; font-size:0.9rem;">
+           <thead style="border-bottom:2px solid #eee; text-align:left; color:#999; font-size:0.8rem; text-transform:uppercase;">
+             <tr><th style="padding:8px;">Material</th><th style="text-align:right;padding:8px;">Risk Score</th><th style="text-align:right;padding:8px;">Origin</th></tr>
+           </thead>
+           <tbody>${rows}</tbody>
+         </table>
+         ${highRiskArr.length > 10 ? '<div style="text-align:center; padding:10px; color:#999; font-size:0.8rem;">...and ' + (highRiskArr.length - 10) + ' more</div>' : ''}
+       `;
+       openModal("CEO View: Risk Landscape", "Operational & Compliance Exposure", html);
+    }
+    wire("lensCEO", openFibreModalCEO);
+
+    // CFO Logic
+    function openFibreModalCFO(){
+       const html = `
+         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+            <div style="background:#f8f9fa; padding:1rem; border-radius:6px; text-align:center;">
+              <div style="font-size:0.8rem; text-transform:uppercase; color:#666;">Annual Exposure</div>
+              <div style="font-size:1.8rem; font-weight:bold; color:#02154e;">€${(annualExposure/1e6).toFixed(2)}M</div>
+              <div style="font-size:0.75rem; color:#999;">Unmitigated</div>
+            </div>
+            <div style="background:#f8f9fa; padding:1rem; border-radius:6px; text-align:center;">
+               <div style="font-size:0.8rem; text-transform:uppercase; color:#666;">Shadow Price</div>
+               <div style="font-size:1.8rem; font-weight:bold; color:#02154e;">€${shadowPrice}</div>
+               <div style="font-size:0.75rem; color:#999;">per ton (Proxy)</div>
+            </div>
+         </div>
+         <p style="font-size:0.95rem; color:#444; line-height:1.5;">
+           <strong>Financial Logic:</strong> Calculation assumes a standard batch size of <b>${batchSize}kg</b> per material per month.
+           Carbon pricing volatility is modeled at <b>€${shadowPrice}/t</b> based on EU ETS + CBAM forward curves.
+         </p>
+         <p style="font-size:0.95rem; color:#444; line-height:1.5; margin-top:10px;">
+           <strong>Impact:</strong> ${highRiskN} high-risk items drive ${(avgMonthly*100/annualExposure*12*1000).toFixed(1)}% of total projected variance.
+         </p>
+       `;
+       openModal("CFO View: Financial Shock", "Carbon Liability & Volatility", html);
+    }
+    wire("lensCFO", openFibreModalCFO);
+
+    // CTO Logic
+    function openFibreModalCTO(){
+       const html = `
+         <div style="margin-bottom:1rem; padding:1rem; background:#eef2ff; border-left:4px solid #4f46e5; border-radius:4px;">
+           <strong>Data Readiness:</strong> ${pct(completeN, total)}% of records meet ML-training standards (Level 3+).
+         </div>
+         <ul style="list-style:none; padding:0; margin:0; font-size:0.95rem;">
+           <li style="padding:8px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+             <span>Total Records</span> <strong>${total}</strong>
+           </li>
+           <li style="padding:8px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+             <span>Complete Metadata</span> <strong>${completeN}</strong>
+           </li>
+           <li style="padding:8px 0; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+             <span>Missing Attributes</span> <strong style="color:#D51635">${total - completeN}</strong>
+           </li>
+         </ul>
+         <p style="margin-top:1rem; font-size:0.85rem; color:#666;">
+           * Completeness defined as presence of: Name, Group/Category, Composition, Origin, and LCA basic data.
+         </p>
+       `;
+       openModal("CTO View: Data Health", "ML Pipeline & Digital Passport Readiness", html);
+    }
+    wire("lensCTO", openFibreModalCTO);
+
+    // MD Logic
+    function openFibreModalMD(){
+       const html = `
+         <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem;">
+            <div style="flex:1; height:20px; background:#eee; border-radius:10px; overflow:hidden; display:flex;">
+               <div style="width:${pct(techN, total)}%; background:#02154e;"></div>
+               <div style="width:${pct(stableN, total)}%; background:#f9ba00;"></div>
+            </div>
+         </div>
+         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div>
+               <div style="font-size:0.8rem; text-transform:uppercase; color:#666;">Technical</div>
+               <div style="font-size:1.5rem; font-weight:bold; color:#02154e;">${techN}</div>
+               <div style="font-size:0.8rem; color:#666;">${pct(techN, total)}% of portfolio</div>
+            </div>
+             <div>
+               <div style="font-size:0.8rem; text-transform:uppercase; color:#666;">Stable/Basic</div>
+               <div style="font-size:1.5rem; font-weight:bold; color:#f9ba00;">${stableN}</div>
+               <div style="font-size:0.8rem; color:#666;">${pct(stableN, total)}% of portfolio</div>
+            </div>
+         </div>
+         <p style="margin-top:1.5rem; font-size:0.95rem; color:#444;">
+           <strong>Supply Chain Resilience:</strong> Technical materials show higher supplier concentration risk. Recommendation: Diversify sourcing for the ${techN} technical SKUs.
+         </p>
+       `;
+       openModal("MD View: Operations", "Supply Chain & Material Strategy", html);
+    }
+    wire("lensMD", openFibreModalMD);
+
+  }catch(e){
+    // silent
+  }
+})();
+</script>
+<!-- ZERO_EXEC_MODAL v1 --> 
+<div class="zero-modal" id="zeroExecModal" role="dialog" aria-modal="true" aria-hidden="true"> 
+  <div class="zero-modal-panel" role="document"> 
+    <div class="zero-modal-head"> 
+      <div> 
+        <div class="zero-modal-title" id="zeroExecModalTitle">—</div> 
+        <div class="zero-modal-sub" id="zeroExecModalSub">—</div> 
+      </div> 
+      <button class="zero-modal-close" id="zeroExecModalClose" type="button">✕</button> 
+    </div> 
+    <div class="zero-modal-body" id="zeroExecModalBody"> 
+      <!-- JS will render --> 
+    </div> 
+  </div> 
+</div> 
+<script>
+/* ZERO_AUTOROLE_FIBRE_BOOT v1 */
+(function(){
+  function qRole(){
+    try{ return String(new URLSearchParams(location.search).get("role")||"").toLowerCase(); }
+    catch(e){ return ""; }
+  }
+
+  function pickId(role){
+    if(role==="ceo") return "lensCEO";
+    if(role==="cfo") return "lensCFO";
+    if(role==="cto") return "lensCTO";
+    if(role==="md" || role==="coo") return "lensMD";
+    return "";
+  }
+
+  function safeScroll(el){
+    try{ el.scrollIntoView({behavior:"smooth", block:"center"}); }
+    catch(e){ try{ el.scrollIntoView(true);}catch(_e){} }
+  }
+
+  function focusCard(el){
+    if(!el) return;
+    var olds = document.querySelectorAll(".exec-card.is-focus");
+    for(var i=0;i<olds.length;i++) olds[i].classList.remove("is-focus");
+    el.classList.add("is-focus");
+    safeScroll(el);
+  }
+
+  function openByRole(role){
+    var id = pickId(role);
+    if(!id) return;
+    var el = document.getElementById(id);
+    if(!el) return;
+
+    focusCard(el);
+
+    // Prefer explicit helpers if present
+    try{
+      if(role==="ceo" && typeof window.openFibreModalCEO==="function") return window.openFibreModalCEO();
+      if(role==="cfo" && typeof window.openFibreModalCFO==="function") return window.openFibreModalCFO();
+      if(role==="cto" && typeof window.openFibreModalCTO==="function") return window.openFibreModalCTO();
+      if((role==="md"||role==="coo") && typeof window.openFibreModalMD==="function") return window.openFibreModalMD();
+    }catch(e){}
+
+    // Fallback: click (hard-bind wiring yakalar)
+    setTimeout(function(){
+      try{ el.click(); }catch(e){}
+      try{ el.dispatchEvent(new Event("click")); }catch(e){}
+    }, 450);
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    var role = qRole();
+    if(!role) return;
+    setTimeout(function(){ openByRole(role); }, 650);
+  });
+})();
+</script>
+<a href="/" class="zero-back-btn">← Back</a>
+<style>
+.zero-back-btn{
+  position:fixed; top:16px; right:16px; z-index:9999;
+  display:inline-block; padding:10px 14px;
+  font-size:13px; font-weight:700;
+  color:#ffffff; background:#005530;
+  border:2px solid #005530; border-radius:10px;
+  text-decoration:none; letter-spacing:.4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+  transition:transform .12s ease, filter .12s ease;
+}
+.zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
+</style>
+  <div id="fibresTable" data-fibres-table></div>
+  <script src="assets/js/supabase.fabric.config.js"></script>
+<script src="assets/js/supabase.fibre.config.js?v=FIBREDB2"></script>
+  <script src="assets/js/supabase.fibre.loader.js?v=FIBREDB2"></script>
+</body>
+</html>

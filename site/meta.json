@@ -1,0 +1,7 @@
+{
+  "app": "Zero@Production",
+  "module": "fabric-dpp",
+  "env": "local",
+  "build": "dev",
+  "ts": "2026-01-21T00:00:00Z"
+}

@@ -1,0 +1,286 @@
+window.__FABRICS_LOADER_BOOTED__ = new Date().toISOString();
+console.error("[FABRICS_LOADER] BOOTED", window.__FABRICS_LOADER_BOOTED__);
+/**
+ * Zero@Production — Fabric DPP Supabase Loader (v1.1)
+ * Renders into: [data-fabrics-table]
+ * Features: search, sort, pagination, error pill
+ */
+(function () {
+  'use strict';
+
+  const SUPA_URL = (window.SUPABASE_URL || '').replace(/\/+$/, '');
+  const ANON = window.SUPABASE_ANON_KEY || '';
+  const SCHEMA = window.SUPABASE_SCHEMA || 'public';
+
+  const mount =
+    document.querySelector('[data-fabrics-table]') ||
+    document.getElementById('fabricsTable');
+
+  if (!mount) {
+    console.warn('[fabric.loader] mount not found');
+    return;
+  }
+
+  const style = document.createElement('style');
+  style.textContent = `
+    .zf-wrap{max-width:1200px;margin:0 auto;padding:14px}
+    .zf-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0 14px}
+    .zf-input{flex:1;min-width:240px;padding:10px 12px;border:1px solid rgba(2,21,78,.18);border-radius:10px;font-size:14px}
+    .zf-select{padding:10px 12px;border:1px solid rgba(2,21,78,.18);border-radius:10px;font-size:14px;background:#fff}
+    .zf-pill{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;display:inline-flex;gap:6px;align-items:center}
+    .zf-pill.ok{background:rgba(0,85,48,.12);color:#005530;border:1px solid rgba(0,85,48,.25)}
+    .zf-pill.bad{background:rgba(213,22,53,.10);color:#D51635;border:1px solid rgba(213,22,53,.25)}
+    .zf-grid{display:grid;grid-template-columns:repeat(4,minmax(230px,1fr));gap:14px}
+    @media (max-width:1100px){.zf-grid{grid-template-columns:repeat(3,minmax(230px,1fr))}}
+    @media (max-width:850px){.zf-grid{grid-template-columns:repeat(2,minmax(230px,1fr))}}
+    @media (max-width:560px){.zf-grid{grid-template-columns:1fr}}
+    .zf-card{border:1px solid rgba(2,21,78,.12);border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 2px 10px rgba(2,21,78,.06)}
+    .zf-top{padding:12px;border-bottom:1px solid rgba(2,21,78,.08);display:flex;justify-content:space-between;gap:10px}
+    .zf-title{font-weight:900;color:#02154e;font-size:14px;line-height:1.2}
+    .zf-sub{color:rgba(2,21,78,.7);font-size:12px;margin-top:4px}
+    .zf-kpi{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .zf-box{border:1px solid rgba(2,21,78,.10);border-radius:12px;padding:10px}
+    .zf-box .k{font-size:11px;color:rgba(2,21,78,.7);font-weight:800}
+    .zf-box .v{font-size:16px;font-weight:900;color:#02154e;margin-top:2px}
+    .zf-meta{padding:0 12px 12px;color:rgba(2,21,78,.65);font-size:11px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .zf-pager{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+    .zf-btn{padding:10px 12px;border-radius:10px;border:1px solid rgba(2,21,78,.18);background:#fff;font-weight:900;cursor:pointer}
+    .zf-btn:disabled{opacity:.5;cursor:not-allowed}
+    .zf-count{font-size:12px;color:rgba(2,21,78,.75);font-weight:800}
+    .zf-empty{padding:18px;border:1px dashed rgba(2,21,78,.25);border-radius:14px;color:rgba(2,21,78,.8);background:rgba(2,21,78,.03)}
+  `;
+  document.head.appendChild(style);
+
+  function h(tag, attrs = {}, children = []) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === 'class') el.className = v;
+      else if (k === 'html') el.innerHTML = v;
+      else if (k.startsWith('on') && typeof v === 'function')
+        el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, String(v));
+    }
+    for (const c of children) {
+      if (c == null) continue;
+      el.appendChild(typeof c === 'string' ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+
+  function fmtNum(x, d = 2) {
+    if (x == null || x === '') return '-';
+    const n = Number(x);
+    if (!Number.isFinite(n)) return String(x);
+    return n.toFixed(d);
+  }
+
+  function apiFetch(path) {
+    const url = `${SUPA_URL}${path}`;
+    return fetch(url, {
+      headers: {
+        apikey: ANON,
+        Authorization: `Bearer ${ANON}`,
+        'Accept-Profile': SCHEMA,
+        'Content-Profile': SCHEMA
+      }
+    });
+  }
+
+  const state = { q: '', sort: 'co2_desc', page: 1, pageSize: 12 };
+
+  const wrap = h('div', { class: 'zf-wrap' });
+  const pill = h('span', { class: 'zf-pill ok' }, ['●', ' Live (Supabase)']);
+  const input = h('input', {
+    class: 'zf-input',
+    placeholder: 'Search: fabric / composition / collection …',
+    value: ''
+  });
+  const sort = h('select', { class: 'zf-select' }, [
+    h('option', { value: 'co2_desc' }, ['Sort: CO₂ high → low']),
+    h('option', { value: 'co2_asc' }, ['Sort: CO₂ low → high']),
+    h('option', { value: 'name_asc' }, ['Sort: Name A → Z']),
+    h('option', { value: 'name_desc' }, ['Sort: Name Z → A'])
+  ]);
+  const grid = h('div', { class: 'zf-grid' });
+  const pager = h('div', { class: 'zf-pager' });
+  const btnPrev = h('button', { class: 'zf-btn', type: 'button' }, ['← Prev']);
+  const btnNext = h('button', { class: 'zf-btn', type: 'button' }, ['Next →']);
+  const count = h('span', { class: 'zf-count' }, ['—']);
+  pager.append(btnPrev, count, btnNext);
+
+  const bar = h('div', { class: 'zf-bar' }, [pill, input, sort]);
+  wrap.append(bar, grid, pager);
+  mount.innerHTML = '';
+  mount.appendChild(wrap);
+
+  function setStatus(ok, msg) {
+    pill.className = `zf-pill ${ok ? 'ok' : 'bad'}`;
+    pill.textContent = ok ? '● Live (Supabase)' : `● Offline (${msg || 'error'})`;
+  }
+
+  function renderEmpty(msg) {
+    grid.innerHTML = '';
+    grid.appendChild(h('div', { class: 'zf-empty' }, [msg]));
+  }
+
+  function co2Risk(co2) {
+    if (co2 == null) return { label: 'Unknown', cls: 'ok' };
+    const n = Number(co2);
+    if (!Number.isFinite(n)) return { label: 'Unknown', cls: 'ok' };
+    if (n >= 6) return { label: 'High', cls: 'bad' };
+    if (n >= 3) return { label: 'Medium', cls: 'ok' };
+    return { label: 'Low', cls: 'ok' };
+  }
+
+  function renderCards(rows) {
+    grid.innerHTML = '';
+    if (!rows || !rows.length) return renderEmpty('No results. Try another keyword.');
+
+    for (const r of rows) {
+      const title = r.fabric_name || r.base_code || r.id || 'Fabric';
+      const sub = [
+        r.collection ? `Collection: ${r.collection}` : null,
+        r.composition ? `Comp: ${r.composition}` : null,
+        r.weight_gsm != null ? `GSM: ${fmtNum(r.weight_gsm, 0)}` : null
+      ]
+        .filter(Boolean)
+        .join(' • ');
+
+      const risk = co2Risk(r.co2_kg_per_kg);
+      const topRight = h('span', { class: `zf-pill ${risk.cls}` }, [`Risk: ${risk.label}`]);
+
+      const card = h('div', { class: 'zf-card' }, [
+        h('div', { class: 'zf-top' }, [
+          h('div', {}, [
+            h('div', { class: 'zf-title' }, [title]),
+            h('div', { class: 'zf-sub' }, [sub || '—'])
+          ]),
+          topRight
+        ]),
+        h('div', { class: 'zf-kpi' }, [
+          h('div', { class: 'zf-box' }, [
+            h('div', { class: 'k' }, ['CO₂ (kg/kg)']),
+            h('div', { class: 'v' }, [fmtNum(r.co2_kg_per_kg, 4)])
+          ]),
+          h('div', { class: 'zf-box' }, [
+            h('div', { class: 'k' }, ['Confidence']),
+            h('div', { class: 'v' }, [fmtNum(r.co2_confidence, 2)])
+          ]),
+          h('div', { class: 'zf-box' }, [
+            h('div', { class: 'k' }, ['Method']),
+            h('div', { class: 'v', style: 'font-size:12px;line-height:1.1' }, [
+              String(r.co2_method || '—')
+            ])
+          ]),
+          h('div', { class: 'zf-box' }, [
+            h('div', { class: 'k' }, ['Supplier']),
+            h('div', { class: 'v', style: 'font-size:12px;line-height:1.1' }, [
+              String(r.supplier || '—')
+            ])
+          ])
+        ]),
+        h('div', { class: 'zf-meta' }, [
+          h('span', {}, [`ID: ${String(r.id || '').slice(0, 8)}…`]),
+          h('span', {}, [r.theme ? `Theme: ${r.theme}` : ''])
+        ])
+      ]);
+
+      grid.appendChild(card);
+    }
+  }
+
+  function buildQuery() {
+    const select = [
+      'id',
+      'supplier',
+      'collection',
+      'theme',
+      'season',
+      'base_code',
+      'fabric_name',
+      'composition',
+      'weight_gsm',
+      'co2_kg_per_kg',
+      'co2_confidence',
+      'co2_method'
+    ].join(',');
+
+    const params = new URLSearchParams();
+    params.set('select', select);
+    params.set('limit', String(state.pageSize));
+    params.set('offset', String((state.page - 1) * state.pageSize));
+
+    if (state.sort === 'co2_desc') params.set('order', 'co2_kg_per_kg.desc.nullslast');
+    else if (state.sort === 'co2_asc') params.set('order', 'co2_kg_per_kg.asc.nullslast');
+    else if (state.sort === 'name_asc') params.set('order', 'fabric_name.asc.nullslast');
+    else if (state.sort === 'name_desc') params.set('order', 'fabric_name.desc.nullslast');
+
+    const q = (state.q || '').trim();
+    if (q) {
+      const safe = q.replace(/[%]/g, '');
+      const or = [
+        `fabric_name.ilike.*${safe}*`,
+        `composition.ilike.*${safe}*`,
+        `collection.ilike.*${safe}*`,
+        `base_code.ilike.*${safe}*`
+      ].join(',');
+      params.set('or', `(${or})`);
+    }
+
+    return `/rest/v1/v_fabrics?${params.toString()}`;
+  }
+
+  async function load() {
+    if (!SUPA_URL || !ANON) {
+      setStatus(false, 'missing config');
+      return renderEmpty('Missing Supabase config (URL/ANON).');
+    }
+
+    setStatus(true);
+    count.textContent = `Page ${state.page} • ${state.pageSize}/page`;
+
+    try {
+      const res = await apiFetch(buildQuery());
+      if (!res.ok) {
+        const t = await res.text().catch(() => '');
+        setStatus(false, `HTTP ${res.status}`);
+        return renderEmpty(`Supabase error: HTTP ${res.status}\n${t}`);
+      }
+      const rows = await res.json();
+      renderCards(rows);
+
+      btnPrev.disabled = state.page <= 1;
+      btnNext.disabled = !rows || rows.length < state.pageSize;
+    } catch (e) {
+      setStatus(false, 'network');
+      renderEmpty(`Network error: ${String(e && e.message ? e.message : e)}`);
+    }
+  }
+
+  let t = null;
+  input.addEventListener('input', () => {
+    state.q = input.value;
+    state.page = 1;
+    if (t) clearTimeout(t);
+    t = setTimeout(load, 250);
+  });
+
+  sort.addEventListener('change', () => {
+    state.sort = sort.value;
+    state.page = 1;
+    load();
+  });
+
+  btnPrev.addEventListener('click', () => {
+    state.page = Math.max(1, state.page - 1);
+    load();
+  });
+
+  btnNext.addEventListener('click', () => {
+    state.page = state.page + 1;
+    load();
+  });
+
+  // initial load
+  load();
+})();

@@ -1,0 +1,166 @@
+/**
+ * Zero@Production — Fibre DPP Supabase Loader (v1.0)
+ * Mount: [data-fibres-table]
+ * Source: zero.v_fibre_db
+ */
+(function(){
+  const SUPA_URL = window.SUPABASE_URL;
+  const ANON = window.SUPABASE_ANON_KEY;
+  const SCHEMA = window.SUPABASE_SCHEMA || "zero";
+
+  function el(tag, attrs={}, html=""){
+    const n = document.createElement(tag);
+    Object.entries(attrs).forEach(([k,v])=>{
+      if(k==="class") n.className = v;
+      else n.setAttribute(k, v);
+    });
+    if(html) n.innerHTML = html;
+    return n;
+  }
+
+  function ensureStyles(){
+    if(document.getElementById("z-fibre-style")) return;
+    const s = el("style",{id:"z-fibre-style"});
+    s.textContent = `
+      .z-card{background:#fff;border:1px solid rgba(2,21,78,.10);border-radius:14px;box-shadow:0 10px 30px rgba(2,21,78,.08);padding:14px;margin-top:14px}
+      .z-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-bottom:10px}
+      .z-title{font-weight:900;color:#02154e;letter-spacing:.2px}
+      .z-sub{font-size:12px;color:rgba(2,21,78,.65)}
+      .z-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+      .z-in{padding:8px 10px;border:1px solid rgba(2,21,78,.15);border-radius:10px;font-size:13px;min-width:220px}
+      .z-sel{padding:8px 10px;border:1px solid rgba(2,21,78,.15);border-radius:10px;font-size:13px}
+      .z-btn{padding:8px 12px;border-radius:10px;border:1px solid rgba(2,21,78,.15);background:#f9ba00;color:#000;font-weight:800;cursor:pointer}
+      .z-btn:active{transform:translateY(1px)}
+      .z-table{width:100%;border-collapse:separate;border-spacing:0}
+      .z-table th{position:sticky;top:0;background:#fff;font-size:12px;text-align:left;color:rgba(2,21,78,.7);padding:10px;border-bottom:1px solid rgba(2,21,78,.10)}
+      .z-table td{padding:10px;border-bottom:1px solid rgba(2,21,78,.06);vertical-align:top}
+      .z-muted{font-size:12px;color:rgba(2,21,78,.55)}
+      .z-pill{display:inline-block;background:#f3f4f6;border:1px solid rgba(2,21,78,.10);border-radius:999px;padding:2px 8px;margin:2px 6px 0 0;font-size:11px}
+      .z-pill.a{background:rgba(0,85,48,.10);border-color:rgba(0,85,48,.25)}
+      .z-pill.b{background:rgba(249,186,0,.12);border-color:rgba(249,186,0,.35)}
+      .z-pill.c{background:rgba(213,22,53,.08);border-color:rgba(213,22,53,.25)}
+      .z-err{padding:12px;border:1px solid rgba(213,22,53,.25);border-radius:12px;background:rgba(213,22,53,.06);color:#02154e}
+    `;
+    document.head.appendChild(s);
+  }
+
+  async function api(path){
+    const r = await fetch(`${SUPA_URL}${path}`, {
+      headers:{
+        apikey: ANON,
+        Authorization: `Bearer ${ANON}`,
+        "Accept-Profile": SCHEMA
+      }
+    });
+    if(!r.ok){
+      const t = await r.text().catch(()=> "");
+      throw new Error(`Supabase ${r.status}: ${t}`);
+    }
+    return r.json();
+  }
+
+  function confPill(v){
+    const c = (String(v||"").toLowerCase()||"c");
+    const p = el("span",{class:`z-pill ${c}`}, (v||"-"));
+    return p.outerHTML;
+  }
+
+  function render(mount, rows, state){
+    mount.innerHTML = "";
+    const card = el("div",{class:"z-card"});
+
+    const title = el("div",{class:"z-title"},"Fibre Library");
+    const sub = el("div",{class:"z-sub"},`Live from Supabase • schema: ${SCHEMA} • rows: ${rows.length}`);
+    const head = el("div",{class:"z-head"});
+    const left = el("div",{}, "");
+    left.appendChild(title); left.appendChild(sub);
+
+    const tools = el("div",{class:"z-tools"});
+    const inp = el("input",{class:"z-in",placeholder:"Search fibre name / code / category…",value:state.q||""});
+    const sel = el("select",{class:"z-sel"});
+    sel.innerHTML = `
+      <option value="co2_desc">CO₂ ↓ (high → low)</option>
+      <option value="co2_asc">CO₂ ↑ (low → high)</option>
+      <option value="name_asc">Name A→Z</option>
+      <option value="name_desc">Name Z→A</option>
+    `;
+    sel.value = state.sort;
+    const btn = el("button",{class:"z-btn"},"Load");
+
+    tools.appendChild(inp); tools.appendChild(sel); tools.appendChild(btn);
+
+    head.appendChild(left); head.appendChild(tools);
+
+    const table = el("table",{class:"z-table"});
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Fibre</th>
+          <th>Category</th>
+          <th>CO₂ (kg/kg)</th>
+          <th>Conf</th>
+          <th>Labels</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    `;
+
+    const tb = table.querySelector("tbody");
+    rows.forEach(r=>{
+      const co2 = (r.co2_kg_per_kg==null) ? "-" : Number(r.co2_kg_per_kg).toFixed(3);
+      const labels = (r.labels||[]).slice(0,4).map(x=>`<span class="z-pill">${x}</span>`).join(" ");
+      const tr = el("tr",{}, `
+        <td>${r.fibre_code||""}</td>
+        <td><div style="font-weight:900;color:#02154e">${r.fibre_name||""}</div><div class="z-muted">${r.subtype||""}</div></td>
+        <td>${r.category||""}</td>
+        <td>${co2}</td>
+        <td>${confPill(r.co2_confidence)}</td>
+        <td>${labels}</td>
+      `);
+      tb.appendChild(tr);
+    });
+
+    card.appendChild(head);
+    card.appendChild(table);
+    mount.appendChild(card);
+
+    btn.onclick = async ()=> boot(mount, { q: inp.value, sort: sel.value });
+    inp.onkeydown = (e)=>{ if(e.key==="Enter") btn.click(); };
+    sel.onchange = ()=> btn.click();
+  }
+
+  async function boot(mount, patch){
+    ensureStyles();
+    const state = Object.assign({ q:"", sort:"co2_desc", limit:50, offset:0 }, patch||{});
+
+    try{
+      const params = new URLSearchParams();
+      params.set("select","id,fibre_code,fibre_name,category,subtype,labels,co2_kg_per_kg,co2_confidence");
+      params.set("limit", String(state.limit));
+      if(state.sort==="co2_desc") params.set("order","co2_kg_per_kg.desc.nullslast");
+      else if(state.sort==="co2_asc") params.set("order","co2_kg_per_kg.asc.nullslast");
+      else if(state.sort==="name_asc") params.set("order","fibre_name.asc.nullslast");
+      else if(state.sort==="name_desc") params.set("order","fibre_name.desc.nullslast");
+
+      const q = (state.q||"").trim().replace(/[%]/g,"");
+      if(q) params.set("or", `fibre_name.ilike.*${q}*,fibre_code.ilike.*${q}*,category.ilike.*${q}*`);
+
+      const url = "/rest/v1/v_fibre_db?" + params.toString();
+      console.error("[FIBRE_LOADER] fetching", url);
+      const rows = await api(url);
+      console.error("[FIBRE_LOADER] rows", Array.isArray(rows)?rows.length:"?", rows && rows[0]);
+      render(mount, rows, state);
+    }catch(err){
+      mount.innerHTML = `<div class="z-err"><b>Fibre load failed</b><div style="margin-top:6px;font-size:12px">${String(err.message||err)}</div></div>`;
+      console.error(err);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    const mount = document.querySelector("[data-fibres-table]");
+    console.error("[FIBRE_LOADER] DOMContentLoaded mount?", !!mount);
+    if(!mount) return;
+    boot(mount, {});
+  });
+})();

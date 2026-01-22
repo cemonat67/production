@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Energy & Utilities</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      /* ZERO_EXEC_CLICKFIX_ENERGY v1 */
+      .exec-lenses, .exec-grid, .exec-card{position:relative; z-index:5;}
+      .exec-card{pointer-events:auto !important; cursor:pointer;}
+      .zero-modal{z-index:9999;}
+      .exec-card.is-focus{outline:3px solid #f9ba00; box-shadow:0 0 0 6px rgba(249,186,0,.18);}
+      
+      /* ZERO: EXECUTIVE LENSES CSS */
+      .exec-grid{ 
+        display:grid; 
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); 
+        gap:14px; 
+      } 
+      .exec-card{ 
+        background:#fff; 
+        border:1px solid #e0e0e0; 
+        border-radius:8px; 
+        padding:14px; 
+        cursor:pointer; 
+        pointer-events:auto; 
+      } 
+      .zero-modal{ 
+        position:fixed; 
+        inset:0; 
+        background:rgba(0,0,0,.45); 
+        display:none; 
+        z-index:9999; 
+      } 
+      .zero-modal[aria-hidden="false"]{ display:flex; } 
+      .zero-modal-box{ 
+        background:#fff; 
+        margin:auto; 
+        padding:20px; 
+        max-width:520px; 
+        width:90%; 
+        border-radius:10px; 
+      }
+      .exec-metric { font-size: 24px; font-weight: 800; color: #02154e; margin: 8px 0; }
+      .exec-sub { font-size: 12px; color: #666; }
+    </style>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Zero <span class="title-at">Ecosystem</span> — Energy & Utilities by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+        </div>
+    </div>
+</header>
+    <main class="container">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="row" style="justify-content: space-between; align-items: center;">
+          <div>
+            <h3>Energy & Utilities — Total CO₂ and Cost</h3>
+            <p class="muted">Energy & Utilities metrics and sustainability data</p>
+          </div>
+          <div class="row" style="gap:8px; align-items:center;">
+             <button class="btn">Filter</button>
+          </div>
+        </div>
+        <div class="row" style="gap:32px; align-items:flex-start;">
+          <div class="card" style="min-width:260px;">
+            <h3>—</h3>
+            <p class="muted">Total CO₂</p>
+          </div>
+          <div class="card" style="min-width:260px;">
+            <h3>—</h3>
+            <p class="muted">Estimated Cost (K)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ZERO: EXECUTIVE LENSES HTML -->
+      <section class="exec-lenses" style="margin-bottom: 24px;"> 
+        <div style="font-size:14px;color:#02154e;font-weight:800;margin-bottom:6px;"> 
+          Executive Decision Lenses — Energy 
+        </div> 
+      
+        <div class="exec-grid"> 
+          <div class="exec-card" data-role="CEO"> 
+            <h4>CEO — Energy Security</h4> 
+            <div class="exec-metric">High</div> 
+            <div class="exec-sub">Grid dependency risk</div> 
+          </div> 
+      
+          <div class="exec-card" data-role="CFO"> 
+            <h4>CFO — Cost Volatility</h4> 
+            <div class="exec-metric">€1.2M</div> 
+            <div class="exec-sub">Annual energy spend</div> 
+          </div> 
+      
+          <div class="exec-card" data-role="CTO"> 
+            <h4>CTO — Smart Grid</h4> 
+            <div class="exec-metric">65%</div> 
+            <div class="exec-sub">IoT sensor coverage</div> 
+          </div> 
+      
+          <div class="exec-card" data-role="MD"> 
+            <h4>MD/COO — Efficiency</h4> 
+            <div class="exec-metric">82%</div> 
+            <div class="exec-sub">Overall plant efficiency</div> 
+          </div> 
+        </div> 
+      </section>
+
+      <section class="card" style="margin-bottom: 24px;">
+        <h3>Trend</h3>
+        <div class="muted">Data integration pending...</div>
+      </section>
+
+      <!-- Consistent Charts Section (ZaE Theme) -->
+      <section class="card" style="margin: 24px;">
+        <h3>Grafikler</h3>
+        <div class="row" style="gap:16px; flex-wrap:wrap;">
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Alanlara Göre Dağılım</h4>
+            <canvas id="chartDomain" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Scope 1/2/3</h4>
+            <canvas id="chartScope" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>CO₂ Trend (Aylık)</h4>
+            <canvas id="chartTrend" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>CO₂ vs Maliyet</h4>
+            <canvas id="chartCompare" height="140"></canvas>
+          </div>
+        </div>
+      </section>
+      <script>
+        (function(){
+          if(!window.Chart) return;
+          try {
+            var ctxDomain = document.getElementById('chartDomain');
+            if (ctxDomain) {
+              new Chart(ctxDomain, {
+                type: 'pie',
+                data: {
+                  labels: ['Production', 'Energy', 'Logistics'],
+                  datasets: [{ data: [40, 35, 25], backgroundColor: ['#005530','#FFC107','#02154e'] }]
+                },
+                options: { plugins: { legend: { position: 'bottom' } } }
+              });
+            }
+            var ctxScope = document.getElementById('chartScope');
+            if (ctxScope) {
+              new Chart(ctxScope, {
+                type: 'bar',
+                data: {
+                  labels: ['Scope 1','Scope 2','Scope 3'],
+                  datasets: [{ label: 'tCO₂', data: [5, 10, 20], backgroundColor: ['#005530','#FFC107','#02154e'] }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+              });
+            }
+            var ctxTrend = document.getElementById('chartTrend');
+            if (ctxTrend) {
+              new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                  labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                  datasets: [{ label: 'CO₂ (t)', data: [20,22,25,24,26,28,27,26,25,24,24,25], borderColor: '#005530', backgroundColor: 'rgba(0,85,48,0.15)', tension: 0.25 }]
+                },
+                options: { plugins: { legend: { display: true } }, scales: { y: { beginAtZero: false } } }
+              });
+            }
+            var ctxCompare = document.getElementById('chartCompare');
+            if (ctxCompare) {
+              new Chart(ctxCompare, {
+                type: 'bar',
+                data: {
+                  labels: ['Energy & Utilities'],
+                  datasets: [
+                    { label: 'CO₂ (t)', data: [30], backgroundColor: '#005530' },
+                    { label: 'Cost (K€)', data: [100], backgroundColor: '#FFC107' }
+                  ]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+              });
+            }
+          } catch(e) {}
+        })();
+      </script>
+    </main>
+
+    <!-- ZERO: MODAL -->
+    <div class="zero-modal" id="energyExecModal" aria-hidden="true"> 
+      <div class="zero-modal-box"> 
+        <button class="zero-modal-close" id="energyExecClose" style="float:right;border:none;background:none;font-size:1.2rem;cursor:pointer;">✕</button> 
+        <h3 id="energyModalTitle" style="margin-top:0;color:#02154e;"></h3> 
+        <p id="energyModalSub" style="color:#666;font-size:0.9rem;margin-bottom:1rem;"></p> 
+        <div id="energyModalContent"></div> 
+      </div> 
+    </div>
+
+    <!-- ZERO_AUTOROLE_BOOT_ENERGY v1 -->
+    <script>
+    (function() {
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        const role = getQueryParam('role');
+        
+        // Modal Logic
+        const modal = document.getElementById("energyExecModal"); 
+        const title = document.getElementById("energyModalTitle"); 
+        const sub = document.getElementById("energyModalSub"); 
+        const body = document.getElementById("energyModalContent"); 
+        const closeBtn = document.getElementById("energyExecClose");
+
+        function openModal(targetRole) {
+             if(!modal) return;
+             modal.setAttribute("aria-hidden","false"); 
+             
+             let t = targetRole + " View — Energy";
+             let s = "Decision-grade snapshot";
+             let h = "";
+
+             if(targetRole === "CEO"){
+                t = "CEO View: Energy Security & Risk";
+                s = "Grid Dependency & Renewable Transition";
+                h = `<div style="padding:10px;background:#fff5f5;border-left:4px solid #D51635;margin-bottom:14px;font-size:13px;"><strong>Risk Alert:</strong> High dependency on external grid during peak hours.</div><ul style="padding:0;list-style:none;font-size:13px;"><li style="padding:6px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span>Renewable Share</span><b>18%</b></li><li style="padding:6px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span>Grid Reliance</span><b style="color:#D51635">82%</b></li></ul>`;
+             } else if(targetRole === "CFO"){
+                t = "CFO View: Cost Volatility";
+                s = "Energy Spend & Carbon Tax Exposure";
+                h = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;"><div style="background:#f8f9fa;padding:10px;text-align:center;"><div style="font-size:11px;color:#666;">ANNUAL SPEND</div><div style="font-size:18px;font-weight:bold;color:#02154e;">€1.2M</div></div><div style="background:#f8f9fa;padding:10px;text-align:center;"><div style="font-size:11px;color:#666;">CARBON TAX</div><div style="font-size:18px;font-weight:bold;color:#D51635">€85K</div></div></div><p style="font-size:13px;color:#444;"><strong>Forecast:</strong> +12% increase next quarter due to tariff changes.</p>`;
+             } else if(targetRole === "CTO"){
+                t = "CTO View: Smart Grid & IoT";
+                s = "Real-time Monitoring Status";
+                h = `<div style="padding:10px;background:#eef2ff;border-left:4px solid #4f46e5;margin-bottom:14px;font-size:13px;"><strong>System Health:</strong> 65% of meters connected to central dashboard.</div><ul style="padding:0;list-style:none;font-size:13px;"><li style="padding:6px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span>Active Sensors</span><b>142</b></li><li style="padding:6px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span>Offline</span><b style="color:#f9ba00">18</b></li></ul>`;
+             } else if(targetRole === "MD"){
+                t = "MD View: Plant Efficiency";
+                s = "Consumption vs Output";
+                h = `<div style="display:flex;margin-bottom:14px;"><div style="flex:82;background:#005530;height:6px;"></div><div style="flex:18;background:#eee;height:6px;"></div></div><div style="display:flex;justify-content:space-between;font-size:13px;"><div><strong>Efficiency:</strong> 82%</div><div><strong>Waste:</strong> 18%</div></div><p style="margin-top:14px;font-size:13px;color:#666;">Dyehouse thermal recovery unit operating at suboptimal levels.</p>`;
+             }
+
+             title.textContent = t; 
+             sub.textContent = s; 
+             body.innerHTML = h; 
+        }
+
+        // Bind clicks
+        document.querySelectorAll(".exec-card").forEach(c=>{ 
+             c.addEventListener("click",()=>openModal(c.dataset.role)); 
+             c.addEventListener("touchend",(e)=>{ e.preventDefault(); openModal(c.dataset.role); }); 
+        }); 
+        
+        if(closeBtn) closeBtn.addEventListener("click",()=>modal.setAttribute("aria-hidden","true")); 
+        if(modal) modal.addEventListener("click", (e) => { if(e.target === modal) modal.setAttribute("aria-hidden","true"); });
+
+        // Auto-Role Logic
+        if (!role) return;
+
+        let targetRole = role.toUpperCase();
+        if (targetRole === 'MD') targetRole = 'MD'; 
+        // Normalize others if needed
+        
+        console.log("ZeroAutoRole: Detected role =", targetRole);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const btn = document.querySelector(`.exec-card[data-role="${targetRole}"]`);
+                if (btn) {
+                    console.log("ZeroAutoRole: Found card for", targetRole);
+                    
+                    try {
+                        btn.scrollIntoView({behavior: 'smooth', block: 'center'});
+                    } catch(e) {
+                        btn.scrollIntoView(true);
+                    }
+
+                    btn.style.transition = "all 0.5s ease";
+                    const originalTransform = btn.style.transform;
+                    const originalBoxShadow = btn.style.boxShadow;
+                    
+                    btn.style.transform = "scale(1.05)";
+                    btn.classList.add("is-focus");
+
+                    setTimeout(() => {
+                        btn.style.transform = originalTransform;
+                        btn.classList.remove("is-focus");
+                    }, 2000);
+
+                    openModal(targetRole);
+                }
+            }, 800);
+        });
+    })();
+    </script>
+  <a href="/" class="zero-back-btn">← Back</a>
+<style>
+.zero-back-btn{
+  position:fixed; top:16px; right:16px; z-index:9999;
+  display:inline-block; padding:10px 14px;
+  font-size:13px; font-weight:700;
+  color:#ffffff; background:#005530;
+  border:2px solid #005530; border-radius:10px;
+  text-decoration:none; letter-spacing:.4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+  transition:transform .12s ease, filter .12s ease;
+}
+.zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
+</style>
+</body>
+</html>

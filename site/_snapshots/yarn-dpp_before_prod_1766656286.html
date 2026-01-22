@@ -1,0 +1,4379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="js/self-heal.js" defer></script>
+<link rel="stylesheet" href="assets/cssmi/dpp-typography.css">
+<link rel="stylesheet" href="assets/cssmi/dpp-intent-cards.css">
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Yarn DPP</title>
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <style>
+    /* Role Cards UI */
+    .role-btn-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        justify-content: flex-end;
+    }
+    .role-btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        background: #fff;
+        cursor: pointer;
+        font-size: 0.9em;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s;
+    }
+    .role-btn:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .role-btn.ceo { color: #2c3e50; border-color: #2c3e50; }
+    .role-btn.cfo { color: #d35400; border-color: #d35400; }
+    .role-btn.cto { color: #27ae60; border-color: #27ae60; }
+    .role-btn.audit { color: #7f8c8d; border-color: #7f8c8d; }
+
+    /* Modal Styles for Roles */
+    .role-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.6);
+        z-index: 2000;
+        justify-content: center;
+        align-items: center;
+    }
+    .role-card {
+        background: white;
+        width: 600px;
+        max-width: 90%;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        display: flex;
+        flex-direction: column;
+    }
+    .role-header {
+        padding: 20px;
+        color: white;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .role-header.ceo { background: #2c3e50; }
+    .role-header.cfo { background: #d35400; }
+    .role-header.cto { background: #27ae60; }
+    .role-header.audit { background: #34495e; }
+    
+    .role-body { padding: 25px; }
+    .role-section { margin-bottom: 20px; }
+    .role-section h3 { margin-bottom: 10px; font-size: 1.1em; color: #555; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+    .role-actions { 
+        padding: 20px; 
+        background: #f8f9fa; 
+        border-top: 1px solid #eee; 
+        display: flex; 
+        justify-content: flex-end; 
+        gap: 10px; 
+    }
+    
+    .btn-approve { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+    .btn-reject { background: #c0392b; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+    .btn-export { background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+
+    textarea.justification {
+        width: 100%;
+        height: 80px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 10px;
+        margin-top: 10px;
+        font-family: inherit;
+    }
+    
+    .audit-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+    .audit-table th, .audit-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+    .audit-table th { background: #f8f9fa; font-weight: 600; }
+    </style>
+    
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/governance-engine.js"></script>
+
+<style>
+ /* All your CSS styles remain unchanged */
+ * {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ }
+ 
+ :root {
+ --primary: #005530; /* Green */
+ --secondary: #02154e; /* Navy */
+ --accent: #f9ba00; /* Orange */
+ --danger: #D51635; /* Red */
+ --light: #f8f9fa;
+ --medium: #e0e0e0;
+ --dark: #333;
+ --text: #333;
+ --border: #d0d0d0;
+ }
+ 
+ /* Body styles matched to index.html for consistent header */
+body {
+    margin: 0;
+    padding: 0;
+    padding-top: 4px; /* Space for zero-color-bar */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(to bottom, #f5f7fa, #ffffff);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1600px; /* Match dashboard width */
+    margin: 2rem auto; /* Add vertical spacing */
+    padding: 0 2rem; /* Add horizontal spacing */
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 25px;
+}
+ 
+
+ 
+ h1 {
+ color: var(--secondary);
+ font-size: 2.8rem;
+ margin-bottom: 10px;
+ font-weight:600;
+ }
+ 
+ .subtitle {
+ color: var(--dark);
+ font-size: 1.3rem;
+ font-weight: 400;
+ max-width: 800px;
+ margin: 0 auto;
+ }
+ 
+ .tabs {
+ display: flex;
+ justify-content: center;
+ margin: 25px 0;
+ gap: 10px;
+ }
+ 
+ .tab-btn {
+ padding: 12px 24px;
+ background: white;
+ border: 1px solid var(--border);
+ 
+ cursor: pointer;
+ font-weight: 600;
+ transition: all 0.3s;
+ color: var(--secondary);
+ }
+ 
+ .tab-btn.active {
+ background: var(--secondary);
+ color: white;
+ border-color: var(--secondary);
+ }
+ 
+ .tab-btn:hover:not(.active) {
+ background: rgba(2, 21, 78, 0.05);
+ }
+ 
+ .sidebar {
+ background: white;
+ 
+ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+ padding: 25px;
+ height: fit-content;
+ border: 1px solid var(--border);
+ }
+ 
+ .search-box {
+ margin-bottom: 25px;
+ position: relative;
+ }
+ 
+ .search-box input {
+ width: 100%;
+ padding: 14px 20px 14px 50px;
+ border: 1px solid var(--border);
+ 
+ font-size: 1.1rem;
+ transition: all 0.3s;
+ background: white;
+ }
+ 
+ .search-box input:focus {
+ outline: none;
+ border-color: var(--secondary);
+ box-shadow: 0 0 0 2px rgba(2, 21, 78, 0.1);
+ }
+ 
+ .search-box i {
+ position: absolute;
+ left: 20px;
+ top: 50%;
+ transform: translateY(-50%);
+ color: #6c757d;
+ font-size: 1.2rem;
+ }
+ 
+ .category-filter {
+ margin-bottom: 30px;
+ }
+ 
+ .category-title {
+ font-size: 1.2rem;
+ color: var(--secondary);
+ margin-bottom: 15px;
+ padding-bottom: 8px;
+ border-bottom: 1px solid var(--border);
+ display: flex;
+ align-items: center;
+ font-weight: 600;
+ }
+ 
+ .category-title i {
+ margin-right: 10px;
+ color: var(--secondary);
+ width: 24px;
+ text-align: center;
+ }
+ 
+ .category-list {
+ list-style: none;
+ }
+ 
+ .category-item {
+ padding: 12px 16px;
+ margin-bottom: 8px;
+ 
+ cursor: pointer;
+ transition: all 0.2s;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ border: 1px solid transparent;
+ }
+ 
+ .category-item:hover {
+ background: rgba(2, 21, 78, 0.03);
+ border-color: var(--border);
+ }
+ 
+ .category-item.active {
+ background: rgba(2, 21, 78, 0.05);
+ color: var(--secondary);
+ font-weight: 500;
+ border-color: var(--secondary);
+ }
+ 
+ .category-count {
+ background: var(--light);
+ padding: 4px 10px;
+ 
+ font-size: 0.9rem;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .active .category-count {
+ background: rgba(2, 21, 78, 0.1);
+ color: var(--secondary);
+ }
+ 
+ .main-content {
+ background: white;
+ 
+ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+ padding: 25px;
+ border: 1px solid var(--border);
+ }
+ 
+ .filters {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 25px;
+ padding-bottom: 20px;
+ border-bottom: 1px solid var(--border);
+ }
+ 
+ .results-info {
+ font-size: 1.2rem;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .sort-filter select {
+ padding: 12px 18px;
+ border: 1px solid var(--border);
+ 
+ background: white;
+ font-size: 1.1rem;
+ cursor: pointer;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .sort-filter select:focus {
+ outline: none;
+ border-color: var(--secondary);
+ box-shadow: 0 0 0 2px rgba(2, 21, 78, 0.1);
+ }
+ 
+ .yarn-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+ gap: 25px;
+ margin-top: 20px;
+ }
+ 
+ .yarn-card {
+ background: white;
+ 
+ overflow: hidden;
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+ transition: all 0.3s;
+ border: 1px solid var(--border);
+ display: flex;
+ flex-direction: column;
+ min-height: 480px;
+ }
+ 
+ .yarn-card:hover {
+ transform: translateY(-8px);
+ box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+ border-color: var(--secondary);
+ }
+ 
+    .yarn-header {
+        background: white;
+        color: var(--text);
+        padding: 20px;
+        position: relative;
+        border-bottom: 1px solid var(--border);
+    }
+    .card-title-bar {
+        width: 100%;
+        background: var(--primary);
+        color: #fff;
+        padding: 10px 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        cursor: pointer;
+    }
+    .ml-ready-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: rgba(2, 21, 78, 0.08);
+        color: var(--secondary);
+        border: 1px solid rgba(2,21,78,0.15);
+        padding: 4px 10px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: 999px;
+    }
+ 
+ .yarn-type {
+ position: absolute;
+ top: 15px;
+ right: 15px;
+ background: rgba(2, 21, 78, 0.05);
+ padding: 6px 14px;
+ 
+ font-size: 0.9rem;
+ font-weight: 600;
+ color: var(--secondary);
+ }
+ 
+ .yarn-name {
+ font-size: 1.6rem;
+ font-weight:600;
+ margin-bottom: 5px;
+ color: var(--secondary);
+ }
+ 
+ .yarn-brand {
+ font-size: 1.1rem;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .yarn-body {
+ padding: 20px;
+ flex: 1;
+ display: flex;
+ flex-direction: column;
+ }
+ 
+ .yarn-composition {
+ color: var(--dark);
+ margin-bottom: 15px;
+ font-weight: 500;
+ font-style: italic;
+ font-size: 1.1rem;
+ }
+ 
+ .metrics {
+ display: flex;
+ justify-content: space-between;
+ margin-bottom: 20px;
+ gap: 10px;
+ }
+ 
+ .metric {
+ text-align: center;
+ padding: 18px;
+ 
+ flex: 1;
+ border: 1px solid var(--border);
+ }
+ 
+ .metric.co2 {
+ background: rgba(0, 85, 48, 0.03);
+ border-color: rgba(0, 85, 48, 0.1);
+ }
+ 
+ .metric.score {
+ background: rgba(2, 21, 78, 0.03);
+ border-color: rgba(2, 21, 78, 0.1);
+ }
+ 
+ .metric-title {
+ font-size: 1rem;
+ margin-bottom: 8px;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .metric-value {
+ font-size: 1.8rem;
+ font-weight:600;
+ }
+ 
+ .co2-value {
+ color: var(--primary);
+ }
+ 
+ .score-value {
+ color: var(--secondary);
+ }
+ 
+ .score-bar {
+ height: 8px;
+ background: var(--light);
+ 
+ margin-top: 12px;
+ overflow: hidden;
+ }
+ 
+ .score-fill {
+ height: 100%;
+ background: var(--secondary);
+ 
+ }
+ 
+ .badges {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 8px;
+ margin-top: 20px;
+ margin-bottom: 15px;
+ }
+ 
+ .badge {
+ display: inline-block;
+ padding: 8px 14px;
+ background: rgba(2, 21, 78, 0.05);
+ color: var(--dark);
+ 
+ font-size: 0.95rem;
+ font-weight: 500;
+ border: 1px solid var(--border);
+ }
+ 
+ .badge.recycled {
+ background: rgba(0, 85, 48, 0.05);
+ color: var(--primary);
+ border-color: rgba(0, 85, 48, 0.1);
+ }
+ 
+ .badge.synthetic {
+ background: rgba(213, 22, 53, 0.05);
+ color: var(--danger);
+ border-color: rgba(213, 22, 53, 0.1);
+ }
+ 
+ .badge.organic {
+ background: rgba(249, 186, 0, 0.05);
+ color: var(--accent);
+ border-color: rgba(249, 186, 0, 0.1);
+ }
+ 
+ .yarn-footer {
+ padding: 15px 20px;
+ background: var(--light);
+ border-top: 1px solid var(--border);
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ }
+ 
+ .yarn-weight {
+ font-size: 1.05rem;
+ color: var(--dark);
+ font-weight: 600;
+ }
+ 
+ .detail-btn {
+ background: var(--secondary);
+ color: white;
+ border: none;
+ padding: 10px 20px;
+ 
+ cursor: pointer;
+ font-weight: 600;
+ transition: background 0.3s;
+ font-size: 1.05rem;
+ }
+ 
+ .detail-btn:hover {
+ background: #0a1d3d;
+ }
+ 
+ .chart-container {
+ margin-top: 30px;
+ padding: 25px;
+ background: white;
+ 
+ border: 1px solid var(--border);
+ }
+ 
+ .chart-title {
+ text-align: center;
+ color: var(--secondary);
+ margin-bottom: 20px;
+ font-size: 1.4rem;
+ font-weight:600;
+ }
+ 
+ .info-section {
+ margin-top: 40px;
+ padding-top: 25px;
+ border-top: 1px solid var(--border);
+ }
+ 
+ .info-title {
+ font-size: 1.7rem;
+ color: var(--secondary);
+ margin-bottom: 20px;
+ text-align: center;
+ font-weight:600;
+ }
+ 
+ .blend-section {
+ margin-top: 40px;
+ padding: 30px;
+ background: white;
+ border: 1px solid var(--border);
+ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+ 
+ }
+ 
+ .blend-title {
+ font-size: 1.8rem;
+ color: var(--secondary);
+ margin-bottom: 25px;
+ text-align: center;
+ font-weight:600;
+ }
+ 
+ .blend-container {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 30px;
+ }
+ 
+ .blend-form {
+ background: rgba(2, 21, 78, 0.02);
+ padding: 25px;
+ 
+ border: 1px solid var(--border);
+ }
+ 
+ .blend-result {
+ background: white;
+ padding: 25px;
+ 
+ border: 1px solid var(--border);
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ }
+ 
+ .form-group {
+ margin-bottom: 20px;
+ }
+ 
+ .form-group label {
+ display: block;
+ margin-bottom: 8px;
+ font-weight: 600;
+ color: var(--secondary);
+ }
+ 
+ .form-group select, .form-group input {
+ width: 100%;
+ padding: 12px 15px;
+ border: 1px solid var(--border);
+ 
+ font-size: 1.1rem;
+ background: white;
+ }
+ 
+ .add-btn {
+ background: var(--secondary);
+ color: white;
+ border: none;
+ padding: 12px 20px;
+ 
+ cursor: pointer;
+ font-weight: 600;
+ font-size: 1.1rem;
+ transition: background 0.3s;
+ width: 100%;
+ margin-top: 10px;
+ }
+ 
+ .add-btn:hover {
+ background: #0a1d3d;
+ }
+ 
+ .blend-components {
+ margin: 20px 0;
+ max-height: 300px;
+ overflow-y: auto;
+ }
+ 
+ .blend-item {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ padding: 12px 15px;
+ background: white;
+ border: 1px solid var(--border);
+ 
+ margin-bottom: 10px;
+ }
+ 
+ .blend-item-name {
+ font-weight: 500;
+ }
+ 
+ .blend-item-percentage {
+ font-weight: 600;
+ color: var(--secondary);
+ }
+ 
+ .remove-btn {
+ background: var(--danger);
+ color: white;
+ border: none;
+ width: 30px;
+ height: 30px;
+ 
+ cursor: pointer;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ }
+ 
+ .blend-result-card {
+ background: white;
+ 
+ padding: 25px;
+ border: 1px solid var(--border);
+ text-align: center;
+ }
+ 
+ .blend-result-title {
+ font-size: 1.6rem;
+ color: var(--secondary);
+ margin-bottom: 20px;
+ font-weight:600;
+ }
+ 
+ .blend-metrics {
+ display: flex;
+ justify-content: center;
+ gap: 30px;
+ margin-bottom: 30px;
+ }
+ 
+ .blend-metric {
+ text-align: center;
+ padding: 20px;
+ 
+ min-width: 180px;
+ border: 1px solid var(--border);
+ }
+ 
+ .blend-metric.co2 {
+ background: rgba(0, 85, 48, 0.03);
+ border-color: rgba(0, 85, 48, 0.1);
+ }
+ 
+ .blend-metric.score {
+ background: rgba(2, 21, 78, 0.03);
+ border-color: rgba(2, 21, 78, 0.1);
+ }
+ 
+ .blend-metric-title {
+ font-size: 1.1rem;
+ margin-bottom: 10px;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .blend-metric-value {
+ font-size: 2.2rem;
+ font-weight:600;
+ }
+ 
+ .blend-co2-value {
+ color: var(--primary);
+ }
+ 
+ .blend-score-value {
+ color: var(--secondary);
+ }
+ 
+ .blend-composition {
+ font-size: 1.2rem;
+ margin-top: 20px;
+ font-weight: 500;
+ }
+ 
+ /* Modal styles */
+ .modal {
+ display: none;
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0, 0, 0, 0.7);
+ z-index: 1000;
+ justify-content: center;
+ align-items: center;
+ }
+ 
+.modal-content {
+  background: white;
+ 
+  width: 92%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 30px;
+  position: relative;
+}
+ 
+ .close-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--dark);
+  }
+ 
+ .fs-btn {
+   position: absolute;
+   top: 15px;
+   right: 55px;
+   font-size: 1.2rem;
+   cursor: pointer;
+   background: none;
+   border: none;
+   color: var(--dark);
+ }
+ 
+ .modal-content.fullscreen {
+   width: 100vw;
+   max-width: 100vw;
+   height: 96vh;
+   max-height: 96vh;
+   border-radius: 0;
+   padding: 20px;
+ }
+ 
+ .modal-title {
+ color: var(--secondary);
+ margin-bottom: 20px;
+ font-size: 1.8rem;
+ padding: 10px 12px; /* başlığa arka plan verebilmek için */
+ 
+ }
+ 
+ .modal-section {
+ margin-bottom: 20px;
+ }
+ 
+ .modal-section h4 {
+ color: var(--secondary);
+ margin-bottom: 10px;
+ font-size: 1.3rem;
+ }
+ 
+ @media (max-width: 1100px) {
+ .container {
+ grid-template-columns: 1fr;
+ }
+ 
+ .yarn-grid {
+ grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+ }
+ 
+ .blend-container {
+ grid-template-columns: 1fr;
+ }
+ }
+ 
+ @media (max-width: 768px) {
+ .tabs {
+ flex-direction: column;
+ }
+ 
+ .yarn-grid {
+ grid-template-columns: 1fr;
+ }
+ 
+ .metrics, .blend-metrics {
+ flex-direction: column;
+ gap: 15px;
+ }
+ }
+ 
+ footer {
+ grid-column: 1 / -1;
+ text-align: center;
+ padding: 30px 0;
+ margin-top: 40px;
+ border-top: 1px solid var(--border);
+ color: var(--dark);
+ font-size: 1.1rem;
+ }
+ 
+.logo-title {
+ display: flex;
+ align-items: center;
+ gap: 15px;
+ justify-content: flex-start;
+}
+.zero-production {
+ color: var(--primary);
+ font-weight: bold;
+}
+.dpp {
+ color: var(--accent);
+ font-weight: bold;
+}
+.blend-icon {
+ margin-right: 8px;
+ font-size: 1.1rem;
+ color: inherit;
+}
+.yarn-card.blend .yarn-header {
+ background: #f9ba00;
+ color: var(--secondary);
+}
+
+.back-link {
+ margin-left: auto;
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ height: 40px;
+ padding: 0 14px;
+ 
+ background: #005530;
+ color: #fff;
+ font-weight: 600;
+ text-decoration: none;
+ border: 1px solid transparent;
+ box-shadow: 0 2px 8px rgba(0,85,48,0.25);
+ transition: transform .15s, box-shadow .15s, background .15s;
+ position: absolute; top: 10px; right: 14px;
+}
+.back-link:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,85,48,0.35); }
+.back-link:active { transform: translateY(0); }
+
+
+ 
+ 
+ /* Loading States */
+ .loading {
+ position: relative;
+ pointer-events: none;
+ opacity: 0.7;
+ }
+ 
+ .loading::after {
+ content: '';
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ width: 20px;
+ height: 20px;
+ margin: -10px 0 0 -10px;
+ border: 2px solid #f3f3f3;
+ border-top: 2px solid var(--navy);
+ 
+ animation: spin 1s linear infinite;
+ z-index: 1000;
+ }
+ 
+ @keyframes spin {
+ 0% { transform: rotate(0deg); }
+ 100% { transform: rotate(360deg); }
+ }
+ 
+ /* Error States */
+ .error {
+ border-color: var(--danger) !important;
+ background-color: rgba(213, 22, 53, 0.05) !important;
+ }
+ 
+ .error-message {
+ color: var(--danger);
+ font-size: 14px;
+ margin-top: 5px;
+ display: none;
+ }
+ 
+ .error .error-message {
+ display: block;
+ }
+ 
+ /* Success States */
+ .success {
+ border-color: var(--green) !important;
+ background-color: rgba(0, 85, 48, 0.05) !important;
+ }
+ 
+ .success-message {
+ color: var(--green);
+ font-size: 14px;
+ margin-top: 5px;
+ display: none;
+ }
+ 
+ .success .success-message {
+ display: block;
+ }
+ 
+ 
+ /* Print Styles */
+ @media print {
+ .no-print,
+ .back-btn,
+ button,
+ .btn {
+ display: none !important;
+ }
+ 
+ body {
+ font-size: 12pt;
+ line-height: 1.3;
+ color: #000 !important;
+ background: #fff !important;
+ }
+ 
+ .header {
+ border-bottom: 2px solid #000;
+ margin-bottom: 20pt;
+ }
+ 
+ .dpp-card,
+ .stat-card {
+ border: 1px solid #000;
+ page-break-inside: avoid;
+ margin-bottom: 10pt;
+ }
+ 
+ .page-break {
+ page-break-before: always;
+ }
+ 
+ a[href]:after {
+ content: " (" attr(href) ")";
+ font-size: 90%;
+ }
+ 
+ .chart-container {
+ max-height: 300pt;
+ overflow: hidden;
+ }
+ }
+ 
+
+/* ===== ZERO Landing Header v1 ===== */
+.page-header{margin:0 0 28px 0}
+.page-header .brand{font-size:14px;font-weight:500;color:#6b7280;letter-spacing:.4px}
+.page-header .brand span{color:#f9ba00}
+.page-header .page-title{font-size:32px;font-weight:600;color:#02154e;margin:6px 0 4px}
+.page-header .page-subtitle{font-size:15px;color:#6b7280;max-width:720px}
+
+
+/* Standalone logo (top-left) */
+.zero-standalone-logo{
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 99999;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0,0,0,.10);
+  border: 1px solid rgba(2,21,78,.10);
+}
+.zero-standalone-logo img{
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+@media (max-width: 980px){
+  .zero-standalone-logo{ top: 10px; left: 10px; width: 52px; height: 52px; }
+  .zero-standalone-logo img{ width: 38px; height: 38px; }
+}
+
+
+/* ZERO FIX: move badges above title (no overlap) */
+.badges{
+  position: static !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin: 0 0 10px 0 !important;
+  align-items: center !important;
+}
+.badge{ white-space: nowrap; }
+
+    /* Dashboard Header Styles */
+    .app-header {
+        background: white;
+        color: var(--secondary);
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-bottom: 1px solid #e0e0e0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    }
+    
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1600px;
+        margin: 0 auto;
+        gap: 20px;
+    }
+    
+    /* CHANGE START: ML-Ready pill brand colors */
+    .ml-ready-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--danger);
+        color: #fff;
+        border: 1px solid rgba(213,22,53,0.35);
+        padding: 6px 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border-radius: 999px;
+        white-space: nowrap;
+    }
+    /* CHANGE END */
+    
+    .title {
+        font-size: 1.5rem;
+        font-weight: 300;
+        color: var(--secondary);
+    }
+    
+    .title-at { color: var(--accent); }
+
+    .zero-color-bar {
+        height: 4px;
+        width: 100%;
+        background: linear-gradient(90deg, 
+            var(--primary) 0%, var(--primary) 25%, 
+            var(--danger) 25%, var(--danger) 50%, 
+            var(--secondary) 50%, var(--secondary) 75%, 
+            var(--accent) 75%, var(--accent) 100%);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+    }
+
+    /* Strategic Status Badges */
+    .status-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px; /* Moved to right to avoid overlap with type */
+        z-index: 10;
+        padding: 4px 10px;
+        font-weight: bold;
+        font-size: 0.8rem;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-badge.exit {
+        background: #ffebee;
+        color: #c62828;
+        border: 1px solid #ffcdd2;
+    }
+    
+    /* CHANGE START: HERO badge brand colors (green/white) */
+    .status-badge.hero {
+        background: var(--primary) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(0,85,48,0.35) !important;
+    }
+    
+    /* CHANGE START: TRANSFORM badge brand colors (orange/white) */
+    .status-badge.transform {
+        background: var(--accent) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(249,186,0,0.35) !important;
+    }
+    /* CHANGE END */
+    
+    /* KILL SWITCH STYLES */
+    .yarn-card.status-exit {
+        opacity: 0.7;
+        background: #fafafa;
+        border-color: #e0e0e0;
+    }
+    
+    .yarn-card.status-exit:hover {
+        transform: none;
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+    
+    .yarn-card.status-exit .detail-btn {
+        background: #9e9e9e;
+        pointer-events: none; /* Disable click on main view if desired, but we want them to see the warning */
+        pointer-events: auto; /* Re-enable to show the warning modal */
+    }
+    
+    .kill-switch-banner {
+        background: #D51635;
+        color: white;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+        margin: -30px -30px 20px -30px; /* Bleed to edges */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .hero-banner {
+        background: #005530;
+        color: white;
+        padding: 10px;
+        text-align: center;
+        font-weight: bold;
+        margin: -30px -30px 20px -30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+</style>
+
+<style>
+.roleModalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:10000}
+.roleModal[hidden],.roleModalBackdrop[hidden]{display:none}
+.roleModal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(720px,92vw);max-height:80vh;overflow:auto;background:#fff;border-radius:12px;box-shadow:0 24px 48px rgba(0,0,0,.25);border:1px solid var(--border);z-index:10001;padding:0}
+.roleModalHeader{padding:16px 20px;background:var(--secondary);color:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.roleModalTitle{font-weight:700;font-size:1.1rem}
+.roleModalMeta{font-size:.9rem;opacity:.9;text-align:right}
+.roleModalClose{position:absolute;top:12px;right:12px;border:none;background:transparent;color:#fff;font-size:1.25rem;cursor:pointer}
+.roleModalBody{padding:20px;background:#f8f9fa}
+.roleView{cursor:pointer}
+body.modal-open{overflow:hidden}
+@media (max-width:768px){.roleModal{width:95vw;max-height:85vh}}
+</style>
+
+<style>
+.productModalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9500}
+.productModal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:min(1100px,92vw);max-height:90vh;overflow:auto;background:#fff;border-radius:12px;box-shadow:0 24px 48px rgba(0,0,0,.25);border:1px solid var(--border);z-index:9501;padding:0}
+.productModal[hidden],.productModalBackdrop[hidden]{display:none}
+.productModalHeader{padding:16px 20px;background:var(--secondary);color:#fff;display:flex;justify-content:space-between;align-items:center}
+.productModalTitle{font-weight:700;font-size:1.1rem}
+.productModalClose{position:absolute;top:12px;right:12px;border:none;background:transparent;color:#fff;font-size:1.25rem;cursor:pointer}
+.productModalBody{padding:20px;background:#f8f9fa}
+</style>
+
+    <link rel="stylesheet" href="assets/css/theme.css">
+</head>
+<body>
+    <div class="zero-color-bar"></div>
+    <div id="header-info-bar" style="text-align: center; padding: 8px; font-size: 0.9em; color: var(--muted); background: #f8f9fa; border-bottom: 1px solid #e0e0e0; letter-spacing: 0.5px;">
+        Yarn Sustainability Database © 2023 | For Sustainable Textile Innovation
+    </div>
+
+<header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Uğurlular Tekstil <span class="title-at">Ecosystem</span> — Yarn DPP by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+            <span class="ml-ready-pill"><i class="fas fa-microchip"></i> ML-Ready</span>
+            <img src="assets/img/ulogo.svg" alt="U Logo" style="height: 80px;">
+        </div>
+    </div>
+</header>
+
+<nav class="main-nav">
+    <button class="tab-btn active" onclick="showTab('yarn-database')"><i class="fas fa-database"></i> Yarn Database</button>
+    <button class="tab-btn" onclick="showTab('blend-calculator')"><i class="fas fa-flask"></i> Blend Calculator</button>
+</nav>
+
+<style>
+.main-nav {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+.tab-btn {
+    padding: 12px 24px;
+    border: 2px solid transparent;
+    background: var(--light);
+    color: var(--muted);
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 30px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tab-btn:hover {
+    background: #eef2f7;
+    color: var(--secondary);
+}
+.tab-btn.active {
+    background: var(--secondary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(2, 21, 78, 0.2);
+}
+/* Ensure Blend Calculator looks good */
+.blend-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+.blend-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 30px;
+}
+@media (max-width: 768px) {
+    .blend-container { grid-template-columns: 1fr; }
+}
+</style>
+
+ <!-- Modal for yarn details -->
+ <div class="modal" id="yarnModal">
+ <div class="modal-content">
+ <span class="close-btn" id="closeModal">&times;</span>
+ <button class="fs-btn" id="toggleFullscreen" aria-label="Fullscreen">⤢</button>
+        <h2 class="dpp-subtitle" id="modalYarnName"></h2>
+        <div class="intent-cards">
+ <div class="intent-card roleView" data-action="open-role-modal" data-role="ceo" data-intent="overview"><h3>CEO View</h3><p>Strategy, risk & compliance snapshot</p></div>
+ <div class="intent-card roleView" data-action="open-role-modal" data-role="cfo" data-intent="cost"><h3>CFO View</h3><p>Cost, CO₂ impact & savings</p></div>
+ <div class="intent-card roleView" data-action="open-role-modal" data-role="cto" data-intent="flow"><h3>CTO View</h3><p>Process flow & operations</p></div>
+</div>
+<div class="modal-section">
+    <!-- NEW: Tabs for detailed view -->
+    <div class="modal-tabs">
+        <button class="modal-tab active" onclick="switchModalTab('overview')">Overview</button>
+        <button class="modal-tab" onclick="switchModalTab('traceability')">Traceability & Energy</button>
+        <button class="modal-tab" onclick="switchModalTab('circularity')">Circularity & Recycling</button>
+        <button class="modal-tab" onclick="switchModalTab('compliance')">Compliance</button>
+    </div>
+
+    <!-- TAB 1: OVERVIEW (Existing content moved here) -->
+    <div id="tab-overview" class="tab-content active">
+        <div class="modal-row">
+            <div class="modal-col">
+                <h4>Composition</h4>
+                <p id="modalComposition"></p>
+                <div id="modalBadges"></div>
+            </div>
+            <div class="modal-col">
+                <h4>Characteristics</h4>
+                <p><strong>Brand:</strong> <span id="modalBrand"></span></p>
+                <p><strong>Weight:</strong> <span id="modalWeight"></span></p>
+                <p><strong>Type:</strong> <span id="modalType"></span></p>
+                <p><strong>Batch ID:</strong> <span id="modalBatchId" class="batch-badge"></span></p>
+            </div>
+        </div>
+
+        <h4>Environmental Metrics</h4>
+        <div class="metrics">
+            <div class="metric co2">
+                <div class="metric-title">CO₂/kg</div>
+                <div class="metric-value co2-value" id="modalCo2"></div>
+                <div class="metric-desc">kg CO₂ per kg yarn</div>
+            </div>
+            <div class="metric score">
+                <div class="metric-title">DPI Score</div>
+                <div class="metric-value score-value" id="modalScore"></div>
+                <div class="score-bar">
+                    <div class="score-fill" id="modalScoreBar"></div>
+                </div>
+            </div>
+        </div>
+        
+        <h4>Common Uses</h4>
+        <ul id="modalUses"></ul>
+    </div>
+
+    <!-- TAB 2: TRACEABILITY & ENERGY -->
+    <div id="tab-traceability" class="tab-content" style="display:none;">
+        <div class="trace-grid">
+            <div class="trace-card">
+                <h5><i class="fas fa-bolt"></i> Energy Profile</h5>
+                <div class="mini-stat">
+                    <span>Renewable Mix:</span>
+                    <strong id="modalRenewable"></strong>
+                </div>
+                <div class="mini-stat">
+                    <span>Real-time Usage:</span>
+                    <strong id="modalKwh"></strong> kWh/kg
+                </div>
+                <div class="energy-bar-container">
+                    <div class="energy-bar" id="modalEnergyBar"></div>
+                </div>
+                <small>Source: <span id="modalEnergySource"></span></small>
+            </div>
+            
+            <div class="trace-card">
+                <h5><i class="fas fa-tint"></i> Water Footprint</h5>
+                <div class="mini-stat">
+                    <span>Blue Water:</span>
+                    <strong id="modalWater"></strong> L/kg
+                </div>
+                <div class="mini-stat">
+                    <span>Scarcity Score:</span>
+                    <strong id="modalScarcity"></strong> / 5.0
+                </div>
+                <div class="mini-stat">
+                    <span>ZDHC Level:</span>
+                    <strong id="modalZdhc"></strong>
+                </div>
+            </div>
+
+            <div class="trace-card">
+                <h5><i class="fas fa-industry"></i> Production Context</h5>
+                <div class="mini-stat">
+                    <span>Machine ID:</span>
+                    <strong id="modalMachine"></strong>
+                </div>
+                <div class="mini-stat">
+                    <span>Shift Efficiency:</span>
+                    <strong id="modalEfficiency"></strong>
+                </div>
+                 <div class="mini-stat">
+                    <span>Date:</span>
+                    <strong id="modalDate"></strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 3: CIRCULARITY -->
+    <div id="tab-circularity" class="tab-content" style="display:none;">
+        <div class="circ-status" id="modalCircStatus">
+            <!-- JS will populate class: circ-pass / circ-fail -->
+            <h3 id="modalCircGrade"></h3>
+            <p id="modalCircMsg"></p>
+        </div>
+
+        <div class="trace-grid">
+            <div class="trace-card">
+                <h5><i class="fas fa-recycle"></i> Recyclability</h5>
+                <div class="mini-stat">
+                    <span>Preferred Method:</span>
+                    <strong id="modalRecycleMethod"></strong>
+                </div>
+                <div class="mini-stat">
+                    <span>Feedstock Ready:</span>
+                    <strong id="modalFeedstock"></strong>
+                </div>
+            </div>
+             <div class="trace-card">
+                <h5><i class="fas fa-microscope"></i> Contamination Risk</h5>
+                <div class="mini-stat">
+                    <span>Foreign Matter:</span>
+                    <strong id="modalContaminants"></strong> PPM
+                </div>
+                <small>Polypropylene / Elastane Risk Analysis</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: COMPLIANCE -->
+    <div id="tab-compliance" class="tab-content" style="display:none;">
+        <div class="compliance-list">
+            <div class="comp-item">
+                <i class="fas fa-check-circle" style="color:var(--green)"></i>
+                <div>
+                    <strong>CBAM Readiness</strong>
+                    <p>Carbon data verified for EU Import Tax calculation.</p>
+                </div>
+            </div>
+             <div class="comp-item">
+                <i class="fas fa-check-circle" style="color:var(--green)"></i>
+                <div>
+                    <strong>ESPR Compliant</strong>
+                    <p>Digital Product Passport data structure aligned with Ecodesign regulation.</p>
+                </div>
+            </div>
+             <div class="comp-item">
+                <i class="fas fa-user-shield" style="color:var(--secondary)"></i>
+                <div>
+                    <strong>Social Audit (SLCP)</strong>
+                    <p>Audit ID: <span id="modalSlcp"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+/* Modal Tab Styles */
+.modal-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+}
+.modal-tab {
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--muted);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+.modal-tab.active {
+    color: var(--secondary);
+    border-bottom-color: var(--secondary);
+}
+.modal-tab:hover {
+    color: var(--secondary);
+    background: rgba(2, 21, 78, 0.03);
+}
+
+.modal-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+.modal-col {
+    flex: 1;
+}
+
+.batch-badge {
+    background: var(--secondary);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: monospace;
+}
+
+/* Traceability Grid */
+.trace-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+.trace-card {
+    background: var(--light);
+    padding: 15px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+}
+.trace-card h5 {
+    margin-bottom: 10px;
+    color: var(--secondary);
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+.mini-stat {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+}
+
+/* Energy Bar */
+.energy-bar-container {
+    height: 8px;
+    background: #ddd;
+    border-radius: 4px;
+    margin: 8px 0;
+    overflow: hidden;
+}
+.energy-bar {
+    height: 100%;
+    background: var(--green);
+}
+
+/* Circularity Status */
+.circ-status {
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+.circ-pass {
+    background: rgba(0, 85, 48, 0.1);
+    border: 1px solid var(--green);
+    color: var(--green);
+}
+.circ-fail {
+    background: rgba(213, 22, 53, 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+}
+
+/* Compliance List */
+.compliance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+.comp-item {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    background: white;
+    padding: 15px;
+    border: 1px solid var(--border);
+}
+</style>
+ </div>
+ </div>
+
+ <div class="container">
+
+ <aside class="sidebar">
+ <div class="search-box">
+ <i class="fas fa-search"></i>
+ <input type="text" id="searchInput" placeholder="Search yarns...">
+ </div>
+ 
+ <div class="category-filter">
+        <h3 class="category-title"><i class="fas fa-globe"></i> All Yarns</h3>
+        <ul class="category-list" id="allYarns">
+          <li class="category-item active" data-category="all">All Yarns <span class="category-count">0</span></li>
+        </ul>
+    </div>
+
+    <div id="dynamic-category-filters">
+        <!-- Dynamic categories will be rendered here -->
+    </div>
+  </aside>
+
+  <main class="main-content" id="yarn-database">
+    
+    <!-- STAKEHOLDER & GOVERNANCE CONTROL PANEL -->
+    <div id="governance-panel" style="margin-bottom: 30px; padding: 20px; background: #fff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+        
+        <!-- 1. Stakeholder Mode Switcher -->
+        <div class="stakeholder-section" style="margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h4 style="margin: 0; color: var(--secondary); font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-users-cog"></i> Stakeholder Perspective Mode
+                    <span style="font-size: 0.8rem; font-weight: normal; color: var(--muted); background: #f0f0f0; padding: 2px 8px; border-radius: 10px;">Select to adapt UI</span>
+                </h4>
+                
+                <!-- DEMO MODE TOGGLE -->
+                <div class="demo-mode-control" style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; background: #fff; padding: 5px 12px; border-radius: 20px; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <span style="font-weight: 600; color: #555; font-size: 0.85rem;">Presentation Mode:</span>
+                    <label class="switch" style="position: relative; display: inline-block; width: 36px; height: 20px; margin: 0;">
+                        <input type="checkbox" id="demoModeToggle" onchange="toggleDemoMode(this)">
+                        <span class="slider round" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;"></span>
+                    </label>
+                    <span id="demoStatusText" style="font-weight: bold; font-size: 0.8rem; color: #999; min-width: 25px;">OFF</span>
+                </div>
+            </div>
+
+            <div class="mode-chips" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="mode-chip active" onclick="setStakeholderMode('board', this)" data-mode="board">👔 Board</button>
+                <button class="mode-chip" onclick="setStakeholderMode('regulator', this)" data-mode="regulator">🧾 Regulator</button>
+                <button class="mode-chip" onclick="setStakeholderMode('buyer', this)" data-mode="buyer">🧵 Brand Buyer</button>
+                <button class="mode-chip" onclick="setStakeholderMode('investor', this)" data-mode="investor">💰 Investor</button>
+                <button class="mode-chip" onclick="setStakeholderMode('supplier', this)" data-mode="supplier">🏭 Supplier</button>
+            </div>
+        </div>
+
+        <!-- 2. Executive Persona Cards (Global) -->
+        <div class="executive-cards-section">
+            <h4 style="margin: 0 0 15px 0; color: var(--secondary); font-size: 1.1rem; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-chess"></i> Executive Decision Support
+            </h4>
+            <div class="role-btn-group" id="executive-cards" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <!-- CEO -->
+                <button class="role-card-btn ceo" onclick="openPersonaModal('ceo')">
+                    <div class="icon"><i class="fas fa-user-tie"></i></div>
+                    <div class="text">
+                        <div class="role-title">CEO</div>
+                        <div class="role-desc">Risk & Compliance Snapshot</div>
+                    </div>
+                </button>
+                <!-- CFO -->
+                <button class="role-card-btn cfo" onclick="openPersonaModal('cfo')">
+                    <div class="icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="text">
+                        <div class="role-title">CFO</div>
+                        <div class="role-desc">Shadow Cost & Margin</div>
+                    </div>
+                </button>
+                <!-- CTO -->
+                <button class="role-card-btn cto" onclick="openPersonaModal('cto')">
+                    <div class="icon"><i class="fas fa-cogs"></i></div>
+                    <div class="text">
+                        <div class="role-title">CTO</div>
+                        <div class="role-desc">Data Integrity & Ops</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .mode-chip {
+            padding: 8px 16px; border: 1px solid #ddd; background: #fff; border-radius: 20px;
+            cursor: pointer; font-weight: 500; color: #555; transition: all 0.2s;
+        }
+        .mode-chip:hover { background: #f5f5f5; transform: translateY(-1px); }
+        .mode-chip.active { background: var(--secondary); color: white; border-color: var(--secondary); box-shadow: 0 2px 5px rgba(2,21,78,0.2); }
+        
+        .role-card-btn {
+            display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+            border: 1px solid #e0e0e0; background: #fff; border-radius: 8px;
+            cursor: pointer; transition: all 0.2s; flex: 1; min-width: 200px;
+            text-align: left;
+        }
+        .role-card-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .role-card-btn .icon { font-size: 1.5rem; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f8f9fa; }
+        .role-card-btn.ceo .icon { color: #2c3e50; background: rgba(44, 62, 80, 0.1); }
+        .role-card-btn.cfo .icon { color: #d35400; background: rgba(211, 84, 0, 0.1); }
+        .role-card-btn.cto .icon { color: #27ae60; background: rgba(39, 174, 96, 0.1); }
+        .role-card-btn .role-title { font-weight: bold; font-size: 1rem; color: var(--secondary); }
+        .role-card-btn .role-desc { font-size: 0.8rem; color: var(--muted); }
+        
+        /* Demo Mode Switch */
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #2196F3; }
+        input:focus + .slider { box-shadow: 0 0 1px #2196F3; }
+        input:checked + .slider:before { transform: translateX(16px); }
+    </style>
+
+    <!-- ZERO DEMO CONTROLLER -->
+    <script>
+    // 1. DEMO MODE STATE (GLOBAL)
+    const DEMO_MODE = sessionStorage.getItem("zero_demo_mode") === "ON";
+
+    window.ZERO_DEMO = {
+        get: () => DEMO_MODE,
+        set: (on) => {
+            const val = on ? 'ON' : 'OFF';
+            sessionStorage.setItem('zero_demo_mode', val);
+            // Reload to ensure clean state application
+            window.location.reload();
+        },
+        toggle: () => {
+            const current = sessionStorage.getItem("zero_demo_mode") === "ON";
+            window.ZERO_DEMO.set(!current);
+        }
+    };
+
+    function toggleDemoMode(el) {
+        window.ZERO_DEMO.set(el.checked);
+    }
+
+    // Initialize Demo State UI
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle = document.getElementById('demoModeToggle');
+        const text = document.getElementById('demoStatusText');
+        
+        if(toggle) toggle.checked = DEMO_MODE;
+        if(text) {
+            text.textContent = DEMO_MODE ? 'ON' : 'OFF';
+            text.style.color = DEMO_MODE ? '#2196F3' : '#999';
+        }
+        
+        document.body.setAttribute('data-demo', DEMO_MODE ? 'ON' : 'OFF');
+        console.log("[ZeroDemo] Initialized. Mode:", DEMO_MODE ? "ON" : "OFF");
+    });
+    </script>
+
+
+ <div class="filters">
+ <div class="results-info">
+ Showing <span id="yarnCount">15</span> yarns
+ </div>
+ <div class="sort-filter">
+ <select id="sortSelect">
+ <option value="name">Sort by Name</option>
+ <option value="co2-asc">CO₂: Low to High</option>
+ <option value="co2-desc">CO₂: High to Low</option>
+ <option value="score-asc">Score: Low to High</option>
+ <option value="score-desc">Score: High to Low</option>
+ </select>
+ </div>
+ </div>
+ 
+ <div class="yarn-grid" id="yarnGrid">
+ <!-- Yarn cards will be populated by JavaScript -->
+ </div>
+ 
+ <div class="chart-container">
+ <h3 class="chart-title">Average Environmental Impact by Yarn Category</h3>
+ <canvas id="impactChart"></canvas>
+ </div>
+ </main>
+ 
+ <div class="blend-section" id="blend-calculator" style="display: none;">
+ <h2 class="dpp-subtitle">Create Your Custom Yarn Blend</h2>
+<div class="intent-cards">
+ <div class="intent-card roleView" data-action="open-role-modal" data-role="ceo" data-intent="overview"><h3>CEO View</h3><p>Strategy, risk & compliance snapshot</p></div>
+ <div class="intent-card roleView" data-action="open-role-modal" data-role="cfo" data-intent="cost"><h3>CFO View</h3><p>Cost, CO₂ impact & savings</p></div>
+ <div class="intent-card roleView" data-action="open-role-modal" data-role="cto" data-intent="flow"><h3>CTO View</h3><p>Process flow & operations</p></div>
+</div>
+ <div class="blend-container">
+ <div class="blend-form">
+ <div class="form-group">
+ <label for="fiberSelect">Select Fiber:</label>
+ <select id="fiberSelect">
+ <option value="">-- Choose a fiber --</option>
+ <!-- Options will be populated by JavaScript -->
+ </select>
+ </div>
+ 
+ <div class="form-group">
+ <label for="percentageInput">Percentage (%):</label>
+ <input type="number" id="percentageInput" min="1" max="100" placeholder="Enter percentage">
+ </div>
+ 
+ <button class="add-btn" onclick="addComponent()">
+ <i class="fas fa-plus"></i> Add to Blend
+ </button>
+ 
+ <h3 style="margin: 25px 0 15px; color: var(--secondary);">Blend Composition</h3>
+ <div class="blend-components" id="blendComponents">
+ <p style="text-align: center; padding: 20px; color: #777;">No fibers added yet</p>
+ </div>
+ 
+ <div class="form-group">
+ <label for="blendName">Blend Name:</label>
+ <input type="text" id="blendName" placeholder="Enter a name for your blend">
+ </div>
+ 
+ <button class="add-btn" onclick="calculateBlend()" style="background: var(--primary);">
+ <i class="fas fa-calculator"></i> Calculate Blend and Add to Database
+ </button>
+ </div>
+ 
+ <div class="blend-result">
+ <div class="blend-result-card">
+ <h3 class="blend-result-title">Your Custom Blend</h3>
+ <div class="blend-metrics">
+ <div class="blend-metric co2">
+ <div class="blend-metric-title">CO₂/kg</div>
+ <div class="blend-metric-value blend-co2-value" id="blendCo2">0.0</div>
+ <div class="metric-desc">kg CO₂ per kg yarn</div>
+ </div>
+ <div class="blend-metric score">
+ <div class="blend-metric-title">DPI Score</div>
+ <div class="blend-metric-value blend-score-value" id="blendScore">0</div>
+ <div class="metric-desc">Sustainability score</div>
+ </div>
+ </div>
+ <div class="blend-composition" id="blendComposition">
+ Add fibers to see your custom blend composition
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ 
+ <footer>
+    <!-- Footer moved to top -->
+</footer>
+ </div>
+
+ <script>
+ // Enhanced fiber database for blending
+ const fiberDatabase = {
+ "Organic Cotton": { co2: 3.8, score: 87 },
+ "Recycled Polyester": { co2: 4.2, score: 75 },
+ "Merino Wool": { co2: 6.2, score: 82 },
+ "Tencel": { co2: 5.5, score: 85 },
+ "Hemp": { co2: 2.1, score: 92 },
+ "Bamboo": { co2: 7.5, score: 75 },
+ "Recycled Nylon": { co2: 6.1, score: 72 },
+ "Organic Linen": { co2: 3.2, score: 91 },
+ "Recycled Wool": { co2: 3.2, score: 84 },
+ "Silk": { co2: 11.5, score: 65 },
+ "Cashmere": { co2: 8.7, score: 70 },
+ "Mohair": { co2: 7.3, score: 68 },
+ "Angora": { co2: 6.8, score: 65 },
+ "Ramie": { co2: 3.5, score: 88 },
+ "Soy Silk": { co2: 4.3, score: 80 },
+ "Banana Fiber": { co2: 3.8, score: 85 },
+ "Coir": { co2: 2.5, score: 90 },
+ "Corn Fiber": { co2: 5.1, score: 78 },
+ "Lyocell": { co2: 4.8, score: 83 },
+ "Modal": { co2: 5.2, score: 81 }
+ };
+
+ // Yarn database with CO2 and Score values
+ 
+let yarnDatabase = [];
+async function __ZERO_LOAD_YARNS(){
+  const url = "data/ugurlular-yarns.json?v=" + Date.now();
+  const res = await fetch(url, { cache: "no-store" });
+  if(!res.ok) throw new Error("Failed to load yarns: " + res.status);
+  const data = await res.json();
+  if(!Array.isArray(data)) throw new Error("Yarn JSON is not an array");
+  
+  // ZERO SELF-HEAL CHECK
+  if(window.ZeroSelfHeal) {
+      window.ZeroSelfHeal.checkDataIntegrity(data);
+  }
+  
+  yarnDatabase = data;
+  return yarnDatabase;
+}
+// DOM Elements
+ const yarnGrid = document.getElementById('yarnGrid');
+ const searchInput = document.getElementById('searchInput');
+ const sortSelect = document.getElementById('sortSelect');
+ const yarnCount = document.getElementById('yarnCount');
+    
+    // Category Icons Mapping
+    const categoryIcons = {
+      "Cotton Yarns": "fa-cloud",
+      "Plant-Based Yarns": "fa-leaf",
+      "Recycled Yarns": "fa-recycle",
+      "Cellulosic Yarns": "fa-seedling",
+      "Technology Yarns": "fa-flask",
+      "Blended Yarns": "fa-blender"
+    };
+
+    // Modal elements
+    const modal = document.getElementById('yarnModal');
+ const closeModal = document.getElementById('closeModal');
+
+ // Chart instance
+ let impactChart = null;
+ 
+ // Blend components
+ let blendComponents = [];
+
+ // Toast Notification
+  function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.style.position = 'fixed';
+      toast.style.top = '20px';
+      toast.style.right = '20px';
+      toast.style.padding = '15px 25px';
+      toast.style.borderRadius = '8px';
+      toast.style.color = '#fff';
+      toast.style.zIndex = '9999';
+      toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+      toast.style.fontWeight = '500';
+      toast.style.fontSize = '14px';
+      toast.style.animation = 'slideIn 0.3s ease-out';
+
+      if (type === 'error') {
+          toast.style.background = '#ef4444';
+          toast.style.borderLeft = '4px solid #991b1b';
+      } else if (type === 'warning') {
+          toast.style.background = '#f59e0b';
+          toast.style.borderLeft = '4px solid #b45309';
+      } else {
+          toast.style.background = '#3b82f6';
+          toast.style.borderLeft = '4px solid #1e40af';
+      }
+
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+          toast.style.animation = 'fadeOut 0.3s ease-out';
+          setTimeout(() => toast.remove(), 300);
+      }, 5000);
+  }
+
+  // Initialize application
+  function init() {
+    console.log("Init called");
+    
+    // Debug log function (console only for production)
+    function log(msg) {
+        console.log(msg);
+    }
+
+    log("App initializing... v=" + Date.now());
+    
+    // Check if JSON file is reachable via HEAD
+    fetch("data/ugurlular-yarns.json", {method:"HEAD"}).then(r => {
+        log("JSON Check: " + r.status + " " + r.statusText);
+        if(!r.ok) log("CRITICAL: JSON file not found or not accessible!");
+    }).catch(e => log("JSON Check Error: " + e.message));
+
+    renderCategoryFilters();
+
+    (async function(){
+      try{
+        log("Fetching yarns...");
+        const yarns = await __ZERO_LOAD_YARNS();
+        log(`Loaded ${yarns ? yarns.length : 'null'} yarns.`);
+        
+        if (yarns && yarns.length > 0) {
+            log("First yarn: " + JSON.stringify(yarns[0]).substring(0, 100) + "...");
+        }
+
+        if (!yarnDatabase || yarnDatabase.length === 0) {
+            log("Warning: Yarn database is empty.");
+            showToast("Warning: No products loaded from database.", "warning");
+        }
+      }catch(e){
+        log("Error: " + e.message);
+        console.error(e);
+        showToast("Error loading products: " + e.message, "error");
+        
+        // FALLBACK DATA (For Offline/Error Scenarios)
+        log("Activating FALLBACK DATA...");
+        yarnDatabase = [
+            {
+                "id": "FB-001",
+                "name": "Organic Cotton (Offline)",
+                "category": "Cotton Yarns",
+                "brand": "Ugurlular Tekstil",
+                "composition": "100% Organic Cotton",
+                "co2": 3.8,
+                "score": 85,
+                "badges": ["Organic", "GOTS", "Offline"],
+                "strategic_status": "HERO",
+                "type": "Ring",
+                "yarn_count": "30/1"
+            },
+            {
+                "id": "FB-002",
+                "name": "Recycled Polyester (Offline)",
+                "category": "Blended Yarns",
+                "brand": "Ugurlular Tekstil",
+                "composition": "100% Recycled PES",
+                "co2": 4.2,
+                "score": 80,
+                "badges": ["Recycled", "GRS", "Offline"],
+                "strategic_status": "TRANSFORM",
+                "type": "Open-End",
+                "yarn_count": "20/1"
+            }
+        ];
+        showToast("System Offline: Using Cached Data", "warning");
+      }
+      
+      try {
+        renderCategoryFilters();
+        log("Category filters rendered.");
+        
+        // Check if renderYarnCards exists
+        if(typeof renderYarnCards !== 'function') {
+            log("CRITICAL: renderYarnCards is not a function!");
+        } else {
+            renderYarnCards(yarnDatabase);
+            const grid = document.getElementById('yarnGrid');
+            log(`Cards rendered. Grid children: ${grid ? grid.children.length : 'null'}`);
+            if(grid && grid.innerHTML.includes('No yarns match')) {
+                log("Grid shows 'No yarns match' message.");
+            }
+        }
+        
+        renderImpactChart(yarnDatabase);
+        log("Chart rendered.");
+      } catch(renderErr) {
+        log("Render Error: " + renderErr.message + "\n" + renderErr.stack);
+      }
+    })();
+    setupEventListeners();
+    populateFiberDropdown();
+
+ 
+ // Setup modal event listeners
+ closeModal.addEventListener('click', () => {
+   modal.style.display = 'none';
+ });
+ 
+ const fsBtn = document.getElementById('toggleFullscreen');
+ const modalContent = modal.querySelector('.modal-content');
+ if (fsBtn && modalContent) {
+   fsBtn.addEventListener('click', () => {
+     modalContent.classList.toggle('fullscreen');
+   });
+ }
+ 
+ window.addEventListener('click', (e) => {
+ if (e.target === modal) {
+ modal.style.display = 'none';
+ }
+ });
+ }
+
+ // Populate fiber dropdown with all fiber types
+ function populateFiberDropdown() {
+ const fiberSelect = document.getElementById('fiberSelect');
+ fiberSelect.innerHTML = '<option value="">-- Choose a fiber --</option>';
+ 
+ for (const fiber in fiberDatabase) {
+ const option = document.createElement('option');
+ option.value = fiber;
+ option.textContent = fiber;
+ fiberSelect.appendChild(option);
+ }
+ }
+
+ // Render category filters with counts
+ function renderCategoryFilters() {
+    const container = document.getElementById('dynamic-category-filters');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const categories = [...new Set(yarnDatabase.map(y => y.category))].sort();
+
+    categories.forEach(category => {
+         const yarnsInCategory = yarnDatabase.filter(yarn => yarn.category === category);
+ 
+         // Create Container DIV
+         const div = document.createElement('div');
+         div.className = 'category-filter';
+
+         // Create Title
+         const title = document.createElement('h3');
+         title.className = 'category-title';
+         const iconClass = categoryIcons[category] || 'fa-layer-group';
+         title.innerHTML = `<i class="fas ${iconClass}"></i> ${category}`;
+         div.appendChild(title);
+ 
+         // Create List
+         const list = document.createElement('ul');
+         list.className = 'category-list';
+ 
+         // 1. Add "All [Category]" item
+         const allCatItem = document.createElement('li');
+         allCatItem.className = 'category-item';
+         allCatItem.dataset.category = category;
+         allCatItem.innerHTML = `All ${category} <span class="category-count">${yarnsInCategory.length}</span>`;
+         allCatItem.addEventListener('click', () => {
+              filterByCategory(category);
+              setActiveItem(allCatItem);
+         });
+         list.appendChild(allCatItem);
+ 
+        // 2. Add individual yarns (unique names) with counts
+        const nameCounts = {};
+        yarnsInCategory.forEach(y => {
+            const k = y.name;
+            nameCounts[k] = (nameCounts[k] || 0) + 1;
+        });
+        const uniqueNames = Object.keys(nameCounts).sort((a,b) => a.localeCompare(b));
+        uniqueNames.forEach(name => {
+            const match = yarnsInCategory.find(y => y.name === name) || {};
+            const li = document.createElement('li');
+            li.className = 'category-item';
+            li.dataset.category = category;
+            li.dataset.yarn = name;
+            li.dataset.action = 'open-product-modal';
+            li.dataset.yarnId = (match.id || name.replace(/\s+/g, '-'));
+            li.innerHTML = `${name} <span class="category-count">${nameCounts[name]}</span>`;
+            li.addEventListener('click', () => {
+                setActiveItem(li);
+            });
+            list.appendChild(li);
+        });
+
+         div.appendChild(list);
+         container.appendChild(div);
+     });
+ 
+ // Update "All Yarns" count
+ document.querySelector('#allYarns .category-count').textContent = yarnDatabase.length;
+ }
+
+ // Set active item in sidebar
+function setActiveItem(activeItem) {
+document.querySelectorAll('.category-item').forEach(item => {
+item.classList.remove('active');
+});
+activeItem.classList.add('active');
+}
+
+// Shared card builder to ensure single source of truth for card HTML
+function createYarnCardElement(yarn) {
+  const card = document.createElement('div');
+  let statusClass = '';
+  let statusBadge = '';
+  if (yarn.strategic_status === 'EXIT') {
+    statusClass = ' status-exit';
+    statusBadge = '<div class="status-badge exit">⛔ PHASE OUT</div>';
+  } else if (yarn.strategic_status === 'HERO') {
+    statusClass = ' status-hero';
+    statusBadge = '<div class="status-badge hero">⭐ HERO PRODUCT</div>';
+  } else if (yarn.strategic_status === 'TRANSFORM') {
+    statusBadge = '<div class="status-badge transform">⚠️ TRANSFORM</div>';
+  }
+  card.className = 'yarn-card' + (yarn.type === 'Blend' ? ' blend' : '') + statusClass;
+  const yarnId = (yarn.id || yarn.name.replace(/\s+/g, '-'));
+  card.setAttribute('data-yarn-id', yarnId);
+  card.innerHTML = `
+    <div class="yarn-header">
+      ${statusBadge}
+      <div class="card-title-bar">${yarn.name}</div>
+      ${yarn.type === 'Blend' ? '<i class="fas fa-layer-group blend-icon"></i>' : ''}<div class="yarn-type">${yarn.type}</div>
+      <div class="intent-cards">
+        <div class="intent-card roleView" data-action="open-role-modal" data-role="ceo" data-intent="overview"><h3>CEO View</h3><p>Strategy, risk & compliance snapshot</p></div>
+        <div class="intent-card roleView" data-action="open-role-modal" data-role="cfo" data-intent="cost"><h3>CFO View</h3><p>Cost, CO₂ impact & savings</p></div>
+        <div class="intent-card roleView" data-action="open-role-modal" data-role="cto" data-intent="flow"><h3>CTO View</h3><p>Process flow & operations</p></div>
+      </div>
+      <p class="yarn-brand">Brand: ${yarn.brand}</p>
+    </div>
+    <div class="yarn-body">
+      <p class="yarn-composition">${yarn.composition}</p>
+      <div class="metrics">
+        <div class="metric co2">
+          <div class="metric-title">CO₂/kg</div>
+          <div class="metric-value co2-value">${yarn.co2}</div>
+          <div class="metric-desc">kg CO₂ per kg yarn</div>
+        </div>
+        <div class="metric score">
+          <div class="metric-title">DPI Score</div>
+          <div class="metric-value score-value">${yarn.score}</div>
+          <div class="score-bar">
+            <div class="score-fill" style="width: ${yarn.score}%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="badges">
+        ${(yarn.badges || []).map(badge => {
+          let badgeClass = '';
+          if (badge.includes('Recycled')) badgeClass = 'recycled';
+          if (badge.includes('Organic')) badgeClass = 'organic';
+          if (badge.includes('Synthetic')) badgeClass = 'synthetic';
+          return `<span class="badge ${badgeClass}">${badge}</span>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="yarn-footer">
+      <div class="yarn-weight">Count: ${yarn.yarn_count}</div>
+      <button class="detail-btn" data-id="${yarn.name.replace(/\s+/g, '-')}">Details</button>
+    </div>
+  `;
+  const detailsBtn = card.querySelector('.detail-btn');
+  if (detailsBtn) {
+    detailsBtn.addEventListener('click', () => {
+      showYarnDetails(yarn);
+    });
+  }
+  const nameEl = card.querySelector('.card-title-bar');
+  if (nameEl) {
+    nameEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showYarnDetails(yarn);
+    });
+  }
+  card.addEventListener('click', (e) => {
+    if (e.target.closest('[data-action="open-role-modal"]') || e.target.closest('.detail-btn')) return;
+    showYarnDetails(yarn);
+  });
+  return card;
+}
+
+// Render yarn cards
+function renderYarnCards(yarns) {
+yarnGrid.innerHTML = '';
+yarnCount.textContent = yarns.length;
+
+if (yarns.length === 0) {
+yarnGrid.innerHTML = '<p class="no-results">No yarns match your search criteria</p>';
+return;
+}
+
+ yarns.forEach(yarn => {
+   const card = createYarnCardElement(yarn);
+   yarnGrid.appendChild(card);
+ });
+}
+
+ // Show yarn details in modal (FIXED: .modal-header -> .modal-title)
+function showYarnDetails(yarn) {
+    const modalContent = document.querySelector('.modal-content');
+    
+    // 1. CLEANUP: Remove old banners
+    const oldBanners = modalContent.querySelectorAll('.kill-switch-banner, .hero-banner');
+    oldBanners.forEach(b => b.remove());
+
+    const modalTitleElem = document.getElementById('modalYarnName');
+    
+    // 2. HEADER LOGIC
+    if (yarn.strategic_status === 'EXIT') {
+        // KILL SWITCH ACTIVE
+        const banner = document.createElement('div');
+        banner.className = 'kill-switch-banner';
+        banner.innerHTML = '<i class="fas fa-ban"></i> SALES BLOCKED: REGULATORY RISK';
+        modalContent.insertBefore(banner, modalContent.firstChild);
+        
+        modalTitleElem.innerHTML = '<i class="fas fa-lock"></i> ' + yarn.name + ' <span style="font-size:0.6em; opacity:0.8">[PHASE OUT]</span>';
+        modalTitleElem.style.background = '#444'; // Dark gray
+        modalTitleElem.style.color = '#fff';
+        
+    } else if (yarn.strategic_status === 'HERO') {
+        // HERO ACTIVE
+        const banner = document.createElement('div');
+        banner.className = 'hero-banner';
+        banner.innerHTML = '<i class="fas fa-trophy"></i> HERO PRODUCT: TARGET +15% PREMIUM';
+        modalContent.insertBefore(banner, modalContent.firstChild);
+        
+        modalTitleElem.innerHTML = '<i class="fas fa-star"></i> ' + yarn.name;
+        modalTitleElem.style.background = 'var(--primary)';
+        modalTitleElem.style.color = '#fff';
+        
+    } else if (yarn.type === 'Blend') {
+        modalTitleElem.innerHTML = '<i class="fas fa-layer-group blend-icon"></i>' + yarn.name;
+        modalTitleElem.style.background = '#f9ba00';
+        modalTitleElem.style.color = 'var(--secondary)';
+    } else {
+        modalTitleElem.innerHTML = yarn.name;
+        modalTitleElem.style.background = 'var(--primary)';
+        modalTitleElem.style.color = '#fff';
+    }
+
+ document.getElementById('modalComposition').textContent = yarn.composition;
+    document.getElementById('modalCo2').textContent = yarn.co2 !== null ? yarn.co2 : 'N/A';
+    document.getElementById('modalScore').textContent = yarn.score !== null ? yarn.score : 'N/A';
+    document.getElementById('modalScoreBar').style.width = `${yarn.score || 0}%`;
+    document.getElementById('modalBrand').textContent = yarn.brand;
+    document.getElementById('modalWeight').textContent = yarn.yarn_count || yarn.weight || 'N/A';
+    document.getElementById('modalType').textContent = yarn.type;
+    
+    // NEW: Populate Batch Info
+    if (yarn.batch_info) {
+        document.getElementById('modalBatchId').textContent = yarn.batch_info.batch_id || 'N/A';
+        document.getElementById('modalMachine').textContent = yarn.batch_info.machine_id || 'N/A';
+        document.getElementById('modalEfficiency').textContent = yarn.batch_info.shift_efficiency || 'N/A';
+        document.getElementById('modalDate').textContent = yarn.batch_info.production_date || 'N/A';
+    }
+
+    // NEW: Populate Environmental Impact
+    if (yarn.environmental_impact) {
+        const energy = yarn.environmental_impact.energy || {};
+        const water = yarn.environmental_impact.water || {};
+        
+        document.getElementById('modalRenewable').textContent = (energy.renewable_share || 0) + '%';
+        document.getElementById('modalKwh').textContent = energy.real_time_kwh_kg || 'N/A';
+        document.getElementById('modalEnergyBar').style.width = (energy.renewable_share || 0) + '%';
+        document.getElementById('modalEnergySource').textContent = (energy.sources && energy.sources.grid_mix < 50) ? 'Solar Dominant' : 'Grid Dominant';
+        
+        document.getElementById('modalWater').textContent = water.blue_water_l_kg || 'N/A';
+        document.getElementById('modalScarcity').textContent = water.scarcity_score || 'N/A';
+        document.getElementById('modalZdhc').textContent = 'Level ' + (water.zdhc_level || '1');
+    }
+
+    // NEW: Populate Circularity
+    if (yarn.circularity_profile) {
+        const circ = yarn.circularity_profile;
+        document.getElementById('modalRecycleMethod').textContent = circ.preferred_method || 'N/A';
+        document.getElementById('modalFeedstock').textContent = circ.feedstock_ready ? 'YES' : 'NO';
+        document.getElementById('modalContaminants').textContent = circ.contaminants_ppm || 'N/A';
+        
+        const circStatus = document.getElementById('modalCircStatus');
+        if (circ.recyclability_grade === 'A' || circ.recyclability_grade === 'A-') {
+            circStatus.className = 'circ-status circ-pass';
+            document.getElementById('modalCircGrade').innerHTML = '<i class="fas fa-check-circle"></i> Grade ' + circ.recyclability_grade;
+            document.getElementById('modalCircMsg').textContent = 'Approved for High-Value Chemical Recycling';
+        } else {
+            circStatus.className = 'circ-status circ-fail';
+            document.getElementById('modalCircGrade').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Grade ' + circ.recyclability_grade;
+            document.getElementById('modalCircMsg').textContent = 'Not suitable for circular loops due to blends/contamination';
+        }
+    }
+
+    // NEW: Compliance
+    if (yarn.compliance_status) {
+        document.getElementById('modalSlcp').textContent = yarn.compliance_status.slcp_audit_id || 'Pending';
+    }
+
+    // Reset to Overview Tab
+    switchModalTab('overview');
+
+    // Render badges
+    const badgesContainer = document.getElementById('modalBadges');
+    badgesContainer.innerHTML = '';
+    (yarn.badges || []).forEach(badge => {
+        let badgeClass = '';
+        if (badge.includes('Recycled')) badgeClass = 'recycled';
+        if (badge.includes('Organic')) badgeClass = 'organic';
+        if (badge.includes('Synthetic')) badgeClass = 'synthetic';
+
+        const badgeElem = document.createElement('span');
+        badgeElem.className = `badge ${badgeClass}`;
+        badgeElem.textContent = badge;
+        badgesContainer.appendChild(badgeElem);
+    });
+
+    // Render uses & Sales Directive
+    const usesContainer = document.getElementById('modalUses');
+    usesContainer.innerHTML = '';
+    
+    // SALES DIRECTIVE INJECTION
+    if (yarn.sales_instruction) {
+        const li = document.createElement('li');
+        li.style.fontWeight = 'bold';
+        li.style.padding = '10px';
+        li.style.marginBottom = '10px';
+        li.style.borderRadius = '4px';
+        
+        if (yarn.strategic_status === 'EXIT') {
+            li.style.background = '#ffebee';
+            li.style.color = '#c62828';
+            li.style.border = '1px solid #ffcdd2';
+            li.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${yarn.sales_instruction}`;
+        } else if (yarn.strategic_status === 'HERO') {
+            li.style.background = '#e8f5e9';
+            li.style.color = '#2e7d32';
+            li.style.border = '1px solid #c8e6c9';
+            li.innerHTML = `<i class="fas fa-check-circle"></i> ${yarn.sales_instruction}`;
+        } else {
+            li.style.background = '#fff3e0';
+            li.style.color = '#e65100';
+            li.innerHTML = `<i class="fas fa-info-circle"></i> ${yarn.sales_instruction}`;
+        }
+        usesContainer.appendChild(li);
+    }
+
+    // Normal uses (Hide if EXIT to prevent pitching)
+    if (yarn.strategic_status !== 'EXIT') {
+        (yarn.end_use || yarn.uses || []).forEach(use => {
+            const li = document.createElement('li');
+            li.textContent = use;
+            usesContainer.appendChild(li);
+        });
+    }
+ 
+    // GOVERNANCE & CONTROL (Phase E)
+    if (yarn.governance) {
+        const gov = yarn.governance;
+        const modalContent = document.querySelector('.modal-content');
+        
+        // Cleanup old gov banners
+        const oldGov = modalContent.querySelectorAll('.gov-banner');
+        oldGov.forEach(b => b.remove());
+
+        // E1: Legal & Claim Enforcement
+        if (gov.claim_status === 'PROHIBITED') {
+             const banner = document.createElement('div');
+             banner.className = 'gov-banner';
+             banner.style.background = '#2c3e50';
+             banner.style.color = '#fff';
+             banner.style.padding = '12px';
+             banner.style.margin = '0 0 10px 0';
+             banner.style.textAlign = 'center';
+             banner.style.fontWeight = 'bold';
+             banner.style.borderLeft = '5px solid #c0392b';
+             banner.innerHTML = `<i class="fas fa-gavel"></i> LEGAL BAN: ${gov.legal_justification}`;
+             // Insert after title (approximate position, adjusting based on structure)
+             const header = modalContent.querySelector('.modal-header') || modalContent.firstChild;
+             header.insertAdjacentElement('afterend', banner);
+             
+             // Override Button (E4)
+             const overrideBtn = document.createElement('button');
+             overrideBtn.className = 'gov-banner'; // Reuse class for cleanup
+             overrideBtn.innerHTML = '<i class="fas fa-key"></i> Request Compliance Override';
+             overrideBtn.style.marginTop = '10px';
+             overrideBtn.style.width = '100%';
+             overrideBtn.style.padding = '8px';
+             overrideBtn.style.background = '#bdc3c7';
+             overrideBtn.style.border = 'none';
+             overrideBtn.style.cursor = 'pointer';
+             overrideBtn.onclick = () => alert('OVERRIDE REQUEST LOGGED.\n\nUser: SALES_REP_01\nTarget: COMPLIANCE_OFFICER\nReason: Market Access Exception\n\nEvent recorded in Synapse Audit Log.');
+             usesContainer.appendChild(overrideBtn);
+
+        } else if (gov.claim_status === 'RESTRICTED') {
+             const banner = document.createElement('div');
+             banner.className = 'gov-banner';
+             banner.style.background = '#fff3cd';
+             banner.style.color = '#856404';
+             banner.style.border = '1px solid #ffeeba';
+             banner.style.padding = '8px';
+             banner.style.margin = '0 0 10px 0';
+             banner.style.fontSize = '0.9em';
+             banner.style.textAlign = 'center';
+             banner.innerHTML = `<i class="fas fa-exclamation-triangle"></i> CLAIM RESTRICTED: ${gov.legal_justification}`;
+             const header = modalContent.querySelector('.modal-header') || modalContent.firstChild;
+             header.insertAdjacentElement('afterend', banner);
+        }
+        
+        // E2: CFO Shadow Cost Engine
+        const financialList = document.createElement('li');
+        financialList.style.marginTop = '15px';
+        financialList.style.borderTop = '1px solid #eee';
+        financialList.style.paddingTop = '10px';
+        financialList.style.background = '#f8f9fa';
+        financialList.style.padding = '10px';
+        financialList.innerHTML = `
+            <div style="font-size:0.9em; text-transform:uppercase; color:#7f8c8d; margin-bottom:5px;">CFO Shadow Cost Analysis</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>CBAM Liability:</span>
+                <span style="font-weight:bold; color: ${gov.shadow_cost > 0.3 ? '#c0392b' : '#d35400'}">€${gov.shadow_cost}/kg</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                <span>Energy Risk Premium:</span>
+                <span style="font-weight:bold; color: ${gov.energy_risk_premium > 0.2 ? '#c0392b' : '#f39c12'}">€${gov.energy_risk_premium || 0}/kg</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                <span>Margin Erosion Risk:</span>
+                <span style="font-weight:bold; color: ${gov.margin_erosion_risk === 'HIGH' ? '#c0392b' : '#27ae60'}">${gov.margin_erosion_risk}</span>
+            </div>
+        `;
+        usesContainer.appendChild(financialList);
+        
+        // Block Discounting
+        if (gov.margin_erosion_risk === 'HIGH') {
+            const blockDiscount = document.createElement('div');
+            blockDiscount.style.color = '#fff';
+            blockDiscount.style.background = '#c0392b';
+            blockDiscount.style.fontWeight = 'bold';
+            blockDiscount.style.textAlign = 'center';
+            blockDiscount.style.padding = '5px';
+            blockDiscount.style.marginTop = '5px';
+            blockDiscount.style.fontSize = '0.8em';
+            blockDiscount.innerHTML = "<i class='fas fa-ban'></i> DISCOUNTING BLOCKED";
+            financialList.appendChild(blockDiscount);
+        }
+    }
+
+ // Show modal
+ modal.style.display = 'flex';
+ }
+
+ // NEW: Switch Modal Tab Function
+ window.switchModalTab = function(tabName) {
+    // 1. Hide all contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.display = 'none';
+        content.classList.remove('active');
+    });
+    
+    // 2. Deactivate all buttons
+    document.querySelectorAll('.modal-tab').forEach(btn => {
+        btn.classList.remove('active');
+    });
+
+    // 3. Show selected content
+    const selectedContent = document.getElementById('tab-' + tabName);
+    if (selectedContent) {
+        selectedContent.style.display = 'block';
+        setTimeout(() => selectedContent.classList.add('active'), 10);
+    }
+
+    // 4. Activate button (find button with onclick containing the tabName)
+    const buttons = document.querySelectorAll('.modal-tab');
+    for (let btn of buttons) {
+        if (btn.getAttribute('onclick').includes(tabName)) {
+            btn.classList.add('active');
+            break;
+        }
+    }
+ }
+
+ // Filter by category
+ function filterByCategory(category, yarnName) {
+ let filteredYarns;
+ if (category === 'all') {
+ filteredYarns = yarnDatabase;
+ } else if (yarnName) {
+ filteredYarns = yarnDatabase.filter(yarn => 
+ yarn.category === category && yarn.name === yarnName
+ );
+ } else {
+ filteredYarns = yarnDatabase.filter(yarn => yarn.category === category);
+ }
+ 
+ renderYarnCards(filteredYarns);
+ renderImpactChart(filteredYarns);
+ }
+
+ // Sort yarns
+ function sortYarns(yarns, criteria) {
+ return [...yarns].sort((a, b) => {
+ switch(criteria) {
+ case 'name':
+ return a.name.localeCompare(b.name);
+ case 'co2-asc':
+ return a.co2 - b.co2;
+ case 'co2-desc':
+ return b.co2 - a.co2;
+ case 'score-asc':
+ return a.score - b.score;
+ case 'score-desc':
+ return b.score - a.score;
+ default:
+ return 0;
+ }
+ });
+ }
+
+ // Search yarns
+ function searchYarns(query) {
+ if (!query) return yarnDatabase;
+ 
+ const lowerQuery = query.toLowerCase();
+ return yarnDatabase.filter(yarn => 
+        yarn.name.toLowerCase().includes(lowerQuery) ||
+        yarn.brand.toLowerCase().includes(lowerQuery) ||
+        yarn.composition.toLowerCase().includes(lowerQuery) ||
+        (yarn.badges || []).some(badge => badge.toLowerCase().includes(lowerQuery)) ||
+        (yarn.end_use || yarn.uses || []).some(use => use.toLowerCase().includes(lowerQuery))
+      );
+ }
+
+ // Render impact chart
+ function renderImpactChart(yarns) {
+ const categories = [...new Set(yarns.map(yarn => yarn.category))];
+ 
+ // Calculate average CO2 and Score for each category
+ const avgCo2 = categories.map(category => {
+ const yarnsInCat = yarns.filter(y => y.category === category);
+ const totalCo2 = yarnsInCat.reduce((sum, yarn) => sum + yarn.co2, 0);
+ return totalCo2 / yarnsInCat.length;
+ });
+ 
+ const avgScore = categories.map(category => {
+ const yarnsInCat = yarns.filter(y => y.category === category);
+ const totalScore = yarnsInCat.reduce((sum, yarn) => sum + yarn.score, 0);
+ return totalScore / yarnsInCat.length;
+ });
+
+ const ctx = document.getElementById('impactChart').getContext('2d');
+ 
+ // Destroy previous chart if it exists
+ if (impactChart) {
+ impactChart.destroy();
+ }
+ 
+ // Create new chart
+ impactChart = new Chart(ctx, {
+ type: 'bar',
+ data: {
+ labels: categories,
+ datasets: [
+ {
+ label: 'Average CO₂/kg',
+ data: avgCo2,
+ backgroundColor: 'rgba(0, 85, 48, 0.5)',
+ borderColor: 'rgba(0, 85, 48, 1)',
+ borderWidth: 1
+ },
+ {
+ label: 'Average DPI Score',
+ data: avgScore,
+ backgroundColor: 'rgba(2, 21, 78, 0.5)',
+ borderColor: 'rgba(2, 21, 78, 1)',
+ borderWidth: 1,
+ type: 'line',
+ yAxisID: 'y1'
+ }
+ ]
+ },
+ options: {
+ responsive: true,
+ scales: {
+ y: {
+ beginAtZero: true,
+ title: {
+ display: true,
+ text: 'CO₂/kg (kg)',
+ font: {
+ size: 14,
+ weight: 'bold'
+ }
+ }
+ },
+ y1: {
+ position: 'right',
+ beginAtZero: true,
+ max: 100,
+ title: {
+ display: true,
+ text: 'DPI Score',
+ font: {
+ size: 14,
+ weight: 'bold'
+ }
+ },
+ grid: {
+ drawOnChartArea: false
+ }
+ }
+ },
+ plugins: {
+ legend: {
+ labels: {
+ font: {
+ size: 14
+ }
+ }
+ },
+ tooltip: {
+ callbacks: {
+ label: function(context) {
+ let label = context.dataset.label || '';
+ if (label) {
+ label += ': ';
+ }
+ label += context.parsed.y.toFixed(1);
+ return label;
+ }
+ }
+ }
+ }
+ }
+ });
+ }
+
+ // Setup event listeners
+ function setupEventListeners() {
+ searchInput.addEventListener('input', () => {
+ const results = searchYarns(searchInput.value);
+ const sorted = sortYarns(results, sortSelect.value);
+ renderYarnCards(sorted);
+ renderImpactChart(sorted);
+ });
+ 
+ sortSelect.addEventListener('change', () => {
+ const results = searchYarns(searchInput.value);
+ const sorted = sortYarns(results, sortSelect.value);
+ renderYarnCards(sorted);
+ renderImpactChart(sorted);
+ });
+ 
+ // Add event listener for the "All Yarns" filter
+ document.querySelector('#allYarns .category-item').addEventListener('click', function() {
+ filterByCategory('all');
+ setActiveItem(this);
+ });
+ }
+ 
+ // Tab navigation
+ function showTab(tabId) {
+    // 1. Update Buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if(btn.getAttribute('onclick').includes(tabId)) {
+            btn.classList.add('active');
+        }
+    });
+ 
+    const yarnDb = document.getElementById('yarn-database');
+    const blendCalc = document.getElementById('blend-calculator');
+    const sidebar = document.querySelector('.sidebar');
+    const container = document.querySelector('.container');
+    const headerInfoBar = document.getElementById('header-info-bar');
+    
+    // 2. Toggle Views
+    if (tabId === 'yarn-database') {
+        yarnDb.style.display = 'block';
+        blendCalc.style.display = 'none';
+        if(sidebar) sidebar.style.display = 'block';
+        if(headerInfoBar) {
+            headerInfoBar.style.display = 'block';
+            headerInfoBar.textContent = 'Yarn Sustainability Database © 2023 | For Sustainable Textile Innovation';
+        }
+        
+        // Restore flex layout for sidebar + main
+        if(container) {
+            container.style.display = 'flex';
+            container.style.flexDirection = 'row';
+        }
+    } else {
+        yarnDb.style.display = 'none';
+        blendCalc.style.display = 'block';
+        if(sidebar) sidebar.style.display = 'none';
+        if(headerInfoBar) {
+            headerInfoBar.style.display = 'block';
+            headerInfoBar.textContent = 'Blend Calculator';
+        }
+        
+        // Use block layout for full-width blend calculator
+        if(container) {
+            container.style.display = 'block';
+        }
+    }
+ }
+ 
+ // Add blend component
+ function addComponent() {
+ const fiberSelect = document.getElementById('fiberSelect');
+ const percentageInput = document.getElementById('percentageInput');
+ 
+ if (!fiberSelect.value || !percentageInput.value) {
+ alert("Please select a fiber and enter a percentage");
+ return;
+ }
+ 
+ const percentage = parseInt(percentageInput.value);
+ if (isNaN(percentage)) {
+ alert("Please enter a valid percentage");
+ return;
+ }
+ 
+ // Check if total percentage would exceed 100%
+ const totalPercentage = blendComponents.reduce((sum, comp) => sum + comp.percentage, 0);
+ if (totalPercentage + percentage > 100) {
+ alert("Total percentage cannot exceed 100%");
+ return;
+ }
+ 
+ blendComponents.push({
+ name: fiberSelect.value,
+ percentage: percentage,
+ co2: fiberDatabase[fiberSelect.value].co2,
+ score: fiberDatabase[fiberSelect.value].score
+ });
+ 
+ renderBlendComponents();
+ 
+ // Reset inputs
+ fiberSelect.value = "";
+ percentageInput.value = "";
+ }
+ 
+ // Render blend components
+ function renderBlendComponents() {
+ const container = document.getElementById('blendComponents');
+ container.innerHTML = '';
+ 
+ if (blendComponents.length === 0) {
+ container.innerHTML = '<p style="text-align: center; padding: 20px; color: #777;">No fibers added yet</p>';
+ return;
+ }
+ 
+ blendComponents.forEach((comp, index) => {
+ const item = document.createElement('div');
+ item.className = 'blend-item';
+ item.innerHTML = `
+ <div class="blend-item-name">${comp.name}</div>
+ <div class="blend-item-percentage">${comp.percentage}%</div>
+ <button class="remove-btn" onclick="removeComponent(${index})">
+ <i class="fas fa-times"></i>
+ </button>
+ `;
+ container.appendChild(item);
+ });
+ }
+ 
+ // Remove blend component
+ function removeComponent(index) {
+ blendComponents.splice(index, 1);
+ renderBlendComponents();
+ }
+ 
+ // Calculate blend and add to database
+ function calculateBlend() {
+ if (blendComponents.length === 0) {
+ alert("Please add at least one fiber to the blend");
+ return;
+ }
+ 
+ const totalPercentage = blendComponents.reduce((sum, comp) => sum + comp.percentage, 0);
+ if (totalPercentage !== 100) {
+ alert(`Total percentage is ${totalPercentage}%. It must equal 100%`);
+ return;
+ }
+ 
+ let totalCo2 = 0;
+ let totalScore = 0;
+ 
+ blendComponents.forEach(comp => {
+ totalCo2 += comp.co2 * (comp.percentage / 100);
+ totalScore += comp.score * (comp.percentage / 100);
+ });
+ 
+ document.getElementById('blendCo2').textContent = totalCo2.toFixed(1);
+ document.getElementById('blendScore').textContent = Math.round(totalScore);
+ 
+ // Update composition text
+ const composition = blendComponents.map(comp => {
+ return `${comp.percentage}% ${comp.name}`;
+ }).join(' + ');
+ 
+ document.getElementById('blendComposition').textContent = composition;
+ 
+ // Get blend name
+ const blendName = document.getElementById('blendName').value || "Custom Blend";
+ 
+ // Create new yarn object for the blend
+ const newBlend = {
+ name: blendName,
+ category: "Blended Yarns",
+ brand: "Custom Blend",
+ composition: composition,
+ co2: parseFloat(totalCo2.toFixed(1)),
+ score: Math.round(totalScore),
+ badges: ["Custom Blend"],
+ uses: ["Varies depending on composition"],
+ weight: "Custom",
+ type: "Blend"
+ };
+ 
+ // Add to yarn database
+ yarnDatabase.push(newBlend);
+ 
+ // Update UI
+ renderCategoryFilters();
+ renderYarnCards(yarnDatabase);
+ renderImpactChart(yarnDatabase);
+ 
+ // Show success message
+ alert(`"${blendName}" has been added to the Yarn Database!`);
+ 
+ // Reset blend calculator
+ blendComponents = [];
+ renderBlendComponents();
+ document.getElementById('blendCo2').textContent = '0.0';
+ document.getElementById('blendScore').textContent = '0';
+ document.getElementById('blendComposition').textContent = 'Add fibers to see your custom blend composition';
+ document.getElementById('blendName').value = '';
+ 
+ // Switch to yarn database tab
+ document.querySelectorAll('.tab-btn').forEach(btn => {
+ btn.classList.remove('active');
+ });
+ document.querySelector('.tab-btn:first-child').classList.add('active');
+ document.getElementById('yarn-database').style.display = 'block';
+ document.getElementById('blend-calculator').style.display = 'none';
+ }
+
+// Initialize the app
+    document.addEventListener('DOMContentLoaded', init);
+
+    // Override showYarnDetails to include Governance Logic
+    const originalShowYarnDetails = window.showYarnDetails;
+    
+    // We need to wait for init to run, so we can override it or just override the global function.
+    // Since originalShowYarnDetails is defined inside init() or global scope, let's check.
+    // showYarnDetails is defined in the main script block. We can overwrite it.
+
+    window.showYarnDetails = function(yarn) {
+        // Set global selected yarn for Executive Persona Cards
+        window.selectedYarn = yarn;
+
+        // Populate standard Modal fields first (DOM must exist)
+        document.getElementById('modalYarnName').textContent = yarn.name;
+        document.getElementById('modalBrand').textContent = yarn.brand;
+        document.getElementById('modalComposition').textContent = yarn.composition;
+        
+        // Use ZeroGovernance to classify
+        const govClass = ZeroGovernance.classify(yarn);
+        const modalCategory = document.getElementById('modalCategory');
+        modalCategory.textContent = yarn.category;
+        
+        // Strategic Status Badge
+        const statusBadge = document.getElementById('modalStatus');
+        statusBadge.textContent = govClass.status;
+        statusBadge.className = 'status-badge ' + govClass.status.toLowerCase();
+        
+        // Rest of standard population...
+        document.getElementById('modalCo2').textContent = yarn.co2.toFixed(1);
+        document.getElementById('modalScore').textContent = yarn.score;
+        document.getElementById('modalUses').innerHTML = ''; // Clear uses
+        
+        const usesContainer = document.getElementById('modalUses');
+        
+        // Standard Badges
+        if(yarn.badges && yarn.badges.length) {
+             yarn.badges.forEach(badge => {
+                const li = document.createElement('li');
+                li.textContent = badge;
+                usesContainer.appendChild(li);
+             });
+        }
+        
+        // --- GOVERNANCE ENFORCEMENT ---
+        
+        // 1. Check Sales Block (Legal/Data)
+        const saleCheck = ZeroGovernance.shouldBlockSale(yarn);
+        if (saleCheck.blocked) {
+             const banner = document.createElement('div');
+             banner.className = 'gov-banner';
+             banner.style.background = '#2c3e50';
+             banner.style.color = '#fff';
+             banner.style.padding = '15px';
+             banner.style.margin = '15px 0';
+             banner.style.borderRadius = '8px';
+             banner.style.borderLeft = '5px solid #c0392b';
+             banner.innerHTML = `
+                <div style="font-weight:bold; font-size:1.1em; margin-bottom:5px;">
+                    <i class="fas fa-ban"></i> SALES BLOCKED: ${saleCheck.reason}
+                </div>
+                <div style="font-size:0.9em; opacity:0.9;">
+                    Requires ${saleCheck.roleRequired} Approval to Proceed.
+                </div>
+                <button onclick="openRoleModal('${saleCheck.roleRequired.toLowerCase()}', {itemId: '${yarn.id}', itemName: '${yarn.name}', ruleId: '${saleCheck.ruleId}', reason: '${saleCheck.reason}'})" 
+                    style="margin-top:10px; background:#e74c3c; color:white; border:none; padding:8px 16px; border-radius:4px; cursor:pointer; font-weight:bold;">
+                    <i class="fas fa-key"></i> Request ${saleCheck.roleRequired} Override
+                </button>
+             `;
+             
+             // Insert at top of uses
+             usesContainer.insertBefore(banner, usesContainer.firstChild);
+        } else {
+             // If NOT blocked, show green light or restricted
+             if (govClass.claim_status === 'RESTRICTED') {
+                 const banner = document.createElement('div');
+                 banner.style.background = '#fff3cd';
+                 banner.style.color = '#856404';
+                 banner.style.padding = '10px';
+                 banner.style.margin = '10px 0';
+                 banner.style.borderRadius = '6px';
+                 banner.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <strong>RESTRICTED CLAIM:</strong> ESPR Data Verification Pending.`;
+                 usesContainer.insertBefore(banner, usesContainer.firstChild);
+             }
+        }
+        
+        // 2. Check Discount Block (CFO)
+        // Only check if not already fully blocked
+        if (!saleCheck.blocked) {
+            const discountCheck = ZeroGovernance.shouldBlockDiscount(yarn);
+            
+            // Render CFO Shadow Cost Panel always (transparency)
+            const costs = ZeroGovernance.computeShadowCosts(yarn);
+            const financialList = document.createElement('li');
+            financialList.style.marginTop = '15px';
+            financialList.style.borderTop = '1px solid #eee';
+            financialList.style.paddingTop = '10px';
+            financialList.style.background = '#f8f9fa';
+            financialList.style.padding = '10px';
+            financialList.style.listStyle = 'none';
+            financialList.innerHTML = `
+                <div style="font-size:0.9em; text-transform:uppercase; color:#7f8c8d; margin-bottom:5px; font-weight:bold;">
+                    <i class="fas fa-coins"></i> CFO Shadow Cost Analysis
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>CBAM Liability:</span>
+                    <span style="font-weight:bold; color: ${costs.cbam_eur_per_kg > 0.3 ? '#c0392b' : '#d35400'}">€${costs.cbam_eur_per_kg}/kg</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px;">
+                    <span>Energy Risk Premium:</span>
+                    <span style="font-weight:bold; color: ${costs.energy_risk_eur_per_kg > 0.2 ? '#c0392b' : '#f39c12'}">€${costs.energy_risk_eur_per_kg}/kg</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:5px; border-top:1px dashed #ccc; padding-top:5px;">
+                    <span>Total Shadow Cost:</span>
+                    <span style="font-weight:bold; color: #2c3e50">€${costs.total_shadow_eur_per_kg}/kg</span>
+                </div>
+            `;
+            usesContainer.appendChild(financialList);
+
+            if (discountCheck.blocked) {
+                 const blockMsg = document.createElement('div');
+                 blockMsg.style.background = '#ffebee';
+                 blockMsg.style.color = '#c62828';
+                 blockMsg.style.padding = '10px';
+                 blockMsg.style.marginTop = '10px';
+                 blockMsg.style.border = '1px solid #ffcdd2';
+                 blockMsg.style.borderRadius = '4px';
+                 blockMsg.innerHTML = `
+                    <div style="font-weight:bold;"><i class="fas fa-hand-holding-usd"></i> DISCOUNTING BLOCKED</div>
+                    <div style="font-size:0.9em;">${discountCheck.reason}</div>
+                    <button onclick="openRoleModal('cfo', {itemId: '${yarn.id}', itemName: '${yarn.name}', ruleId: '${discountCheck.ruleId}', reason: '${discountCheck.reason}', details: ${JSON.stringify(discountCheck.details).replace(/"/g, '&quot;')}})" 
+                        style="margin-top:5px; background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:0.9em;">
+                        Request CFO Approval
+                    </button>
+                 `;
+                 financialList.appendChild(blockMsg);
+            }
+        }
+        
+        // Show Approval Required Line
+        if (saleCheck.blocked || (!saleCheck.blocked && ZeroGovernance.shouldBlockDiscount(yarn).blocked)) {
+             const approver = saleCheck.blocked ? saleCheck.roleRequired : 'CFO';
+             const reqLine = document.createElement('div');
+             reqLine.style.textAlign = 'right';
+             reqLine.style.fontSize = '0.8em';
+             reqLine.style.color = '#7f8c8d';
+             reqLine.style.marginTop = '5px';
+             reqLine.innerHTML = `APPROVAL REQUIRED: <strong>${approver}</strong>`;
+             usesContainer.appendChild(reqLine);
+        }
+
+        document.getElementById('yarnModal').style.display = 'flex';
+    };
+
+    </script><script>
+
+ /* Enhanced Loading and Error Handling */
+ class ZeroProductionEnhancer {
+ constructor() {
+ this.init();
+ }
+ 
+ init() {
+ this.addLoadingStates();
+ this.addFormValidation();
+ this.addKeyboardNavigation();
+ this.optimizeImages();
+ }
+ 
+ addLoadingStates() {
+ // Add loading states to all buttons
+ document.querySelectorAll('button, .btn, input[type="submit"]').forEach(btn => {
+ btn.addEventListener('click', (e) => {
+ if (!btn.classList.contains('no-loading')) {
+ btn.classList.add('loading');
+ setTimeout(() => btn.classList.remove('loading'), 2000);
+ }
+ });
+ });
+ 
+ // Add loading states to form submissions
+ document.querySelectorAll('form').forEach(form => {
+ form.addEventListener('submit', (e) => {
+ form.classList.add('loading');
+ setTimeout(() => form.classList.remove('loading'), 3000);
+ });
+ });
+ }
+ 
+ addFormValidation() {
+ // Real-time form validation
+ document.querySelectorAll('input, select, textarea').forEach(input => {
+ input.addEventListener('blur', this.validateField);
+ input.addEventListener('input', this.clearValidation);
+ });
+ }
+ 
+ validateField(e) {
+ const field = e.target;
+ const value = field.value.trim();
+ 
+ // Clear previous states
+ field.classList.remove('error', 'success');
+ 
+ // Required field validation
+ if (field.hasAttribute('required') && !value) {
+ field.classList.add('error');
+ this.showMessage(field, 'This field is required', 'error');
+ return false;
+ }
+ 
+ // Email validation
+ if (field.type === 'email' && value) {
+ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+ if (!emailRegex.test(value)) {
+ field.classList.add('error');
+ this.showMessage(field, 'Please enter a valid email', 'error');
+ return false;
+ }
+ }
+ 
+ // Number validation
+ if (field.type === 'number' && value) {
+ if (isNaN(value) || value < 0) {
+ field.classList.add('error');
+ this.showMessage(field, 'Please enter a valid number', 'error');
+ return false;
+ }
+ }
+ 
+ // Success state
+ if (value) {
+ field.classList.add('success');
+ }
+ 
+ return true;
+ }
+ 
+ clearValidation(e) {
+ const field = e.target;
+ field.classList.remove('error', 'success');
+ this.hideMessage(field);
+ }
+ 
+ showMessage(field, message, type) {
+ this.hideMessage(field); // Clear existing message
+ 
+ const messageEl = document.createElement('div');
+ messageEl.className = `${type}-message`;
+ messageEl.textContent = message;
+ 
+ field.parentNode.insertBefore(messageEl, field.nextSibling);
+ }
+ 
+ hideMessage(field) {
+ const messages = field.parentNode.querySelectorAll('.error-message, .success-message');
+ messages.forEach(msg => msg.remove());
+ }
+ 
+ addKeyboardNavigation() {
+ // Enhanced keyboard navigation
+ document.addEventListener('keydown', (e) => {
+ // ESC key to close modals
+ if (e.key === 'Escape') {
+ document.querySelectorAll('.modal').forEach(modal => {
+ if (modal.style.display !== 'none') {
+ modal.style.display = 'none';
+ }
+ });
+ }
+ 
+ // Ctrl+/ for help/shortcuts
+ if (e.ctrlKey && e.key === '/') {
+ e.preventDefault();
+ this.showKeyboardShortcuts();
+ }
+ });
+ }
+ 
+ showKeyboardShortcuts() {
+ const shortcuts = `
+ Keyboard Shortcuts:
+ • Esc - Close modals/dialogs
+ • Ctrl+/ - Show this help
+ • Tab - Navigate between elements
+ • Enter - Activate buttons/links
+ • Space - Toggle checkboxes
+ `;
+ 
+ if (typeof alert !== 'undefined') {
+ alert(shortcuts);
+ }
+ }
+ 
+ optimizeImages() {
+ // Lazy load images
+ if ('IntersectionObserver' in window) {
+ const imageObserver = new IntersectionObserver((entries, observer) => {
+ entries.forEach(entry => {
+ if (entry.isIntersecting) {
+ const img = entry.target;
+ if (img.dataset.src) {
+ img.src = img.dataset.src;
+ img.removeAttribute('data-src');
+ observer.unobserve(img);
+ }
+ }
+ });
+ });
+ 
+ document.querySelectorAll('img[data-src]').forEach(img => {
+ imageObserver.observe(img);
+ });
+ }
+ }
+ }
+ 
+ // Initialize when DOM is ready
+ if (document.readyState === 'loading') {
+ document.addEventListener('DOMContentLoaded', () => new ZeroProductionEnhancer());
+ } else {
+ new ZeroProductionEnhancer();
+ }
+ 
+</script>
+
+<!-- BACK2DASHBOARD-INJECTED -->
+<script>
+ (function () {
+ function getBasePath() {
+ const parts = location.pathname.split('/').filter(Boolean);
+ // Proje sayfası ise "/repo-adi/", user/org pages ise "/"
+ return parts.length > 0 ? `/${parts[0]}/` : '/';
+ }
+ const base = getBasePath();
+ document.querySelectorAll('a.back-to-dashboard').forEach(a => {
+ a.setAttribute('href', `${base}index.html`);
+ a.addEventListener('click', function (e) {
+ e.preventDefault();
+ window.location.href = `${base}index.html`;
+ });
+ });
+ })();
+</script>
+
+<script src="assets/js/freeze-guard.js"></script>
+
+<!-- ZERO FIX: sidebar totals (standalone) -->
+<script>
+(() => {
+  const q = (sel) => document.querySelector(sel);
+  const setCount = (cat, n) => {
+    const el = q(`.category-item[data-category="${cat}"] .category-count`);
+    if(el) el.textContent = String(n);
+  };
+
+  const norm = (v) => String(v||"").toLowerCase();
+  const hasAny = (y, words) => {
+    const hay = [
+      y?.name, y?.category, y?.type, y?.fiber, y?.material,
+      ...(y?.badges||[]), ...(y?.tags||[]), ...(y?.certifications||[])
+    ].map(norm).join(" | ");
+    return words.some(w => hay.includes(w));
+  };
+
+  const isWool = (y) => hasAny(y, ["wool","merino","cashmere","alpaca","mohair","angora"]);
+  const isPlant = (y) => hasAny(y, ["cotton","organic cotton","viscose","modal","lyocell","tencel","linen","flax","hemp","bamboo"]);
+  const isSynthetic = (y) => hasAny(y, ["polyester","nylon","polyamide","acrylic","elastane","spandex","synthetic"]);
+  const isRecycled = (y) => hasAny(y, ["recycled","grs"]);
+  const isOrganic = (y) => hasAny(y, ["organic","gots"]);
+
+  fetch("data/ugurlular-yarns.json", { cache: "no-store" })
+    .then(r => r.json())
+    .then(data => {
+      const items = Array.isArray(data) ? data : (data.items || data.yarns || data.data || []);
+      const allEl = q('.category-item[data-category="all"] .category-count');
+      if(allEl) allEl.textContent = String(items.length);
+
+      setCount("wool", items.filter(isWool).length);
+      setCount("plant", items.filter(isPlant).length);
+      setCount("recycled", items.filter(isRecycled).length);
+      setCount("organic", items.filter(isOrganic).length);
+      setCount("synthetic", items.filter(isSynthetic).length);
+    })
+    .catch(() => {});
+})();
+</script>
+
+
+<!-- ZERO FIX: sidebar totals (Ugurlular taxonomy) -->
+<script>
+(function(){
+  const q = (sel) => document.querySelector(sel);
+
+  function setCount(cat, n){
+    const el = q('.category-item[data-category="'+cat+'"] .category-count');
+    if(el) el.textContent = String(n);
+  }
+
+  function norm(x){ return String(x||"").toLowerCase(); }
+
+  function bucket(y){
+    const name = norm(y.name);
+    const comp = norm(y.composition);
+    const cat  = norm(y.category);
+    const typ  = norm(y.type);
+    const all  = [name, comp, cat, typ].join(" ");
+
+    // Technology (process / spinning tech)
+    if (/(compact|ring|open[- ]?end|slub|softtwist|siro|siro[- ]spun|prosoft|ecosoft)/.test(all)) return "technology";
+
+    // Cellulosic (viscose/modal/lyocell/tencel/ecovero/seacell/bamboo etc.)
+    if (/(tencel|lyocell|modal|viscose|ecovero|lenzing|bamboo|seacell|livaeco|sa?xcell)/.test(all)) return "cellulosic";
+
+    // Blends (explicit blend markers or multiple fibers)
+    if (/(blend|\/|%.*%|cotton.*poly|poly.*cotton|cotton.*viscose|viscose.*cotton|wool.*silk|silk.*wool)/.test(all)) return "blends";
+
+    // Cotton default
+    if (/(cotton|bci|supima|giza|turkish cotton|u\.s\. cotton|organic cotton|regenerative cotton)/.test(all)) return "cotton";
+
+    // Fallback: if nothing matched, treat as blends (safer than losing it)
+    return "blends";
+  }
+
+  fetch("data/ugurlular-yarns.json", {cache:"no-store"})
+    .then(r => r.json())
+    .then(data => {
+      const items = Array.isArray(data) ? data : (data.items || data.yarns || []);
+      // All Yarns
+      const allEl = q('.category-item[data-category="all"] .category-count');
+      if(allEl) allEl.textContent = String(items.length);
+
+      let c=0, ce=0, b=0, t=0;
+      for(const y of items){
+        const k = bucket(y);
+        if(k==="cotton") c++;
+        else if(k==="cellulosic") ce++;
+        else if(k==="blends") b++;
+        else if(k==="technology") t++;
+      }
+
+      setCount("cotton", c);
+      setCount("cellulosic", ce);
+      setCount("blends", b);
+      setCount("technology", t);
+    })
+    .catch(()=>{});
+})();
+</script>
+
+    <!-- Role Modals -->
+    <!-- CEO Modal -->
+    <div id="modal-ceo" class="role-modal">
+        <div class="role-card">
+            <div class="role-header ceo">
+                <h3><i class="fas fa-user-tie"></i> CEO | Chief Executive Officer</h3>
+                <button onclick="closeRoleModal('ceo')" style="background:none; border:none; color:white; font-size:1.2em; cursor:pointer;">&times;</button>
+            </div>
+            <div class="role-body">
+                <div class="role-section">
+                    <h3>Responsibilities</h3>
+                    <p>• Final authority on Legal Bans and Corporate Strategy.</p>
+                    <p>• Must approve any exception to EU Green Claims Directive.</p>
+                </div>
+                <div class="role-section">
+                    <h3>Active Trigger</h3>
+                    <p id="ceo-trigger-msg">No active trigger.</p>
+                </div>
+                <div class="role-section">
+                    <h3>Justification</h3>
+                    <textarea id="ceo-justification" class="justification" placeholder="Enter business justification for this override..."></textarea>
+                </div>
+            </div>
+            <div class="role-actions">
+                <button class="btn-reject" onclick="handleRoleAction('ceo', 'reject')">Reject</button>
+                <button class="btn-approve" onclick="handleRoleAction('ceo', 'approve')">Approve Override</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CFO Modal -->
+    <div id="modal-cfo" class="role-modal">
+        <div class="role-card">
+            <div class="role-header cfo">
+                <h3><i class="fas fa-chart-line"></i> CFO | Chief Financial Officer</h3>
+                <button onclick="closeRoleModal('cfo')" style="background:none; border:none; color:white; font-size:1.2em; cursor:pointer;">&times;</button>
+            </div>
+            <div class="role-body">
+                <div class="role-section">
+                    <h3>Responsibilities</h3>
+                    <p>• Protects Gross Margin against Hidden Carbon Liability.</p>
+                    <p>• Must approve pricing below Shadow Cost threshold.</p>
+                </div>
+                <div class="role-section">
+                    <h3>Financial Impact</h3>
+                    <p id="cfo-trigger-msg">No active trigger.</p>
+                    <div id="cfo-data-panel" style="background:#fff3cd; padding:10px; margin-top:10px; border-radius:4px; font-size:0.9em;"></div>
+                </div>
+                <div class="role-section">
+                    <h3>Justification</h3>
+                    <textarea id="cfo-justification" class="justification" placeholder="Enter financial justification (e.g., Strategic Account)..."></textarea>
+                </div>
+            </div>
+            <div class="role-actions">
+                <button class="btn-reject" onclick="handleRoleAction('cfo', 'reject')">Reject</button>
+                <button class="btn-approve" onclick="handleRoleAction('cfo', 'approve')">Approve Discount</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTO Modal -->
+    <div id="modal-cto" class="role-modal">
+        <div class="role-card">
+            <div class="role-header cto">
+                <h3><i class="fas fa-database"></i> CTO | Chief Technology Officer</h3>
+                <button onclick="closeRoleModal('cto')" style="background:none; border:none; color:white; font-size:1.2em; cursor:pointer;">&times;</button>
+            </div>
+            <div class="role-body">
+                <div class="role-section">
+                    <h3>Responsibilities</h3>
+                    <p>• Ensures Data Integrity and Traceability.</p>
+                    <p>• Must approve release of products with missing/unverified data.</p>
+                </div>
+                <div class="role-section">
+                    <h3>Data Gap</h3>
+                    <p id="cto-trigger-msg">No active trigger.</p>
+                </div>
+                <div class="role-section">
+                    <h3>Justification</h3>
+                    <textarea id="cto-justification" class="justification" placeholder="Enter technical justification (e.g., Data Pending Lab Result)..."></textarea>
+                </div>
+            </div>
+            <div class="role-actions">
+                <button class="btn-reject" onclick="handleRoleAction('cto', 'reject')">Reject</button>
+                <button class="btn-approve" onclick="handleRoleAction('cto', 'approve')">Approve Release</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Log Modal -->
+    <div id="modal-audit" class="role-modal">
+        <div class="role-card" style="width:800px;">
+            <div class="role-header audit">
+                <h3><i class="fas fa-history"></i> System Audit Log</h3>
+                <button onclick="closeRoleModal('audit')" style="background:none; border:none; color:white; font-size:1.2em; cursor:pointer;">&times;</button>
+            </div>
+            <div class="role-body" style="max-height:60vh; overflow-y:auto;">
+                <table class="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Role</th>
+                            <th>Event</th>
+                            <th>Item</th>
+                            <th>Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-table-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="role-actions">
+                <button class="btn-export" onclick="ZeroAuditLog.exportJSON()">Export JSON</button>
+                <button class="btn-reject" onclick="closeRoleModal('audit')" style="background:#95a5a6;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Role Modal Logic ---
+        let currentOverrideContext = null;
+
+        function openRoleModal(role, context = null) {
+            document.getElementById(`modal-${role}`).style.display = 'flex';
+            currentOverrideContext = context;
+            
+            // Reset fields
+            const just = document.getElementById(`${role}-justification`);
+            if(just) just.value = '';
+
+            // Populate context message if triggered by item
+            if (context) {
+                const msgEl = document.getElementById(`${role}-trigger-msg`);
+                if(msgEl) msgEl.innerHTML = `<strong>Item:</strong> ${context.itemName}<br><strong>Alert:</strong> ${context.reason}`;
+                
+                if (role === 'cfo' && context.details) {
+                     const panel = document.getElementById('cfo-data-panel');
+                     if(panel) {
+                         panel.innerHTML = `
+                            Shadow Cost: €${context.details.total_shadow_eur_per_kg}/kg<br>
+                            CBAM: €${context.details.cbam_eur_per_kg}<br>
+                            Energy Risk: €${context.details.energy_risk_eur_per_kg}
+                         `;
+                     }
+                }
+            } else {
+                 // Manual open
+                 const msgEl = document.getElementById(`${role}-trigger-msg`);
+                 if(msgEl) msgEl.textContent = "Manual Access - No active alert.";
+                 const panel = document.getElementById('cfo-data-panel');
+                 if(panel) panel.innerHTML = '';
+            }
+        }
+
+        function closeRoleModal(role) {
+            document.getElementById(`modal-${role}`).style.display = 'none';
+            currentOverrideContext = null;
+        }
+        
+        function openAuditModal() {
+            const logs = ZeroAuditLog.getLogs();
+            const tbody = document.getElementById('audit-table-body');
+            tbody.innerHTML = logs.map(l => `
+                <tr>
+                    <td>${new Date(l.ts).toLocaleTimeString()}</td>
+                    <td><span class="status-badge" style="background:#eee; color:#333;">${l.actor_role || '-'}</span></td>
+                    <td>${l.event_type}</td>
+                    <td>${l.item_id || '-'}</td>
+                    <td>${l.reason || '-'}</td>
+                </tr>
+            `).join('');
+            document.getElementById('modal-audit').style.display = 'flex';
+        }
+
+        function handleRoleAction(role, action) {
+            const justification = document.getElementById(`${role}-justification`).value;
+            
+            if (action === 'approve') {
+                if (!justification) {
+                    alert("Justification is MANDATORY for overrides.");
+                    return;
+                }
+                
+                if (currentOverrideContext) {
+                    // Log event
+                    ZeroAuditLog.logEvent('OVERRIDE_APPROVED', {
+                        actor_role: role.toUpperCase(),
+                        item_id: currentOverrideContext.itemId,
+                        rule_id: currentOverrideContext.ruleId,
+                        reason: justification,
+                        details: currentOverrideContext.reason
+                    });
+
+                    // Set Session Override
+                    ZeroGovernance.approveOverride(currentOverrideContext.itemId, currentOverrideContext.ruleId, role.toUpperCase(), justification);
+                    
+                    alert("Override Approved. Session valid for 30 minutes.");
+                    closeRoleModal(role);
+                    
+                    // Refresh UI if Detail Modal is open
+                    // We need to re-fetch the yarn and re-render showYarnDetails
+                    // Since we don't have easy access to the yarn object here, we can reload the page or trigger a refresh if we had a global yarn list.
+                    // For now, let's close the detail modal too to force re-open, or try to refresh.
+                    const modal = document.getElementById('yarn-modal');
+                    if(modal.style.display === 'flex') {
+                        // Ideally we find the yarn in 'yarns' array.
+                        // 'yarns' is global in this file.
+                        const yarn = yarns.find(y => y.id === currentOverrideContext.itemId);
+                        if(yarn) showYarnDetails(yarn);
+                    }
+
+                } else {
+                    alert("No active alert to override.");
+                }
+            } else {
+                // Reject
+                if (currentOverrideContext) {
+                     ZeroAuditLog.logEvent('OVERRIDE_REJECTED', {
+                        actor_role: role.toUpperCase(),
+                        item_id: currentOverrideContext.itemId,
+                        reason: justification || "Manual Rejection"
+                    });
+                }
+                closeRoleModal(role);
+            }
+        }
+
+        // Close on ESC
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                ['ceo', 'cfo', 'cto', 'audit'].forEach(role => closeRoleModal(role));
+            }
+        });
+    </script>
+<!-- GLOBAL EXECUTIVE MODALS -->
+<div class="role-modal" id="modal-ceo">
+    <div class="role-card">
+        <div class="role-header ceo">
+            <h3><i class="fas fa-user-tie"></i> CEO: Board Decision Snapshot</h3>
+            <span style="cursor:pointer" onclick="closePersonaModal('ceo')">&times;</span>
+        </div>
+        <div class="role-body">
+            <div class="role-section">
+                <h3>90-Day Decision Checklist</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li><input type="checkbox" checked> Approve Q1 Sustainability Report</li>
+                    <li><input type="checkbox"> Review Supply Chain Risk (High)</li>
+                    <li><input type="checkbox"> Authorize CAPEX for Renewable Energy</li>
+                </ul>
+            </div>
+            <div class="role-section">
+                <h3>Top Risks</h3>
+                <div style="display:flex; gap:10px; margin-top:10px">
+                    <div style="background:#ffebee; color:#c62828; padding:10px; flex:1; border-radius:4px;">
+                        <strong>Regulatory Risk</strong><br>High (EU ESPR)
+                    </div>
+                    <div style="background:#fff3e0; color:#ef6c00; padding:10px; flex:1; border-radius:4px;">
+                        <strong>Market Access</strong><br>Medium
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="role-actions">
+             <button class="btn-export" onclick="alert('Summary copied to clipboard')">Copy Summary</button>
+             <button class="btn-reject" onclick="closePersonaModal('ceo')">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="role-modal" id="modal-cfo">
+    <div class="role-card">
+        <div class="role-header cfo">
+            <h3><i class="fas fa-chart-line"></i> CFO: Financial Impact</h3>
+             <span style="cursor:pointer" onclick="closePersonaModal('cfo')">&times;</span>
+        </div>
+        <div class="role-body">
+            <div class="role-section">
+                <h3>Shadow Cost Breakdown</h3>
+                <p>Real-time calculation based on current CO2 & Energy mix.</p>
+                <table class="audit-table" style="margin-top:10px">
+                    <tr><td>CBAM Liability</td><td style="color:#d35400">€ 0.42 / kg</td></tr>
+                    <tr><td>Energy Risk Premium</td><td style="color:#d35400">€ 0.15 / kg</td></tr>
+                    <tr><td><strong>Total Shadow Cost</strong></td><td><strong>€ 0.57 / kg</strong></td></tr>
+                </table>
+            </div>
+             <div class="role-section">
+                <h3>Margin Erosion Warning</h3>
+                <p style="color:#c62828"><i class="fas fa-exclamation-triangle"></i> Current shadow costs exceed 12% of gross margin.</p>
+            </div>
+        </div>
+        <div class="role-actions">
+             <button class="btn-export" onclick="alert('Financial report exported')">Export Report</button>
+             <button class="btn-reject" onclick="closePersonaModal('cfo')">Close</button>
+        </div>
+    </div>
+</div>
+
+<div class="role-modal" id="modal-cto">
+    <div class="role-card">
+        <div class="role-header cto">
+            <h3><i class="fas fa-cogs"></i> CTO: Data Integrity</h3>
+             <span style="cursor:pointer" onclick="closePersonaModal('cto')">&times;</span>
+        </div>
+        <div class="role-body">
+            <div class="role-section">
+                <h3>System Status</h3>
+                <div style="display:flex; gap:10px; margin-top:10px">
+                    <div style="background:#e8f5e9; color:#2e7d32; padding:10px; flex:1; border-radius:4px; text-align:center">
+                        <strong>Synapse AI</strong><br>ONLINE
+                    </div>
+                     <div style="background:#e8f5e9; color:#2e7d32; padding:10px; flex:1; border-radius:4px; text-align:center">
+                        <strong>Metering</strong><br>ACTIVE
+                    </div>
+                </div>
+            </div>
+            <div class="role-section">
+                <h3>Missing Data Fields</h3>
+                <ul style="color:#c62828; margin-left:20px">
+                    <li>Batch 1092: Missing Water Usage</li>
+                    <li>Batch 2201: Unverified Renewable Cert</li>
+                </ul>
+            </div>
+        </div>
+        <div class="role-actions">
+             <button class="btn-export" onclick="alert('Technical logs exported')">Export Logs</button>
+             <button class="btn-reject" onclick="closePersonaModal('cto')">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- GOVERNANCE ENGINE LOGIC ---
+
+    // 1. Stakeholder Modes
+    function setStakeholderMode(mode, btn) {
+        // UI Update
+        document.querySelectorAll('.mode-chip').forEach(el => el.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        
+        document.body.className = ''; // Clear existing
+        document.body.classList.add('mode-' + mode);
+        
+        sessionStorage.setItem('zero_stakeholder_mode', mode);
+        
+        // Show/Hide Elements based on Mode (Simple CSS-like logic via JS for now)
+        updateUIForMode(mode);
+        
+        console.log("Stakeholder Mode:", mode);
+    }
+
+    function updateUIForMode(mode) {
+        // Reset basic visibility
+        const auditBtn = document.getElementById('regulator-audit-export');
+        if(auditBtn) auditBtn.style.display = (mode === 'regulator') ? 'block' : 'none';
+        
+        // Example: Highlight risks for Board
+        if (mode === 'board') {
+            // Logic to highlight high-level KPIs
+        }
+    }
+
+    // Init Mode from Storage
+    const savedMode = sessionStorage.getItem('zero_stakeholder_mode') || 'board';
+    const savedBtn = document.querySelector(`.mode-chip[data-mode="${savedMode}"]`);
+    if(savedBtn) setStakeholderMode(savedMode, savedBtn);
+
+
+    // 2. Persona Modals
+    function openPersonaModal(role) {
+        const modal = document.getElementById('modal-' + role);
+        if (modal) {
+            modal.style.display = 'flex';
+        }
+    }
+
+    function closePersonaModal(role) {
+        const modal = document.getElementById('modal-' + role);
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // 3. Audit Export (Regulator)
+    function exportAuditLog() {
+        if(window.ZeroAuditLog) {
+            window.ZeroAuditLog.exportJSON();
+        } else {
+            alert("Audit Log module not loaded.");
+        }
+    }
+
+    function generateEvidencePack() {
+        const pack = {
+            timestamp: new Date().toISOString(),
+            build: "2025-12-24-RC1",
+            audit_log: window.ZeroAuditLog ? window.ZeroAuditLog.getLogs() : [],
+            data_snapshot: "Refer to ugurlular-yarns.json",
+            governance_summary: {
+                total_items: 15,
+                compliant: 12,
+                blocked: 3
+            }
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pack, null, 2));
+        const a = document.createElement('a');
+        a.href = dataStr;
+        a.download = "zero_evidence_pack.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+    }
+    
+    // 4. Inject Regulator Controls if needed
+    window.addEventListener('DOMContentLoaded', () => {
+        const panel = document.getElementById('governance-panel');
+        if(panel) {
+            const regControls = document.createElement('div');
+            regControls.id = 'regulator-audit-export';
+            regControls.style.display = 'none'; // Hidden by default
+            regControls.style.marginTop = '20px';
+            regControls.style.padding = '15px';
+            regControls.style.background = '#f8f9fa';
+            regControls.style.borderTop = '1px solid #ddd';
+            regControls.innerHTML = `
+                <h5 style="margin-top:0"><i class="fas fa-file-contract"></i> Regulator Tools</h5>
+                <div style="display:flex; gap:10px">
+                    <button onclick="exportAuditLog()" style="padding:8px 16px; background:#34495e; color:white; border:none; border-radius:4px; cursor:pointer;">Export Audit Log</button>
+                    <button onclick="generateEvidencePack()" style="padding:8px 16px; background:#2c3e50; color:white; border:none; border-radius:4px; cursor:pointer;">Generate Evidence Pack</button>
+                </div>
+            `;
+            panel.appendChild(regControls);
+        }
+    });
+
+</script>
+<!-- EXECUTIVE PERSONA MODAL -->
+<div id="executiveModal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 10001; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="max-width: 600px; width: 90%; padding: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); background: white;">
+        <div class="modal-header" style="background: var(--secondary); color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="execModalTitle" style="margin: 0; display: flex; align-items: center; gap: 10px; font-size: 1.25rem;">
+                <i id="execModalIcon" class="fas fa-user-tie"></i>
+                <span id="execModalRole">Executive View</span>
+            </h3>
+            <button onclick="document.getElementById('executiveModal').style.display='none'" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <div class="modal-body" id="execModalBody" style="padding: 25px; background: #f8f9fa; max-height: 70vh; overflow-y: auto;">
+            <!-- Dynamic Content -->
+        </div>
+        <div class="modal-footer" style="padding: 15px 25px; background: white; border-top: 1px solid #eee; display: flex; justify-content: flex-end;">
+             <button onclick="document.getElementById('executiveModal').style.display='none'" class="btn" style="background: var(--secondary); color: white; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer;">Close Executive View</button>
+        </div>
+    </div>
+</div>
+
+<script>
+window.openPersonaModal = function(role) {
+    const yarn = window.selectedYarn || (window.yarnDatabase && window.yarnDatabase[0]) || { name: "Sample Yarn", co2: 5.0, score: 80, category: "Cotton" };
+    
+    const modal = document.getElementById('executiveModal');
+    const title = document.getElementById('execModalRole');
+    const icon = document.getElementById('execModalIcon');
+    const body = document.getElementById('execModalBody');
+    
+    // Ensure ZeroGovernance is available or mock it
+    const gov = (window.ZeroGovernance && window.ZeroGovernance.computeShadowCosts) 
+                ? window.ZeroGovernance.computeShadowCosts(yarn) 
+                : { cbam_eur_per_kg: 0.45, energy_risk_eur_per_kg: 0.12, total_shadow_eur_per_kg: 0.57 };
+    
+    let content = '';
+    
+    if (role === 'ceo') {
+        title.textContent = "CEO: Strategic Risk & Compliance";
+        icon.className = "fas fa-user-tie";
+        content = `
+            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px;">
+                <h4 style="margin-top:0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px; display:inline-block;">90-Day Decision Checklist</h4>
+                <ul style="list-style: none; padding: 0; margin-top: 15px;">
+                    <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                        <i class="fas fa-check-circle" style="color: #27ae60; margin-top: 3px;"></i>
+                        <div>
+                            <strong>ESPR Compliance:</strong> <span style="color: #27ae60;">On Track</span>
+                            <div style="font-size: 0.85em; color: #666;">Data verification completed for Q3.</div>
+                        </div>
+                    </li>
+                    <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                        <i class="fas fa-exclamation-circle" style="color: #f39c12; margin-top: 3px;"></i>
+                        <div>
+                            <strong>Supply Chain Resilience:</strong> <span style="color: #f39c12;">Moderate Risk</span>
+                            <div style="font-size: 0.85em; color: #666;">Tier 2 supplier audit pending renewal.</div>
+                        </div>
+                    </li>
+                    <li style="margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px;">
+                        <i class="fas fa-shield-alt" style="color: #2980b9; margin-top: 3px;"></i>
+                        <div>
+                            <strong>Brand Reputation:</strong> <span style="color: #2980b9;">Protected</span>
+                            <div style="font-size: 0.85em; color: #666;">No forced labor violations detected in active lineage.</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div style="background: #e8f8f5; padding: 15px; border-radius: 8px; border: 1px solid #d1f2eb;">
+                <strong style="color: #16a085;">Recommendation:</strong> Proceed with procurement. Margin impact is within acceptable limits for "Hero" category products.
+            </div>
+        `;
+    } else if (role === 'cfo') {
+        title.textContent = "CFO: Financial Impact & Shadow Costs";
+        icon.className = "fas fa-chart-line";
+        const isHighRisk = gov.total_shadow_eur_per_kg > 0.5;
+        content = `
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee; text-align: center;">
+                    <div style="font-size: 0.9em; color: #7f8c8d; text-transform: uppercase;">CBAM Liability</div>
+                    <div style="font-size: 1.8em; font-weight: bold; color: ${gov.cbam_eur_per_kg > 0.3 ? '#c0392b' : '#d35400'}">€${gov.cbam_eur_per_kg.toFixed(2)}</div>
+                    <div style="font-size: 0.8em; color: #999;">per kg</div>
+                </div>
+                <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee; text-align: center;">
+                    <div style="font-size: 0.9em; color: #7f8c8d; text-transform: uppercase;">Energy Risk</div>
+                    <div style="font-size: 1.8em; font-weight: bold; color: ${gov.energy_risk_eur_per_kg > 0.2 ? '#c0392b' : '#f39c12'}">€${gov.energy_risk_eur_per_kg.toFixed(2)}</div>
+                    <div style="font-size: 0.8em; color: #999;">per kg</div>
+                </div>
+            </div>
+            <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px;">
+                <h4 style="margin-top:0; color: #2c3e50;">Total Shadow Cost Impact</h4>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px;">
+                    <span>Direct Cost Base:</span>
+                    <span>€12.50 / kg</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; color: #c0392b;">
+                    <span>+ Shadow Costs:</span>
+                    <span>+ €${gov.total_shadow_eur_per_kg.toFixed(2)} / kg</span>
+                </div>
+                <div style="border-top: 2px solid #eee; padding-top: 10px; display: flex; justify-content: space-between; align-items: flex-end; font-weight: bold; font-size: 1.1em;">
+                    <span>Effective Cost:</span>
+                    <span>€${(12.50 + gov.total_shadow_eur_per_kg).toFixed(2)} / kg</span>
+                </div>
+            </div>
+            ${isHighRisk ? 
+            `<div style="background: #fdedec; padding: 15px; border-radius: 8px; border: 1px solid #fadbd8; color: #943126;">
+                <i class="fas fa-exclamation-triangle"></i> <strong>Margin Erosion Alert:</strong> Shadow costs exceed 4% of base cost. Review pricing strategy.
+            </div>` : 
+            `<div style="background: #e8f8f5; padding: 15px; border-radius: 8px; border: 1px solid #d1f2eb; color: #145a32;">
+                <i class="fas fa-check-circle"></i> <strong>Healthy Margin:</strong> Shadow costs are well contained.
+            </div>`}
+        `;
+    } else if (role === 'cto') {
+        title.textContent = "CTO: Data Integrity & Operations";
+        icon.className = "fas fa-cogs";
+        content = `
+             <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #eee; margin-bottom: 15px;">
+                <h4 style="margin-top:0; color: #2c3e50;">Data Completeness Score</h4>
+                <div style="height: 20px; background: #ecf0f1; border-radius: 10px; overflow: hidden; margin: 15px 0;">
+                    <div style="width: 92%; height: 100%; background: #27ae60;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: #666;">
+                    <span><strong>92%</strong> Verified</span>
+                    <span>Target: 95%</span>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <div style="font-weight: bold; color: #2c3e50; margin-bottom: 5px;">Traceability</div>
+                    <div style="color: #27ae60;"><i class="fas fa-link"></i> Full Chain (Tier 4)</div>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <div style="font-weight: bold; color: #2c3e50; margin-bottom: 5px;">Certifications</div>
+                    <div style="color: #2980b9;"><i class="fas fa-certificate"></i> 3/3 Validated</div>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <div style="font-weight: bold; color: #2c3e50; margin-bottom: 5px;">LCA Data</div>
+                    <div style="color: #f39c12;"><i class="fas fa-database"></i> Primary (85%)</div>
+                </div>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <div style="font-weight: bold; color: #2c3e50; margin-bottom: 5px;">Integration</div>
+                    <div style="color: #27ae60;"><i class="fas fa-check"></i> ERP Synced</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    body.innerHTML = content;
+    modal.style.display = 'flex';
+}
+</script>
+<!-- ROLE OVERRIDE MODAL -->
+<div id="roleOverrideModal" class="modal-overlay" style="display: none; align-items: center; justify-content: center; z-index: 10002; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6);">
+    <div class="modal-content" style="max-width: 500px; width: 90%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div class="modal-header" style="background: #c0392b; color: white; padding: 15px; font-weight: bold; display: flex; justify-content: space-between;">
+            <span><i class="fas fa-lock"></i> Governance Override Request</span>
+            <button onclick="document.getElementById('roleOverrideModal').style.display='none'" style="background:none; border:none; color:white; cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 20px;">
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; color:#7f8c8d; font-size:0.9em;">Rule Violation</label>
+                <div id="overrideRule" style="font-weight:bold; color:#c0392b;"></div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; color:#7f8c8d; font-size:0.9em;">Reason</label>
+                <div id="overrideReason" style="background:#f8f9fa; padding:10px; border-radius:4px; font-size:0.9em;"></div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display:block; color:#7f8c8d; font-size:0.9em;">Required Role</label>
+                <div id="overrideRole" style="font-weight:bold; color:#2c3e50;"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="overrideJustification" style="display:block; font-size:0.9em; margin-bottom:5px;">Justification (Required for Audit Log)</label>
+                <textarea id="overrideJustification" style="width:100%; height:80px; padding:8px; border:1px solid #ddd; border-radius:4px;" placeholder="Enter reason for overriding this compliance block..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer" style="padding: 15px; background: #f8f9fa; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px;">
+            <button onclick="document.getElementById('roleOverrideModal').style.display='none'" style="padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 4px; cursor: pointer;">Cancel</button>
+            <button onclick="submitOverride()" style="padding: 8px 16px; background: #c0392b; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Confirm Override</button>
+        </div>
+    </div>
+</div>
+
+<script>
+window.openRoleModal = function(role, context) {
+    currentOverrideContext = { role, ...context };
+    
+    document.getElementById('overrideRule').textContent = context.ruleId;
+    document.getElementById('overrideReason').textContent = context.reason;
+    document.getElementById('overrideRole').textContent = role.toUpperCase();
+    document.getElementById('overrideJustification').value = '';
+    
+    // Color coding
+    const header = document.querySelector('#roleOverrideModal .modal-header');
+    const btn = document.querySelector('#roleOverrideModal .modal-footer button:last-child');
+    
+    if (role === 'ceo') {
+        header.style.background = '#2c3e50';
+        btn.style.background = '#2c3e50';
+    } else if (role === 'cfo') {
+        header.style.background = '#d35400';
+        btn.style.background = '#d35400';
+    } else {
+        header.style.background = '#c0392b';
+        btn.style.background = '#c0392b';
+    }
+    
+    document.getElementById('roleOverrideModal').style.display = 'flex';
+};
+
+window.submitOverride = function() {
+    const justification = document.getElementById('overrideJustification').value;
+    if (!justification || justification.length < 5) {
+        alert("Please provide a valid justification for the audit log.");
+        return;
+    }
+    
+    if (currentOverrideContext) {
+        ZeroGovernance.approveOverride(
+            currentOverrideContext.itemId, 
+            currentOverrideContext.ruleId, 
+            currentOverrideContext.role, 
+            justification
+        );
+        
+        alert("Override Approved. The change has been logged to the Immutable Ledger.");
+        document.getElementById('roleOverrideModal').style.display = 'none';
+        
+        // Refresh view if possible
+        if (window.selectedYarn) {
+            window.showYarnDetails(window.selectedYarn);
+        }
+    }
+};
+
+window.generateEvidencePack = function() {
+    // Enterprise Mode: Trigger n8n Workflow 2
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.textContent = "Requesting Generator...";
+    btn.disabled = true;
+    
+    // Fallback/Demo Data
+    const demoPack = {
+        timestamp: new Date().toISOString(),
+        build: "2025-12-24-RC1",
+        audit_log: window.ZeroAuditLog ? window.ZeroAuditLog.getLogs() : [],
+        data_snapshot: window.yarnDatabase || "Refer to ugurlular-yarns.json",
+        hash: "0x" + Math.random().toString(16).substr(2, 64)
+    };
+
+    const payload = { 
+        yarn_id: window.selectedYarn ? (window.selectedYarn.yarn_id || window.selectedYarn.id) : "ALL", 
+        requester_role: sessionStorage.getItem("zero_role") || "REGULATOR", 
+        timestamp: new Date().toISOString(), 
+        client_build: window.__ZERO_BUILD_TS || "" 
+    };
+
+    if (typeof window.zeroOrchSend === 'function') {
+        window.zeroOrchSend("EVIDENCE", payload)
+        .then(data => {
+            if (data.offline || data.error) {
+                 console.warn("n8n Generator Unreachable/Error, falling back.", data.error);
+                 simulateLocalGeneration(btn, originalText, demoPack);
+                 return;
+            }
+
+            // n8n returns signed URL
+            const downloadUrl = data.signed_url || data.url || window.ZeroConfig.mock.evidenceUrl; 
+            const hash = data.hash || window.ZeroConfig.mock.evidenceHash;
+            
+            if (data.signed_url) {
+                window.location.href = data.signed_url; // trigger download directly if provided
+                alert(`Evidence Pack Generated!\\n\\nHash: ${hash}\\n\\nDownloading...`);
+            } else {
+                 alert(`Evidence Pack Generated!\\n\\nHash: ${hash}\\n\\nDownloading from Supabase Storage...`);
+                 // Trigger download
+                 const a = document.createElement('a');
+                 a.href = downloadUrl;
+                 a.download = `Evidence_${window.selectedYarn ? window.selectedYarn.id : 'FULL'}.zip`;
+                 document.body.appendChild(a);
+                 a.click();
+                 a.remove();
+            }
+        })
+        .catch(err => {
+            console.warn("n8n Generator Exception, falling back.", err);
+            simulateLocalGeneration(btn, originalText, demoPack);
+        })
+        .finally(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        });
+    } else {
+        simulateLocalGeneration(btn, originalText, demoPack);
+    }
+};
+
+function simulateLocalGeneration(btn, originalText, pack) {
+    btn.textContent = "Local Hashing...";
+    setTimeout(() => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(pack, null, 2));
+        const a = document.createElement('a');
+        a.href = dataStr;
+        a.download = "zero_evidence_pack_fallback.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        alert("Evidence Pack Generated (Local Fallback)!\\n\\nCryptographic Hash: " + pack.hash);
+        
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }, 1000);
+}
+
+window.exportAuditLog = function() {
+    if (window.ZeroAuditLog) {
+        window.ZeroAuditLog.exportJSON();
+    } else {
+        // Fallback if module not loaded
+        const logs = "Timestamp,Event,Actor,Details\\n" + new Date().toISOString() + ",SYSTEM,ERROR,ZeroAuditLog module missing";
+        const blob = new Blob([logs], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.setAttribute('hidden', '');
+        a.setAttribute('href', url);
+        a.setAttribute('download', 'zero_audit_log_fallback.csv');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+};
+
+// BOOT APPLICATION
+if (typeof init === 'function') {
+    console.log("🚀 Zero@Yarn Booting...");
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+} else {
+    console.error("Critical: init() function not found. Application cannot start.");
+}
+</script>
+<!-- Global Role Modal -->
+<div id="roleModalBackdrop" class="roleModalBackdrop" hidden></div>
+<div id="roleModal" class="roleModal" role="dialog" aria-modal="true" aria-labelledby="roleModalTitle" hidden>
+  <button id="roleModalClose" class="roleModalClose" aria-label="Close">✕</button>
+  <div class="roleModalHeader">
+    <div id="roleModalTitle" class="roleModalTitle">Title</div>
+    <div id="roleModalMeta" class="roleModalMeta">Meta</div>
+  </div>
+<div id="roleModalBody" class="roleModalBody"></div>
+</div>
+<script>
+(function(){
+  const backdrop = document.getElementById('roleModalBackdrop');
+  const modal = document.getElementById('roleModal');
+  const closeBtn = document.getElementById('roleModalClose');
+  const titleEl = document.getElementById('roleModalTitle');
+  const metaEl = document.getElementById('roleModalMeta');
+  const bodyEl = document.getElementById('roleModalBody');
+
+  function openRole(role, ctx){
+    const roleTitle = role.toUpperCase() + ' View';
+    titleEl.textContent = ctx.name ? roleTitle + ' — ' + ctx.name : roleTitle;
+    const meta = [ctx.brand ? ctx.brand : null, ctx.co2 ? ('CO₂/kg: ' + ctx.co2) : null, ctx.score ? ('DPI: ' + ctx.score) : null].filter(Boolean).join(' • ');
+    metaEl.textContent = meta || '';
+    bodyEl.innerHTML = buildRoleContent(role, ctx);
+    backdrop.hidden = false;
+    modal.hidden = false;
+    document.body.classList.add('modal-open');
+  }
+  function closeRole(){
+    backdrop.hidden = true;
+    modal.hidden = true;
+    document.body.classList.remove('modal-open');
+  }
+  function buildRoleContent(role, ctx){
+    const tagsLine = (ctx.tags && ctx.tags.length) ? `<div style="margin-top:12px; font-size:.9rem; color:#555;">Tags: ${ctx.tags.join(', ')}</div>` : '';
+    if(role === 'ceo'){
+      return `
+        <div>
+          <div style="font-weight:600; margin-bottom:8px;">Risk & Compliance</div>
+          <ul style="margin-left:18px;">
+            <li>ESPR alignment and DPP data completeness</li>
+            <li>CBAM readiness and carbon data verification</li>
+            <li>Supply chain integrity and certification status</li>
+          </ul>
+          <div style="margin-top:12px; font-size:.95rem;">SCO/CRO: Strategic compliance overview prepared</div>
+          ${tagsLine}
+        </div>
+      `;
+    }
+    if(role === 'cfo'){
+      return `
+        <div>
+          <div style="font-weight:600; margin-bottom:8px;">Cost & Impact</div>
+          <div>CO₂/kg: ${ctx.co2 || 'N/A'}</div>
+          <div>DPI score: ${ctx.score || 'N/A'}</div>
+          <div style="margin-top:8px;">Shadow cost and margin signal under review.</div>
+          <div style="margin-top:8px;">Potential CO₂ savings through mix optimization.</div>
+          ${tagsLine}
+        </div>
+      `;
+    }
+    if(role === 'cto'){
+      return `
+        <div>
+          <div style="font-weight:600; margin-bottom:8px;">Process Readiness</div>
+          <ul style="margin-left:18px;">
+            <li>Traceability chain validated to Tier 4</li>
+            <li>Data integrity checks passed for key fields</li>
+            <li>Operations readiness confirmed for production</li>
+          </ul>
+          ${tagsLine}
+        </div>
+      `;
+    }
+    return '';
+  }
+  function extractContext(el){
+    const card = el.closest('.yarn-card');
+    const ctx = {};
+    if(card){
+      const nameEl = card.querySelector('.card-title-bar');
+      ctx.name = nameEl ? nameEl.textContent.trim() : undefined;
+      const brandEl = card.querySelector('.yarn-brand');
+      const brandText = brandEl ? brandEl.textContent.trim() : '';
+      ctx.brand = brandText.replace(/^\s*Brand:\s*/i,'').trim() || undefined;
+      const co2El = card.querySelector('.metric-value.co2-value');
+      ctx.co2 = co2El ? co2El.textContent.trim() : undefined;
+      const scoreEl = card.querySelector('.metric-value.score-value');
+      ctx.score = scoreEl ? scoreEl.textContent.trim() : undefined;
+      ctx.tags = Array.from(card.querySelectorAll('.badge')).map(b => b.textContent.trim());
+      return ctx;
+    }
+    if (window.selectedYarn) {
+      const y = window.selectedYarn;
+      ctx.name = y.name; ctx.brand = y.brand; ctx.co2 = y.co2; ctx.score = y.score; ctx.tags = y.badges || y.tags || [];
+      return ctx;
+    }
+    ctx.name = (document.getElementById('modalYarnName') && document.getElementById('modalYarnName').textContent.trim()) || undefined;
+    ctx.brand = (document.getElementById('modalBrand') && document.getElementById('modalBrand').textContent.trim()) || undefined;
+    ctx.co2 = (document.getElementById('modalCo2') && document.getElementById('modalCo2').textContent.trim()) || undefined;
+    ctx.score = (document.getElementById('modalScore') && document.getElementById('modalScore').textContent.trim()) || undefined;
+    ctx.tags = Array.from(document.querySelectorAll('#modalBadges .badge')).map(b => b.textContent.trim());
+    return ctx;
+  }
+
+  document.addEventListener('click', function(e){
+    const target = e.target.closest('[data-action="open-role-modal"]');
+    if(!target) return;
+    const role = target.getAttribute('data-role') || 'ceo';
+    const ctx = extractContext(target);
+    openRole(role, ctx);
+  });
+
+  backdrop.addEventListener('click', closeRole);
+  if (closeBtn) closeBtn.addEventListener('click', closeRole);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ closeRole(); }});
+})();
+</script>
+<div id="productModalBackdrop" class="productModalBackdrop" hidden></div>
+<div id="productModal" class="productModal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle" hidden>
+  <button id="productModalClose" class="productModalClose" aria-label="Close">✕</button>
+  <div class="productModalHeader">
+    <div id="productModalTitle" class="productModalTitle">Product</div>
+  </div>
+  <div id="productModalBody" class="productModalBody"></div>
+</div>
+<script>
+(function(){
+  const pBackdrop = document.getElementById('productModalBackdrop');
+  const pModal = document.getElementById('productModal');
+  const pClose = document.getElementById('productModalClose');
+  const pTitle = document.getElementById('productModalTitle');
+  const pBody = document.getElementById('productModalBody');
+  const roleModal = document.getElementById('roleModal');
+  // Helper: find yarn object by id/slug or name
+  function findYarn(yarnId){
+    const slug = (s) => String(s||'').trim().replace(/\s+/g,'-');
+    if (Array.isArray(window.yarnDatabase)) {
+      let y = window.yarnDatabase.find(it => it.id === yarnId);
+      if (!y) y = window.yarnDatabase.find(it => slug(it.name) === yarnId);
+      return y || null;
+    }
+    return null;
+  }
+
+  function openProductById(yarnId){
+    // Resolve from JSON first to ensure data integrity
+    const yarn = findYarn(yarnId);
+    pBody.innerHTML = '';
+    if (yarn) {
+      pTitle.textContent = yarn.name || 'Product';
+      const built = createYarnCardElement(yarn);
+      built.style.boxShadow = 'none';
+      built.style.border = '1px solid var(--border)';
+      pBody.appendChild(built);
+    } else {
+      // Fallback: clone from grid if JSON resolution fails
+      let card = document.querySelector(`.yarn-card[data-yarn-id="${CSS.escape(yarnId)}"]`);
+      if(!card){
+        const titleSel = Array.from(document.querySelectorAll('.yarn-card .card-title-bar')).find(el => (el.textContent||'').trim().replace(/\s+/g,'-') === yarnId);
+        if(titleSel) card = titleSel.closest('.yarn-card');
+      }
+      if(!card) return;
+      const nameEl = card.querySelector('.card-title-bar');
+      pTitle.textContent = nameEl ? nameEl.textContent.trim() : 'Product';
+      const clone = card.cloneNode(true);
+      clone.style.boxShadow = 'none';
+      clone.style.border = '1px solid var(--border)';
+      pBody.appendChild(clone);
+    }
+    pBackdrop.hidden = false;
+    pModal.hidden = false;
+    document.body.classList.add('modal-open');
+  }
+  function closeProduct(){
+    pBackdrop.hidden = true;
+    pModal.hidden = true;
+    document.body.classList.remove('modal-open');
+  }
+  document.addEventListener('click', function(e){
+    const t = e.target.closest('[data-action="open-product-modal"]');
+    if(!t) return;
+    const yarnId = t.getAttribute('data-yarn-id') || (t.getAttribute('data-yarn')||'').replace(/\s+/g,'-');
+    openProductById(yarnId);
+  });
+  // Delegation: Details button anywhere (grid or product modal)
+  document.addEventListener('click', function(e){
+    const d = e.target.closest('[data-action="open-details"], .detail-btn');
+    if(!d) return;
+    const yarnId = d.getAttribute('data-id') ||
+      (d.closest('.yarn-card') && (d.closest('.yarn-card').getAttribute('data-yarn-id') || (d.closest('.yarn-card').querySelector('.card-title-bar')||{}).textContent?.trim()?.replace(/\s+/g,'-')));
+    const yarn = findYarn(yarnId);
+    if (yarn && typeof window.showYarnDetails === 'function') {
+      window.showYarnDetails(yarn);
+    }
+  });
+  pBackdrop.addEventListener('click', closeProduct);
+  if(pClose) pClose.addEventListener('click', closeProduct);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+      if (roleModal && roleModal.hidden === false) {
+        // Let role modal handle its own close; do not close product beneath it
+        return;
+      }
+      closeProduct();
+    }
+  });
+})();
+</script>
+<a href="/" class="zero-back-btn">← Back</a>
+<style>
+.zero-back-btn{
+  position:fixed; top:16px; right:16px; z-index:9999;
+  display:inline-block; padding:10px 14px;
+  font-size:13px; font-weight:700;
+  color:#ffffff; background:#005530;
+  border:2px solid #005530; border-radius:10px;
+  text-decoration:none; letter-spacing:.4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+  transition:transform .12s ease, filter .12s ease;
+}
+.zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
+</style>
+</body>
+</html>

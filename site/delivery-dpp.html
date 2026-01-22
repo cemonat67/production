@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Order Delivery</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      /* SHOCK MODAL STYLES */
+      .shock-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2,21,78,0.85); backdrop-filter:blur(5px); z-index:9999; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s; }
+      .shock-overlay.active { opacity:1; pointer-events:all; }
+      .shock-modal { background:#fff; width:90%; max-width:600px; border-radius:12px; overflow:hidden; box-shadow:0 25px 50px rgba(0,0,0,0.5); transform:translateY(20px); transition:transform 0.3s; }
+      .shock-overlay.active .shock-modal { transform:translateY(0); }
+      .shock-header { background:#D51635; color:#fff; padding:20px; font-weight:700; font-size:1.2rem; display:flex; justify-content:space-between; align-items:center; }
+      .shock-body { padding:30px; }
+      .shock-metric { font-size:3rem; font-weight:800; color:#D51635; line-height:1; margin-bottom:10px; }
+      .shock-label { font-size:0.9rem; text-transform:uppercase; color:#666; font-weight:700; letter-spacing:1px; }
+      .shock-desc { margin-top:20px; font-size:1.1rem; color:#333; line-height:1.5; border-left:4px solid #f9ba00; padding-left:15px; }
+      .shock-actions { margin-top:30px; display:flex; gap:10px; justify-content:flex-end; }
+      .shock-btn { padding:12px 24px; border-radius:6px; font-weight:600; cursor:pointer; border:none; }
+      .shock-btn.primary { background:#02154e; color:#fff; }
+      .shock-btn.secondary { background:#f0f0f0; color:#333; }
+    </style>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Zero@Production <span class="title-at">Ecosystem</span> — Order Delivery by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+        </div>
+    </div>
+</header>
+    <main class="container">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="row" style="justify-content: space-between; align-items: center;">
+          <div>
+            <h3>Order Delivery — Total CO₂ and Cost</h3>
+            <p class="muted">Order Delivery metrics and sustainability data</p>
+          </div>
+          <div class="row" style="gap:8px; align-items:center;">
+             <button class="btn">Filter</button>
+          </div>
+        </div>
+        <div class="row" style="gap:32px; align-items:flex-start;">
+          <div class="card" style="min-width:260px;">
+            <h3 id="total-units">--</h3>
+            <p class="muted">Total Units</p>
+          </div>
+          <div class="card" style="min-width:260px;">
+            <h3 id="total-weight">-- kg</h3>
+            <p class="muted">Total Weight</p>
+          </div>
+          <div class="card" style="min-width:260px;">
+            <h3 id="delivery-co2" style="color:#D51635">-- kg CO₂e</h3>
+            <p class="muted">Estimated Logistics CO₂</p>
+          </div>
+        </div>
+      </div>
+
+      <section class="card" style="margin-bottom: 24px;">
+        <h3>Trend</h3>
+        <div class="muted">Integrated Logistics Feed: Active</div>
+      </section>
+
+      <!-- Consistent Charts Section (ZaE Theme) -->
+      <section class="card" style="margin: 24px;">
+        <h3>Charts</h3>
+        <div class="row" style="gap:16px; flex-wrap:wrap;">
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Allocation by Leg</h4>
+            <canvas id="chartDomain" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Scope 1/2/3</h4>
+            <canvas id="chartScope" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>CO₂ Trend (Monthly)</h4>
+            <canvas id="chartTrend" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>CO₂ vs Margin Impact</h4>
+            <canvas id="chartCompare" height="140"></canvas>
+          </div>
+        </div>
+      </section>
+      
+      <!-- SHOCK MODAL HTML -->
+      <div id="shockModal" class="shock-overlay">
+          <div class="shock-modal">
+              <div class="shock-header">
+                  <span>⚠️ CFO ALERT: MARGIN EROSION DETECTED</span>
+                  <button onclick="document.getElementById('shockModal').classList.remove('active')" style="background:none;border:none;color:white;font-size:1.5rem;cursor:pointer;">&times;</button>
+              </div>
+              <div class="shock-body">
+                  <div class="shock-label">Projected Annual Loss</div>
+                  <div class="shock-metric">+25%</div>
+                  <div class="shock-label" style="color:#02154e;">Energy & Downstream Cost Spike</div>
+                  
+                  <div class="shock-desc">
+                      <strong>Critical Insight:</strong> Your downstream logistics and energy allocations are silently eating into order-level margins. This is not just sustainability—it's P&L leakage.
+                  </div>
+                  
+                  <div class="shock-actions">
+                      <button class="shock-btn secondary" onclick="document.getElementById('shockModal').classList.remove('active')">Dismiss</button>
+                      <button class="shock-btn primary" onclick="alert('Exporting Board Report...')">📉 Export P&L Impact</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+
+      <script>
+        (function(){
+            // CHECK FOR SHOCK PARAM
+            const p = new URLSearchParams(window.location.search);
+            if(p.get("demo") === "cfo_shock") {
+                setTimeout(() => {
+                    document.getElementById('shockModal').classList.add('active');
+                }, 800); // Slight delay for dramatic effect
+            }
+
+          if(!window.Chart) return;
+          try {
+            var ctxDomain = document.getElementById('chartDomain');
+            if (ctxDomain) {
+              new Chart(ctxDomain, {
+                type: 'pie',
+                data: {
+                  labels: ['Last Mile', 'Air Freight', 'Sea Freight'],
+                  datasets: [{ data: [15, 60, 25], backgroundColor: ['#005530','#D51635','#02154e'] }]
+                },
+                options: { plugins: { legend: { position: 'bottom' } } }
+              });
+            }
+            var ctxScope = document.getElementById('chartScope');
+            if (ctxScope) {
+              new Chart(ctxScope, {
+                type: 'bar',
+                data: {
+                  labels: ['Scope 1','Scope 2','Scope 3'],
+                  datasets: [{ label: 'tCO₂', data: [5, 10, 85], backgroundColor: ['#005530','#FFC107','#D51635'] }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+              });
+            }
+            var ctxTrend = document.getElementById('chartTrend');
+            if (ctxTrend) {
+              new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                  labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                  datasets: [{ label: 'Margin Erosion (%)', data: [2,3,4,5,8,12,15,18,20,22,24,25], borderColor: '#D51635', backgroundColor: 'rgba(213,22,53,0.1)', fill:true, tension: 0.3 }]
+                },
+                options: { plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
+              });
+            }
+            var ctxCompare = document.getElementById('chartCompare');
+            if (ctxCompare) {
+              new Chart(ctxCompare, {
+                type: 'bar',
+                data: {
+                  labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                  datasets: [
+                    { label: 'Net Margin', data: [15, 12, 8, 5], backgroundColor: '#02154e' },
+                    { label: 'Logistics Cost', data: [5, 8, 12, 15], backgroundColor: '#D51635' }
+                  ]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+              });
+            }
+          } catch(e) {}
+        })();
+      </script>
+<script src="assets/js/live-data.js"></script>
+<script>
+(async () => {
+  const data = await loadLiveOrder("order_001");
+  if (!data || !data.order) return;
+
+  const { order, items, logistics } = data;
+
+  // 1) Total units
+  const totalUnits = items.reduce((s, i) => s + i.units, 0);
+
+  // 2) Total weight (kg)
+  const totalWeightKg = items.reduce(
+    (s, i) => s + (i.units * i.weight_g) / 1000,
+    0
+  );
+
+  // 3) Logistics CO2 (simple weighted model)
+  const co2 =
+    totalWeightKg *
+    (
+      logistics.mode_mix.road * logistics.co2_factors.road +
+      logistics.mode_mix.sea * logistics.co2_factors.sea +
+      logistics.mode_mix.air * logistics.co2_factors.air
+    );
+
+  // 4) UI inject
+  const elUnits = document.getElementById("total-units");
+  if(elUnits) elUnits.textContent = totalUnits.toLocaleString();
+  
+  const elWeight = document.getElementById("total-weight");
+  if(elWeight) elWeight.textContent = totalWeightKg.toFixed(1) + " kg";
+  
+  const elCo2 = document.getElementById("delivery-co2");
+  if(elCo2) elCo2.textContent = co2.toFixed(1) + " kg CO₂e";
+
+  console.log("✅ LIVE ORDER WIRED:", order.order_id);
+})();
+</script>
+<a href="/" class="zero-back-btn">← Back</a>
+<style>
+.zero-back-btn{
+  position:fixed; top:16px; right:16px; z-index:9999;
+  display:inline-block; padding:10px 14px;
+  font-size:13px; font-weight:700;
+  color:#ffffff; background:#005530;
+  border:2px solid #005530; border-radius:10px;
+  text-decoration:none; letter-spacing:.4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+  transition:transform .12s ease, filter .12s ease;
+}
+.zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
+</style>
+</body>
+</html>

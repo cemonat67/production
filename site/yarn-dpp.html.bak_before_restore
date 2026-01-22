@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en" class="dpp-header-on">
+<head>
+<link rel="stylesheet" href="assets/css/dpp-typography.css">
+<link rel="stylesheet" href="assets/css/dpp-intent-cards.css">
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Yarn DPP</title>
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ 
+<style>
+
+/* ZERO_3COL_LAYOUT_LOCK_V1 */
+.container{
+  display:flex !important;
+  align-items:flex-start;
+  gap:18px;
+  flex-wrap:nowrap;
+}
+.sidebar{
+  flex:0 0 280px;
+}
+.details-panel{
+  flex:0 0 340px;
+  position:sticky;
+  top:110px;
+  max-height:calc(100vh - 140px);
+  overflow:auto;
+}
+.main-content{
+  flex:1 1 auto;
+  min-width:0;
+}
+
+/* Mobile/tablet: hide panel, use modal */
+@media (max-width: 1099px){
+  .container{ flex-wrap:wrap; }
+  .details-panel{ display:none !important; }
+}
+
+
+
+/* ZERO@PRODUCTION ??? GLOBAL DPP HEADER STANDARD (LEFT + NAVY) */
+:root{
+ --zero-navy:#02154e;
+ --zero-orange:#f9ba00;
+ --zero-gray:#6b7280;
+}
+
+/* Common header containers across pages (safe, broad, non-breaking) */
+header, .header, .page-header, .top-bar, .hero, .hero-header, .app-header {
+ text-align: left !important;
+}
+
+/* If a page uses a centered flex header, force left */
+header, .header, .page-header, .top-bar, .app-header {
+ justify-content: flex-start !important;
+ align-items: flex-start !important;
+}
+
+/* Typical title/subtitle patterns */
+h1, .title, .page-title {
+ color: var(--zero-navy) !important;
+ font-weight: 600 !important; /* never 700 */
+ letter-spacing: .2px;
+ text-align:left !important;
+}
+
+/* Subtitle-like elements */
+.subtitle, .sub-title, .page-subtitle, header p, .header p {
+ color: var(--zero-gray) !important;
+ text-align:left !important;
+ max-width: 920px;
+}
+
+/* Your specific ???Zero@Production??? span-brand headers */
+h1 span, .brand span {
+ color: var(--zero-navy) !important;
+ font-weight: 600 !important;
+}
+h1 span[style*="#f9ba00"], h1 span[style*="#F9BA00"] {
+ color: var(--zero-orange) !important; /* keep @ orange */
+}
+
+</style>
+ <link rel="stylesheet" href="assets/css/dpp-header.css?v=0">
+ <script src="assets/js/dpp-header.js?v=0" defer></script>
+<style>
+
+/* ZERO_DETAILS_PANEL_CSS_V1 */
+.container{
+  grid-template-columns: 280px 360px 1fr !important;
+  align-items: start;
+  gap: 22px !important;
+}
+
+/* Details panel */
+.details-panel{
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+  position: sticky;
+  top: 92px;
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+}
+.details-head{
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.details-title{
+  font-weight: 800;
+  color: var(--secondary);
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+.details-sub{
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: .92rem;
+}
+.details-section{ margin: 14px 0; }
+.details-section h4{
+  color: var(--secondary);
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+.details-metrics{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.details-uses{
+  margin: 0;
+  padding-left: 18px;
+  color: #374151;
+}
+.details-kv{
+  display: grid;
+  gap: 8px;
+  color: #374151;
+}
+
+/* Modal MUST NOT affect layout */
+.modal{
+  display: none !important;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 9999 !important;
+}
+.modal.is-open{ display: flex !important; }
+
+/* Responsive: panel desktop; collapse to 1 col on smaller screens */
+@media (max-width: 1100px){
+  .container{ grid-template-columns: 1fr !important; }
+  .details-panel{ position: static; max-height: none; }
+}
+
+</style>
+
+<script>
+// ZERO_SELECT_YARN_V1
+function __ZERO_SET_TEXT(id, val){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = (val == null || val === "") ? "—" : String(val);
+}
+function __ZERO_SET_HTML(id, html){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.innerHTML = html || "";
+}
+function __ZERO_SET_SCOREBAR(score){
+  const bar = document.getElementById("modalScoreBar");
+  if(!bar) return;
+  const v = Math.max(0, Math.min(100, Number(score) || 0));
+  bar.style.width = v + "%";
+}
+function __ZERO_RENDER_BADGES(arr){
+  if(!Array.isArray(arr) || !arr.length) return '<span class="badge">—</span>';
+  return arr.map(x => `<span class="badge">${String(x)}</span>`).join("");
+}
+function __ZERO_RENDER_USES(arr){
+  const el = document.getElementById("modalUses");
+  if(!el) return;
+  el.innerHTML = "";
+  if(!Array.isArray(arr) || !arr.length){
+    const li = document.createElement("li");
+    li.textContent = "—";
+    el.appendChild(li);
+    return;
+  }
+  arr.forEach(x => {
+    const li = document.createElement("li");
+    li.textContent = String(x);
+    el.appendChild(li);
+  });
+}
+function __ZERO_OPEN_MODAL(){
+  try{
+    const m = document.getElementById("yarnModal");
+    if(m) m.classList.add("is-open");
+  }catch(e){}
+}
+function __ZERO_CLOSE_MODAL(){
+  try{
+    const m = document.getElementById("yarnModal");
+    if(m) m.classList.remove("is-open");
+  }catch(e){}
+}
+function __ZERO_SELECT_YARN(y){
+  if(!y) return;
+
+  __ZERO_SET_TEXT("modalYarnName", y.name || y.id || "Yarn");
+  __ZERO_SET_TEXT("modalYarnBrand", y.brand || y.category || "");
+  __ZERO_SET_TEXT("modalComposition", y.composition || "");
+  __ZERO_SET_TEXT("modalCo2", (y.co2!=null) ? y.co2 : "—");
+  __ZERO_SET_TEXT("modalScore", (y.score!=null) ? y.score : "—");
+  __ZERO_SET_SCOREBAR(y.score);
+
+  __ZERO_SET_HTML("modalBadges", __ZERO_RENDER_BADGES(y.badges || []));
+  __ZERO_RENDER_USES(y.end_use || y.uses || []);
+
+  __ZERO_SET_TEXT("modalBrand", y.brand || "—");
+  __ZERO_SET_TEXT("modalWeight", y.weight || y.yarn_count || "—");
+  __ZERO_SET_TEXT("modalType", y.type || "—");
+  __ZERO_SET_TEXT("modalCount", y.yarn_count || "—");
+
+  // Desktop: modal kapalı kalsın, panel doldurulsun
+  try{
+    const isDesktop = window.matchMedia && window.matchMedia("(min-width: 1100px)").matches;
+    if(isDesktop){
+      __ZERO_CLOSE_MODAL();
+      const panel = document.getElementById("detailsPanel");
+      if(panel) panel.scrollIntoView({block:"start", behavior:"smooth"});
+    }else{
+      __ZERO_OPEN_MODAL();
+    }
+  }catch(e){}
+}
+</script>
+
+</head>
+<body style="padding-left:90px;">
+
+<!-- SIMPLE TOP-LEFT LOGO -->
+<div style="position:fixed;top:12px;left:12px;z-index:9999;">
+  <img src="assets/img/plogo.svg" alt="Production Logo" style="height:72px;width:auto;">
+</div>
+
+<div class="dpp-header">
+<div>
+<div class="dpp-title">Yarn DPP</div>
+ <div class="dpp-subtitle">
+ 
+ </div>
+ </div>
+</div>
+<!-- Fixed Back Button -->
+ <div style="position: fixed; top: 20px; right: 20px; z-index: 99999; background: #02154e; color: white; padding: 12px 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+ <a href="dashboard.html" style="color: white; text-decoration: none; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">Back to Production</a>
+ </div>
+
+ <header class="header">
+ <div class="logo-container">
+ 
+ <div class="header-text">
+ <div class="page-header">
+<!-- Zero@Production signature -->
+<div style="
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin:6px 0 10px;
+  font-family: inherit;
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:0.2px;
+  line-height:1;
+">
+  <span style="color:#02154e;">Zero</span><span style="color:#f9ba00;">@</span><span style="color:#02154e;">Production</span>
+  <span style="color:#9aa3b2; margin:0 6px;">by</span>
+  <span style="color:#02154e;">Zero</span><span style="color:#f9ba00;">@</span><span style="color:#02154e;">Ecosystem</span>
+</div>
+
+<h1 class="dpp-title">Yarn DPP</h1>
+</div>
+
+ 
+ </div>
+ </div>
+ <div class="back-to-dashboard">
+ <a href="dashboard.html" class="back-btn">Back to Production</a>
+ </div>
+ </header>
+
+ <!-- Modal for yarn details -->
+ <div class="modal" id="yarnModal">
+ <div class="modal-content">
+ <span class="close-btn" id="closeModal">&times;</span>
+ <h2 class="dpp-subtitle"></h2>
+<div class="intent-cards">
+ <div class="intent-card" data-intent="overview"><h3>CEO View</h3><p>Strategy, risk & compliance snapshot</p></div>
+ <div class="intent-card" data-intent="cost"><h3>CFO View</h3><p>Cost, CO??? impact & savings</p></div>
+ <div class="intent-card" data-intent="flow"><h3>CTO View</h3><p>Process flow & operations</p></div>
+</div>
+ <div class="modal-section">
+ <h4>Composition</h4>
+ <p id="m_modalComposition"></p>
+ </div>
+ <div class="modal-section">
+ <h4>Environmental Metrics</h4>
+ <div class="metrics">
+ <div class="metric co2">
+ <div class="metric-title">CO???/kg</div>
+ <div class="metric-value co2-value" id="m_modalCo2"></div>
+ <div class="metric-desc">kg CO??? per kg yarn</div>
+ </div>
+ <div class="metric score">
+ <div class="metric-title">Mango DPI Score</div>
+ <div class="metric-value score-value" id="m_modalScore"></div>
+ <div class="score-bar">
+ <div class="score-fill" id="m_modalScoreBar"></div>
+ </div>
+ </div>
+ </div>
+ </div>
+ <div class="modal-section">
+ <h4>Characteristics</h4>
+ <div id="m_modalBadges"></div>
+ </div>
+ <div class="modal-section">
+ <h4>Common Uses</h4>
+ <ul id="m_modalUses"></ul>
+ </div>
+ <div class="modal-section">
+ <h4>Additional Information</h4>
+ <p><strong>Brand:</strong> <span id="m_modalBrand"></span></p>
+ <p><strong>Weight:</strong> <span id="m_modalWeight"></span></p>
+ <p><strong>Type:</strong> <span id="m_modalType"></span></p>
+ </div>
+ </div>
+ </div>
+
+ <div class="container">
+
+ <aside class="sidebar">
+ <div class="search-box">
+ <i class="fas fa-search"></i>
+ <input type="text" id="searchInput" placeholder="Search yarns...">
+ </div>
+ 
+ <div class="category-filter">
+ <h3 class="category-title"><i class="fas fa-globe"></i> All Yarns</h3>
+ <ul class="category-list" id="allYarns">
+ <li class="category-item active" data-category="all">All Yarns <span class="category-count" id="allYarnsCount">—</span></li>
+ </ul>
+ </div>
+ 
+ 
+ <!-- Categories removed per user request -->
+
+ </aside>
+<!-- ZERO_DETAILS_PANEL_V1 -->
+<aside class="details-panel" id="detailsPanel" aria-label="Yarn Details">
+  <div class="details-head">
+    <div class="details-title" id="modalYarnName">Select a yarn</div>
+    <div class="details-sub" id="modalYarnBrand">Click a card to preview details</div>
+  </div>
+
+  <div class="details-section">
+    <h4>Composition</h4>
+    <p id="modalComposition">—</p>
+  </div>
+
+  <div class="details-section">
+    <h4>Environmental Metrics</h4>
+    <div class="details-metrics">
+      <div class="metric co2">
+        <div class="metric-title">CO₂/kg</div>
+        <div class="metric-value co2-value" id="modalCo2">—</div>
+        <div class="metric-desc">kg CO₂ per kg yarn</div>
+      </div>
+      <div class="metric score">
+        <div class="metric-title">Mango DPI Score</div>
+        <div class="metric-value score-value" id="modalScore">—</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="details-section">
+    <h4>Characteristics</h4>
+    <div class="badges" id="modalBadges">
+      <span class="badge">—</span>
+    </div>
+  </div>
+
+  <div class="details-section">
+    <h4>Common Uses</h4>
+    <ul class="details-uses" id="modalUses">
+      <li>—</li>
+    </ul>
+  </div>
+
+  <div class="details-section">
+    <h4>Additional Information</h4>
+    <div class="details-kv">
+      <div><strong>Brand:</strong> <span id="modalBrand">—</span></div>
+      <div><strong>Weight:</strong> <span id="modalWeight">—</span></div>
+      <div><strong>Type:</strong> <span id="modalType">—</span></div>
+      <div><strong>Yarn Count:</strong> <span id="modalCount">—</span></div>
+    </div>
+  </div>
+</aside>
+
+ 
+ <main class="main-content" id="yarn-database">
+ <div class="filters">
+ <div class="results-info">
+ Showing <span id="yarnCount">—</span> yarns <span id="zeroStatus" style="margin-left:10px;font-size:12px;color:#777;">(boot)</span>
+ </div>
+ <div class="sort-filter">
+ <select id="sortSelect">
+ <option value="name">Sort by Name</option>
+ <option value="co2-asc">CO???: Low to High</option>
+ <option value="co2-desc">CO???: High to Low</option>
+ <option value="score-asc">Score: Low to High</option>
+ <option value="score-desc">Score: High to Low</option>
+ </select>
+ </div>
+ </div>
+ 
+ <div class="yarn-grid" id="yarnGrid">
+ <!-- Yarn cards will be populated by JavaScript -->
+ </div>
+ 
+ <div class="chart-container">
+ <h3 class="chart-title">Average Environmental Impact by Yarn Category</h3>
+ <canvas id="impactChart"></canvas>
+
+<script>
+window.renderImpactChart = function(yarns){
+  if (!window.Chart) {
+    console.warn("Chart.js not loaded");
+    return;
+  }
+
+  const canvas = document.getElementById("impactChart");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+
+  const groups = {};
+  yarns.forEach(y => {
+    const c = y.category || "Other";
+    const v = Number(y.co2 ?? ({
+  "Plant-Based Yarns": 2.8,
+  "Organic Yarns": 3.2,
+  "Recycled Yarns": 2.1,
+  "Blended Yarns": 4.5,
+  "Cotton Yarns": 5.9
+}[y.category] || 3.5));
+    if (!groups[c]) groups[c] = [];
+    if (v > 0) groups[c].push(v);
+  });
+
+  const labels = Object.keys(groups);
+  const values = labels.map(k => {
+    const a = groups[k];
+    return a.reduce((x,y)=>x+y,0) / a.length;
+  });
+
+  if (window.__impactChart) window.__impactChart.destroy();
+
+  window.__impactChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Average CO₂ (kg/kg yarn)",
+        data: values,
+        backgroundColor: "#005530"
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+
+  console.log("✅ Impact chart rendered", labels, values);
+};
+</script>
+
+ </div>
+ </main>
+ 
+ <div class="blend-section" id="blend-calculator" style="display: none;">
+ <h2 class="dpp-subtitle">Create Your Custom Yarn Blend</h2>
+<div class="intent-cards">
+ <div class="intent-card" data-intent="overview"><h3>CEO View</h3><p>Strategy, risk & compliance snapshot</p></div>
+ <div class="intent-card" data-intent="cost"><h3>CFO View</h3><p>Cost, CO??? impact & savings</p></div>
+ <div class="intent-card" data-intent="flow"><h3>CTO View</h3><p>Process flow & operations</p></div>
+</div>
+ <div class="blend-container">
+ <div class="blend-form">
+ <div class="form-group">
+ <label for="fiberSelect">Select Fiber:</label>
+ <select id="fiberSelect">
+ <option value="">-- Choose a fiber --</option>
+ <!-- Options will be populated by JavaScript -->
+ </select>
+ </div>
+ 
+ <div class="form-group">
+ <label for="percentageInput">Percentage (%):</label>
+ <input type="number" id="percentageInput" min="1" max="100" placeholder="Enter percentage">
+ </div>
+ 
+ <button class="add-btn" onclick="addComponent()">
+ <i class="fas fa-plus"></i> Add to Blend
+ </button>
+ 
+ <h3 style="margin: 25px 0 15px; color: var(--secondary);">Blend Composition</h3>
+ <div class="blend-components" id="blendComponents">
+ <p style="text-align: center; padding: 20px; color: #777;">No fibers added yet</p>
+ </div>
+ 
+ <div class="form-group">
+ <label for="blendName">Blend Name:</label>
+ <input type="text" id="blendName" placeholder="Enter a name for your blend">
+ </div>
+ 
+ <button class="add-btn" onclick="calculateBlend()" style="background: var(--primary);">
+ <i class="fas fa-calculator"></i> Calculate Blend and Add to Database
+ </button>
+ </div>
+ 
+ <div class="blend-result">
+ <div class="blend-result-card">
+ <h3 class="blend-result-title">Your Custom Blend</h3>
+ <div class="blend-metrics">
+ <div class="blend-metric co2">
+ <div class="blend-metric-title">CO???/kg</div>
+ <div class="blend-metric-value blend-co2-value" id="blendCo2">0.0</div>
+ <div class="metric-desc">kg CO??? per kg yarn</div>
+ </div>
+ <div class="blend-metric score">
+ <div class="blend-metric-title">Mango DPI Score</div>
+ <div class="blend-metric-value blend-score-value" id="blendScore">0</div>
+ <div class="metric-desc">Sustainability score</div>
+ </div>
+ </div>
+ <div class="blend-composition" id="blendComposition">
+ Add fibers to see your custom blend composition
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ 
+ <footer>
+ <p>Yarn Sustainability Database &copy; 2023 | For Sustainable Textile Innovation</p>
+ </footer>
+ </div>
+
+ <script>
+/* ZERO_LOADUGURLULAR_V1 — demo-safe loader */
+window.yarnDatabase = Array.isArray(window.yarnDatabase) ? window.yarnDatabase : [];
+
+window.loadUgurlularYarns = async function(){
+  let arr = [];
+  try{
+    const url = "data/ugurlular-yarns.json?ts=" + Date.now();
+    const res = await fetch(url, { cache: "no-store" });
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    arr = await res.json();
+      console.log("🧶 LOADED JSON length =", Array.isArray(arr)?arr.length:"not-array");
+
+    if(!Array.isArray(arr)) throw new Error("JSON not array");
+  }catch(e){
+    console.warn("⚠️ loadUgurlularYarns failed, using fallback", e);
+    arr = (window.__YARN_FALLBACK__ || []);
+  }
+
+  // normalize shape
+  window.yarnDatabase = (arr || []).map(x => ({
+      id: x.id || "",
+      name: x.name || "",
+      category: x.category || "Other",
+      brand: x.brand || "Ugurlular Tekstil",
+      composition: x.composition || "",
+      yarn_count: x.yarn_count || "",
+      type: x.type || "",
+      co2: (x.co2 === null || x.co2 === undefined) ? null : Number(x.co2),
+      score: (x.score === null || x.score === undefined) ? null : Number(x.score),
+      badges: Array.isArray(x.badges) ? x.badges : [],
+      properties: Array.isArray(x.properties) ? x.properties : [],
+      end_use: Array.isArray(x.end_use) ? x.end_use : [],
+      qualities: Array.isArray(x.qualities) ? x.qualities : [],
+      source: (x.source && typeof x.source === "object") ? x.source : null,
+      notes_missing: Array.isArray(x.notes_missing) ? x.notes_missing : []
+    }));
+
+  // sync counts + status
+  try{
+    const n = window.yarnDatabase.length;
+    const yc = document.getElementById("yarnCount");
+    if (yc) yc.textContent = String(n);
+    const allc = document.getElementById("allYarnsCount");
+    if (allc) allc.textContent = String(n);
+    const zs = document.getElementById("zeroStatus");
+    if (zs) zs.textContent = "(loaded " + n + ")";
+  }catch(_e){}
+
+  
+  // ZERO_SYNC_DB: keep legacy code happy (yarnDatabase may exist)
+  try { if (typeof yarnDatabase !== "undefined") yarnDatabase = window.yarnDatabase; } catch(_e) {}
+
+// render
+  try{
+    if (typeof window.renderYarnCards === "function") window.renderYarnCards(window.yarnDatabase);
+    if (typeof window.renderImpactChart === "function") window.renderImpactChart(window.yarnDatabase);
+  }catch(e){
+    console.error("❌ render failed:", e);
+  }
+
+  return window.yarnDatabase;
+};
+
+/* ZERO_BOOT_FINAL single entry point */
+(function () {
+  async function boot() {
+    try {
+      console.log("✅ ZERO BOOT START");
+      await (window.loadUgurlularYarns ? window.loadUgurlularYarns() : Promise.resolve([]));
+// Single source of truth: window.yarnDatabase
+      const db = Array.isArray(window.yarnDatabase) ? window.yarnDatabase : [];
+      const n = db.length;
+
+      const yc = document.getElementById("yarnCount");
+      if (yc) yc.textContent = String(n);
+
+      const allc = document.getElementById("allYarnsCount")
+                || document.querySelector('li[data-category="all"] .category-count');
+      if (allc) allc.textContent = String(n);
+
+      // render using window-scoped functions
+      if (typeof window.renderYarnCards === "function") window.renderYarnCards(db);
+      if (typeof window.renderImpactChart === "function") window.renderImpactChart(db);
+      
+      // ZERO_GRIDCOUNT_DEBUG
+      try{
+        const grid = document.getElementById("yarnGrid");
+        const cards = grid ? grid.querySelectorAll(".yarn-card").length : -1;
+        const zs = document.getElementById("zeroStatus");
+        if (zs) zs.textContent = "(db=" + db.length + " / dom=" + cards + ")";
+        console.log("🧪 ZERO_GRIDCOUNT_DEBUG db=", db.length, "dom=", cards);
+      }catch(e){}
+const zs = document.getElementById("zeroStatus");
+      if (zs) zs.textContent = "(loaded " + n + ")";
+    } catch (e) {
+      console.error("❌ ZERO_BOOT_FINAL failed:", e);
+      const zs = document.getElementById("zeroStatus");
+      if (zs) zs.textContent = "(ERROR: " + (e && e.message ? e.message : "boot") + ")";
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+
+<script>
+// ===============================================
+// ZERO_RESTORE_RENDER_V1 — minimal demo-safe UI
+// Adds renderYarnCards / renderImpactChart if missing
+// ===============================================
+(function(){
+
+    // ZERO_UTF8_GUARD_V1
+    function __ZERO_FIX_MOJIBAKE(str){
+      try{
+        if(typeof str !== "string") return str;
+        // hızlı heuristik: mojibake işaretleri
+        if(!/[ÃÄÂâ€™â€œâ€]|mÃ©|Ã¶|Ã¼|Ã§|ÄŸ|ÅŸ|Åž|Ä°/g.test(str)) return str;
+        // latin1->utf8 roundtrip dene
+        try { return decodeURIComponent(escape(str)); } catch(e){}
+        return str;
+      }catch(e){ return str; }
+    }
+    function txt(x){ return __ZERO_FIX_MOJIBAKE(x || ""); }
+
+
+  function esc(x){
+    return String(x ?? "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+  }
+
+  if (typeof window.renderYarnCards !== "function") {
+      window.renderYarnCards = function(yarns){
+        const grid = document.getElementById("yarnGrid");
+        const yc   = document.getElementById("yarnCount");
+        const allc = document.getElementById("allYarnsCount");
+
+        const arr = Array.isArray(yarns) ? yarns : [];
+        if (yc) yc.textContent = String(arr.length);
+        if (allc) allc.textContent = String(arr.length);
+        if (!grid) return;
+
+        if (arr.length === 0) {
+          grid.innerHTML = '<p class="no-results">No yarns match your search criteria</p>';
+          return;
+        }
+
+        const esc = (x) => String(x ?? "").replace(/[&<>"']/g, m => ({
+          "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+        }[m]));
+
+        const fmt1 = (n) => {
+          const v = Number(n);
+          if (!isFinite(v)) return "-";
+          return v.toFixed(1);
+        };
+
+        const chip = (t) => `<span class="tag">${esc(t)}</span>`;
+
+        grid.innerHTML = arr.map(y => {
+          const name  = esc(y.name || "Untitled Yarn");
+          const type  = esc(y.type || "Natural");
+          const brand = esc(y.brand || "Ugurlular Tekstil");
+          const comp  = esc(y.composition || "-");
+          const cnt   = esc(y.yarn_count || "-");
+
+          const co2   = fmt1(y.co2);
+          const score = Math.round(Number(y.score || 0));
+
+          const tags = []
+            .concat((y.properties || []).slice(0, 3))
+            .concat((y.badges || []).slice(0, 2));
+
+          const tagsHtml = tags.map(chip).join("");
+
+          return `
+          <div class="yarn-card yarn-card-rich">
+            <div class="yarn-top">
+              <div class="yarn-title">${name}</div>
+              <div class="yarn-type-badge">${type}</div>
+            </div>
+
+            <div class="yarn-views">
+              <button class="view-btn" data-view="ceo">CEO View</button>
+              <button class="view-btn" data-view="cfo">CFO View</button>
+              <button class="view-btn" data-view="cto">CTO View</button>
+            </div>
+
+            <div class="yarn-brand">Brand: <strong>${brand}</strong></div>
+            <div class="yarn-comp"><em>${comp}</em></div>
+            <div class="yarn-meta2">Count: ${cnt}</div>
+
+            <div class="yarn-kpi-row">
+              <div class="kpi-box">
+                <div class="kpi-label">CO₂/kg</div>
+                <div class="kpi-big">${co2}</div>
+                <div class="kpi-sub">kg CO₂ per kg yarn</div>
+              </div>
+              <div class="kpi-box">
+                <div class="kpi-label">Mango DPI</div>
+                <div class="kpi-big">${isFinite(score) ? score : "-"}</div>
+                <div class="kpi-sub">Score</div>
+              </div>
+            </div>
+
+            ${tagsHtml ? `<div class="yarn-tags">${tagsHtml}</div>` : ""}
+
+            <div class="yarn-footer">
+              <div class="yarn-weight"><strong>Weight:</strong> -</div>
+              <button class="details-btn" type="button">Details</button>
+            </div>
+          </div>
+          `;
+        }).join("
+");
+
+        // demo-safe: Details click
+        grid.querySelectorAll(".details-btn").forEach(btn => {
+          btn.addEventListener("click", () => { try{ const id = btn.closest("[data-yarn-id]")?.getAttribute("data-yarn-id"); const y = (window.yarnDatabase||[]).find(o=>String(o.id)===String(id)); __ZERO_SELECT_YARN(y); }catch(e){} });
+        });
+
+        // demo-safe: view buttons
+        grid.querySelectorAll(".view-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const v = btn.getAttribute("data-view");
+            alert("Demo: " + (v||"view").toUpperCase() + " insight coming soon.");
+          });
+        });
+      }[m]));
+
+        const pill = (txt)=>`<span class="badge">${esc(txt)}</span>`;
+
+        if (arr.length === 0) {
+          grid.innerHTML = '<p class="no-results">No yarns match your search criteria</p>';
+          return;
+        }
+
+        grid.innerHTML = arr.map(y => {
+          const name  = esc(y.name);
+          const cat   = esc(y.category);
+          const comp  = esc(y.composition || "-");
+          const cnt   = esc(y.yarn_count || "-");
+          const typ   = esc(y.type || "");
+          const co2   = (y.co2 === null || y.co2 === undefined) ? "—" : Number(y.co2).toFixed(2);
+          const score = (y.score === null || y.score === undefined) ? "—" : String(Math.round(Number(y.score)));
+
+          const badges = (y.badges || []).map(pill).join(" ");
+          const props  = (y.properties || []).map(pill).join(" ");
+          const enduse = (y.end_use || []).map(pill).join(" ");
+          const quals  = (y.qualities || []).map(pill).join(" ");
+
+          const src = y.source && y.source.source_url ? esc(y.source.source_url) : "";
+          const notes = (y.notes_missing || []).map(n => `<li>${esc(txt(n))}</li>`).join("");
+
+          return `
+            <div class="yarn-card">
+              <div class="yarn-card-header">
+                <h3 class="yarn-name">${name}</h3>
+                <div class="yarn-category">${cat}${typ ? ` • <strong>${typ}</strong>` : ``}</div>
+                ${y.id ? `<div style="font-size:12px;color:#6b7280;margin-top:6px;">ID: <strong>${esc(txt(y.id))}</strong></div>` : ``}
+              </div>
+
+              <div class="yarn-meta">
+                <div><strong>Composition:</strong> ${comp}</div>
+                <div><strong>Yarn Count:</strong> ${cnt}</div>
+              </div>
+
+              <div class="yarn-kpis">
+                <div class="kpi">
+                  <div class="kpi-label">CO₂</div>
+                  <div class="kpi-value">${co2}</div>
+                  <div class="kpi-unit">kg/kg</div>
+                </div>
+                <div class="kpi">
+                  <div class="kpi-label">Score</div>
+                  <div class="kpi-value">${score}</div>
+                </div>
+              </div>
+
+              ${(badges||props) ? `<div class="yarn-badges">${badges} ${props}</div>` : ``}
+
+              ${enduse ? `<div style="margin-top:10px;"><div style="font-weight:700;font-size:12px;margin-bottom:6px;">End Use</div><div class="yarn-badges">${enduse}</div></div>` : ``}
+              ${quals  ? `<div style="margin-top:10px;"><div style="font-weight:700;font-size:12px;margin-bottom:6px;">Qualities</div><div class="yarn-badges">${quals}</div></div>` : ``}
+
+              ${src ? `<div style="margin-top:12px;font-size:12px;color:#6b7280;">
+                <strong>Source:</strong> <a href="${src}" target="_blank" rel="noopener noreferrer">${src}</a>
+              </div>` : ``}
+
+              ${notes ? `<div style="margin-top:10px;font-size:12px;color:#6b7280;">
+                <strong>Notes / Missing:</strong>
+                <ul style="margin:6px 0 0 18px;">${notes}</ul>
+              </div>` : ``}
+            </div>
+          `;
+        }).join("
+");
+      }
+    }
+
+  if (typeof window.renderImpactChart !== "function") {
+      
+
+        const options = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        };
+
+        window.__zeroImpactChart = new Chart(canvas, {
+          type: "bar",
+          data,
+          options
+        });
+      }
+    }
+
+})();
+</script>
+
+
+<script>
+// ===============================================
+// ZERO_RICH_YARN_CARDS_V1
+// Restores image-like product cards (CO2 + Score + CEO/CFO/CTO blocks)
+// ===============================================
+(function(){
+  function esc(x){
+    return String(x ?? "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+  }
+  function num(x, fallback=0){
+    const n = Number(x);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  window.renderYarnCards = function(yarns){
+    const grid = document.getElementById("yarnGrid");
+    const yc   = document.getElementById("yarnCount");
+    const allc = document.getElementById("allYarnsCount");
+
+    const arr = Array.isArray(yarns) ? yarns : [];
+    if (yc) yc.textContent = String(arr.length);
+    if (allc) allc.textContent = String(arr.length);
+
+    if (!grid) return;
+
+    // ensure visible
+    try{
+      grid.style.display = "grid";
+      grid.style.visibility = "visible";
+      grid.style.opacity = "1";
+    }catch(e){}
+
+    if (arr.length === 0) {
+      grid.innerHTML = '<p class="no-results">No yarns match your search criteria</p>';
+      return;
+    }
+
+    grid.innerHTML = arr.map(y => {
+      const name  = esc(y.name || y.yarn_name || y.id || "Yarn");
+      const cat   = esc(y.category || "Yarn");
+      const brand = esc(y.brand || y.supplier || "Ugurlular Tekstil");
+      const type  = esc(y.type || y.yarn_type || "Natural");
+      const comp  = esc(y.composition || "-");
+
+      const co2   = num(y.co2, 0);
+      const score = Math.round(num(y.score, 0));
+
+      const badgesArr = (y.badges || y.labels || []);
+      const badges = Array.isArray(badgesArr) ? badgesArr.slice(0,6).map(b => `<span class="tag">${esc(b)}</span>`).join("") : "";
+
+      // Weight/style line (optional)
+      const weight = esc(y.weight || y.yarn_weight || "");
+
+      return `
+        <div class="yarn-card-rich">
+          <div class="ycr-top">
+            <div class="ycr-name">${name}</div>
+            <div class="ycr-type">${type}</div>
+          </div>
+
+          <div class="ycr-intents">
+            <div class="intent-box"><div class="intent-title">CEO View</div><div class="intent-sub">Strategy, risk &amp; compliance snapshot</div></div>
+            <div class="intent-box"><div class="intent-title">CFO View</div><div class="intent-sub">Cost, CO₂ impact &amp; savings</div></div>
+            <div class="intent-box"><div class="intent-title">CTO View</div><div class="intent-sub">Process flow &amp; operations</div></div>
+          </div>
+
+          <div class="ycr-brand">Brand: <span>${brand}</span></div>
+          <div class="ycr-comp">${comp}</div>
+
+          <div class="ycr-kpis">
+            <div class="kpi-box">
+              <div class="kpi-label">CO₂/kg</div>
+              <div class="kpi-value">${co2.toFixed(1)}</div>
+              <div class="kpi-sub">kg CO₂ per kg yarn</div>
+            </div>
+            <div class="kpi-box">
+              <div class="kpi-label">Mango DPI Score</div>
+              <div class="kpi-value">${score || "-"}</div>
+              <div class="kpi-bar"></div>
+            </div>
+          </div>
+
+          ${badges ? `<div class="ycr-tags">${badges}</div>` : ``}
+
+          <div class="ycr-footer">
+            <div class="ycr-weight">${weight ? `Weight: <b>${weight}</b>` : ``}</div>
+            <button class="ycr-btn" type="button">Details</button>
+          </div>
+        </div>
+      `;
+    }).join("\n");
+
+    console.log("✅ RICH cards rendered:", arr.length);
+  };
+
+})();
+</script>
+
+<style>
+/* --- ZERO Rich Card Styles (minimal, match your screenshot vibe) --- */
+.yarn-grid{
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+.yarn-card-rich{
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:10px;
+  overflow:hidden;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+  padding:14px;
+}
+.ycr-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.ycr-name{font-weight:700;color:#0b1b3a;}
+.ycr-type{
+  font-size:12px;font-weight:700;
+  background:#f3f4f6;color:#0b1b3a;
+  padding:6px 10px;border-radius:8px;white-space:nowrap;
+}
+.ycr-intents{display:grid;gap:10px;margin:10px 0 12px;}
+.intent-box{border:1px solid #eef0f3;border-radius:10px;padding:10px 12px;}
+.intent-title{font-weight:700;color:#0b1b3a;font-size:13px;}
+.intent-sub{font-size:12px;color:#6b7280;margin-top:2px;}
+.ycr-brand{color:#6b7280;font-size:13px;margin:6px 0 8px;}
+.ycr-brand span{color:#0b1b3a;font-weight:600;}
+.ycr-comp{font-style:italic;color:#111827;margin:6px 0 10px;}
+.ycr-kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0;}
+.kpi-box{border:1px solid #eef0f3;border-radius:10px;padding:12px;text-align:center;background:#fafafa;}
+.kpi-label{font-size:12px;color:#6b7280;margin-bottom:6px;}
+.kpi-value{font-size:34px;line-height:1;color:#0b5d3b;font-weight:800;}
+.kpi-sub{font-size:12px;color:#6b7280;margin-top:6px;}
+.kpi-bar{height:6px;border-radius:999px;background:#0b1b3a;margin:10px 18px 2px;}
+.ycr-tags{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0;}
+.tag{font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#374151;}
+.ycr-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid #eef0f3;}
+.ycr-btn{
+  background:#0b1b3a;color:#fff;border:0;border-radius:8px;
+  padding:8px 14px;font-weight:700;cursor:pointer;
+}
+</style>
+
+
+<script>
+/* ZERO_DETAILS_DUAL_TARGET_V1 */
+
+function __ZERO_IS_DESKTOP(){
+  try{
+    return window.matchMedia && window.matchMedia("(min-width: 1100px)").matches;
+  }catch(e){ return false; }
+}
+
+function __ZERO_SET_TEXT(id, val){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.textContent = (val===undefined || val===null || val==="") ? "—" : String(val);
+}
+
+function __ZERO_SET_BADGES(containerId, badges){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const arr = Array.isArray(badges) ? badges : [];
+  if(!arr.length){ el.innerHTML = '<span class="badge">—</span>'; return; }
+  el.innerHTML = arr.map(b => `<span class="badge">${String(b)}</span>`).join("");
+}
+
+function __ZERO_SET_USES(listId, uses){
+  const el = document.getElementById(listId);
+  if(!el) return;
+  const arr = Array.isArray(uses) ? uses : [];
+  if(!arr.length){ el.innerHTML = "<li>—</li>"; return; }
+  el.innerHTML = arr.map(u => `<li>${String(u)}</li>`).join("");
+}
+
+function __ZERO_FILL_PANEL(y){
+  if(!y) return;
+  __ZERO_SET_TEXT("modalYarnName", y.name);
+  __ZERO_SET_TEXT("modalYarnBrand", y.brand || "—");
+  __ZERO_SET_TEXT("modalComposition", y.composition || "—");
+  __ZERO_SET_TEXT("modalCo2", (y.co2!=null) ? y.co2 : "—");
+  __ZERO_SET_TEXT("modalScore", (y.score!=null) ? y.score : "—");
+  __ZERO_SET_BADGES("modalBadges", y.badges || y.properties);
+  __ZERO_SET_USES("modalUses", y.end_use || y.uses);
+  __ZERO_SET_TEXT("modalBrand", y.brand || "—");
+  __ZERO_SET_TEXT("modalWeight", y.weight || y.yarn_weight || "—");
+  __ZERO_SET_TEXT("modalType", y.type || "—");
+  __ZERO_SET_TEXT("modalCount", y.yarn_count || y.count || "—");
+}
+
+function __ZERO_FILL_MODAL(y){
+  if(!y) return;
+  __ZERO_SET_TEXT("m_modalComposition", y.composition || "—");
+  __ZERO_SET_TEXT("m_modalCo2", (y.co2!=null) ? y.co2 : "—");
+  __ZERO_SET_TEXT("m_modalScore", (y.score!=null) ? y.score : "—");
+  __ZERO_SET_BADGES("m_modalBadges", y.badges || y.properties);
+  __ZERO_SET_USES("m_modalUses", y.end_use || y.uses);
+  __ZERO_SET_TEXT("m_modalBrand", y.brand || "—");
+  __ZERO_SET_TEXT("m_modalWeight", y.weight || y.yarn_weight || "—");
+  __ZERO_SET_TEXT("m_modalType", y.type || "—");
+  __ZERO_SET_TEXT("m_modalCount", y.yarn_count || y.count || "—");
+}
+
+function __ZERO_SHOW_MODAL(){
+  const m = document.getElementById("yarnModal");
+  if(m) m.classList.add("is-open");
+}
+function __ZERO_HIDE_MODAL(){
+  const m = document.getElementById("yarnModal");
+  if(m) m.classList.remove("is-open");
+}
+
+/* override / define */
+window.__ZERO_SELECT_YARN = function(y){
+  if(!y) return;
+  try{
+    if(__ZERO_IS_DESKTOP()){
+      __ZERO_FILL_PANEL(y);
+      try{ document.getElementById("detailsPanel")?.scrollIntoView({block:"start", behavior:"smooth"}); }catch(e){}
+      try{ __ZERO_HIDE_MODAL(); }catch(e){}
+    }else{
+      __ZERO_FILL_MODAL(y);
+      __ZERO_SHOW_MODAL();
+    }
+  }catch(e){}
+};
+
+/* close button wiring (safe) */
+document.addEventListener("DOMContentLoaded", () => {
+  const closeBtn = document.getElementById("closeModal");
+  if(closeBtn) closeBtn.addEventListener("click", __ZERO_HIDE_MODAL);
+  const modal = document.getElementById("yarnModal");
+  if(modal) modal.addEventListener("click", (e) => {
+    if(e.target === modal) __ZERO_HIDE_MODAL();
+  });
+});
+</script>
+
+</body>
+</html>

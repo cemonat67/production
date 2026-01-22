@@ -1,0 +1,36 @@
+{
+  "cards": [
+    { "id":"FIB-COT-ORG", "group":"Cotton", "name":"Organic Cotton", "certs":["GOTS","OEKO-TEX"], "co2_kgkg":1.6, "water_lkg":1700, "energy_kwhkg":5.2, "risk":28, "note":"Premium sustainable cotton line." },
+    { "id":"FIB-COT-US", "group":"Cotton", "name":"U.S. Cotton", "certs":["OEKO-TEX"], "co2_kgkg":1.8, "water_lkg":1600, "energy_kwhkg":5.4, "risk":32, "note":"Stable quality, export-grade." },
+    { "id":"FIB-COT-GIZA", "group":"Cotton", "name":"Giza Cotton", "certs":["OEKO-TEX"], "co2_kgkg":2.0, "water_lkg":1850, "energy_kwhkg":5.7, "risk":38, "note":"Extra-long staple, luxury segment." },
+    { "id":"FIB-COT-SUP", "group":"Cotton", "name":"Supima", "certs":["OEKO-TEX"], "co2_kgkg":2.1, "water_lkg":1900, "energy_kwhkg":5.8, "risk":41, "note":"High-end staple cotton." },
+    { "id":"FIB-COT-TR", "group":"Cotton", "name":"Turkish Cotton", "certs":["OEKO-TEX"], "co2_kgkg":1.9, "water_lkg":1750, "energy_kwhkg":5.6, "risk":34, "note":"Local sourcing advantage." },
+    { "id":"FIB-COT-CMA", "group":"Cotton", "name":"Cotton Made in Africa", "certs":["CmiA","OEKO-TEX"], "co2_kgkg":1.7, "water_lkg":1550, "energy_kwhkg":5.3, "risk":36, "note":"Social impact & traceability." },
+    { "id":"FIB-COT-BCI", "group":"Cotton", "name":"BCI Cotton", "certs":["BCI","OEKO-TEX"], "co2_kgkg":1.7, "water_lkg":1650, "energy_kwhkg":5.4, "risk":30, "note":"Better Cotton pathway." },
+    { "id":"FIB-COT-REG", "group":"Cotton", "name":"Regenerative Cotton", "certs":["Regen","OEKO-TEX"], "co2_kgkg":1.5, "water_lkg":1600, "energy_kwhkg":5.1, "risk":33, "note":"Soil-first farming narrative." },
+    { "id":"FIB-COT-REC", "group":"Cotton", "name":"Recycled Cotton", "certs":["GRS","OEKO-TEX"], "co2_kgkg":1.1, "water_lkg":200, "energy_kwhkg":3.5, "risk":25, "note":"Pre/post-consumer blend." },
+    { "id":"FIB-COT-PIMA", "group":"Cotton", "name":"Pima Cotton", "certs":["OEKO-TEX"], "co2_kgkg":1.9, "water_lkg":1800, "energy_kwhkg":5.5, "risk":35, "note":"Superior softness & durability." },
+    
+    { "id":"FIB-CEL-SAX", "group":"Cellulosic", "name":"SaXcell", "certs":["GRS","OEKO-TEX"], "co2_kgkg":1.3, "water_lkg":400, "energy_kwhkg":4.4, "risk":35, "note":"Textile-to-textile recycled cellulose." },
+    { "id":"FIB-CEL-TM", "group":"Cellulosic", "name":"TENCEL™ Modal", "certs":["FSC/PEFC","OEKO-TEX"], "co2_kgkg":1.4, "water_lkg":450, "energy_kwhkg":4.6, "risk":29, "note":"Soft handfeel, stable supply." },
+    { "id":"FIB-CEL-TMM", "group":"Cellulosic", "name":"TENCEL™ Modal Micro", "certs":["FSC/PEFC","OEKO-TEX"], "co2_kgkg":1.45, "water_lkg":470, "energy_kwhkg":4.7, "risk":30, "note":"Micro-denier comfort focus." },
+    { "id":"FIB-CEL-TLSTD", "group":"Cellulosic", "name":"TENCEL™ Lyocell STD", "certs":["FSC/PEFC","OEKO-TEX"], "co2_kgkg":1.2, "water_lkg":380, "energy_kwhkg":4.2, "risk":27, "note":"Closed-loop solvent story." },
+    { "id":"FIB-CEL-TLLF", "group":"Cellulosic", "name":"TENCEL™ Lyocell LF", "certs":["FSC/PEFC","OEKO-TEX"], "co2_kgkg":1.22, "water_lkg":390, "energy_kwhkg":4.25, "risk":28, "note":"Low-fibrillation option." },
+    { "id":"FIB-CEL-TLA100", "group":"Cellulosic", "name":"TENCEL™ Lyocell A100", "certs":["FSC/PEFC","OEKO-TEX"], "co2_kgkg":1.25, "water_lkg":400, "energy_kwhkg":4.3, "risk":29, "note":"Performance lyocell grade." },
+    { "id":"FIB-CEL-LV", "group":"Cellulosic", "name":"LENZING™ Viscose", "certs":["FSC/PEFC","OEKO-TEX"], "co2_kgkg":1.6, "water_lkg":520, "energy_kwhkg":4.9, "risk":31, "note":"Mainstream viscose option." },
+    { "id":"FIB-CEL-ECO", "group":"Cellulosic", "name":"LENZING™ ECOVERO™ Viscose", "certs":["EU Ecolabel","OEKO-TEX"], "co2_kgkg":1.4, "water_lkg":480, "energy_kwhkg":4.7, "risk":28, "note":"Lower impact viscose line." },
+    { "id":"FIB-CEL-LIM", "group":"Cellulosic", "name":"Livaeco™ Modal", "certs":["FSC","OEKO-TEX"], "co2_kgkg":1.45, "water_lkg":460, "energy_kwhkg":4.7, "risk":30, "note":"Traceability-focused modal." },
+    { "id":"FIB-CEL-LIMM", "group":"Cellulosic", "name":"Livaeco™ Modal Micro", "certs":["FSC","OEKO-TEX"], "co2_kgkg":1.48, "water_lkg":475, "energy_kwhkg":4.75, "risk":31, "note":"Micro comfort variant." },
+    { "id":"FIB-CEL-LIV", "group":"Cellulosic", "name":"Livaeco™ Viscose", "certs":["FSC","OEKO-TEX"], "co2_kgkg":1.55, "water_lkg":510, "energy_kwhkg":4.85, "risk":32, "note":"Viscose with traceability." },
+    { "id":"FIB-CEL-BAM", "group":"Cellulosic", "name":"Bamboo", "certs":["OEKO-TEX"], "co2_kgkg":1.7, "water_lkg":600, "energy_kwhkg":5.0, "risk":39, "note":"Soft, but verify sourcing claims." },
+    
+    { "id":"FIB-BLD-CV", "group":"Blends", "name":"Cotton / Viscose 50/50", "certs":["OEKO-TEX"], "co2_kgkg":1.65, "water_lkg":1100, "energy_kwhkg":5.1, "risk":32, "note":"Standard blend for drape." },
+    { "id":"FIB-BLD-CP", "group":"Blends", "name":"Cotton / Poly 60/40", "certs":["OEKO-TEX"], "co2_kgkg":2.5, "water_lkg":900, "energy_kwhkg":8.0, "risk":45, "note":"Durable workwear blend." },
+    { "id":"FIB-BLD-CL", "group":"Blends", "name":"Cotton / Linen 70/30", "certs":["OEKO-TEX"], "co2_kgkg":1.8, "water_lkg":1400, "energy_kwhkg":5.3, "risk":35, "note":"Summer breathable mix." },
+    { "id":"FIB-BLD-TCM", "group":"Blends", "name":"Tencel / Cotton / Modal", "certs":["OEKO-TEX"], "co2_kgkg":1.5, "water_lkg":1000, "energy_kwhkg":4.9, "risk":30, "note":"Tri-blend softness." },
+    { "id":"FIB-BLD-ECO", "group":"Blends", "name":"EcoVero / Cotton", "certs":["EU Ecolabel","OEKO-TEX"], "co2_kgkg":1.55, "water_lkg":1050, "energy_kwhkg":5.0, "risk":29, "note":"Sustainable viscose blend." },
+    { "id":"FIB-BLD-REF", "group":"Blends", "name":"Refibra / Cotton", "certs":["GRS","OEKO-TEX"], "co2_kgkg":1.4, "water_lkg":950, "energy_kwhkg":4.8, "risk":28, "note":"Recycled content blend." },
+    { "id":"FIB-BLD-WO", "group":"Blends", "name":"Wool / Cotton 80/20", "certs":["RWS","OEKO-TEX"], "co2_kgkg":8.5, "water_lkg":1200, "energy_kwhkg":6.5, "risk":42, "note":"Warmth with cotton feel." },
+    { "id":"FIB-BLD-SE", "group":"Blends", "name":"Silk / Cotton", "certs":["OEKO-TEX"], "co2_kgkg":12.0, "water_lkg":2000, "energy_kwhkg":7.0, "risk":48, "note":"Luxury blend." }
+  ]
+}

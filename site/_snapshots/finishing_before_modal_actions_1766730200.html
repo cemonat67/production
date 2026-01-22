@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Finishing DPP</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      #finStackLegend .lg{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid #eef2f7;border-radius:999px;background:#fff;}
+      #finStackLegend .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+      .exec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+      .exec-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px;cursor:pointer;pointer-events:auto;position:relative;z-index:5;}
+      .exec-card:hover{border-color:#f9ba00;}
+      .exec-metric{font-size:24px;font-weight:800;color:#02154e;margin:8px 0;}
+      .exec-sub{font-size:12px;color:#666;}
+      .zero-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:9999;}
+      .zero-modal[aria-hidden="false"]{display:flex;}
+      .zero-modal-box{background:#fff;margin:auto;padding:20px;max-width:520px;width:90%;border-radius:10px;}
+      @media print{.app-header,.zero-color-bar,.container,.btn,#finishingClearFilter,#finishingTimeframe{display:none !important;}.print-only-report{display:block !important;}}
+      .print-only-report{display:none;}
+    </style>
+  </head>
+  <body>
+    <style>.exec-card{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;}.exec-card:hover{transform:translateY(-2px);box-shadow:0 12px 24px rgba(0,0,0,.18);}</style>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+    <div class="header-content">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+            <a href="index.html" style="text-decoration:none;display:flex;align-items:center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height:80px;margin-right:15px;">
+                <div class="title">Zero <span class="title-at">Ecosystem</span> — Finishing DPP by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+        </div>
+    </div>
+</header>
+    <main class="container">
+      <div class="card" style="margin-bottom:24px;">
+        <div class="row" style="justify-content:space-between;align-items:center;">
+          <div>
+            <h3>Finishing — Quality & Yield Loss</h3>
+            <p class="muted">Process metrics: Rework, Defects, and Cost of Quality</p>
+          </div>
+          <div class="row" style="gap:8px;align-items:center;">
+            <label for="finFacilitySelect" class="muted" style="font-weight:bold;color:#02154e;">Line:</label>
+            <select id="finFacilitySelect" class="btn" style="background:#f9ba00;color:#02154e;font-weight:bold;border:none;">
+              <option value="line1">🏭 Stenter Line A (High Capacity)</option>
+              <option value="line2">🏭 Stenter Line B (Precision)</option>
+              <option value="compact">🏭 Compactor Unit 1</option>
+            </select>
+            <button class="btn" onclick="window.print()" style="background:#02154e;color:#fff;">📄 Export Report (PDF)</button>
+            <label for="finishingTimeframe" class="muted">Range:</label>
+            <select id="finishingTimeframe" class="btn" style="background:rgba(255,255,255,0.1);min-width:120px;"></select>
+          </div>
+        </div>
+        <div class="row" style="gap:32px;align-items:flex-start;">
+          <div class="card" style="min-width:260px;">
+            <h3 id="finTotalRework">—</h3>
+            <p class="muted">Rework Rate (%)</p>
+          </div>
+          <div class="card" style="min-width:260px;">
+            <h3 id="finTotalLoss">—</h3>
+            <p class="muted">Yield Loss Cost (€)</p>
+          </div>
+        </div>
+      </div>
+      <section class="exec-lenses" style="margin-bottom:24px;">
+        <div style="font-size:14px;color:#02154e;font-weight:800;margin-bottom:6px;">Executive Decision Lenses — Finishing</div>
+        <div class="exec-grid">
+          <div class="exec-card" data-role="CEO"><h4>CEO — Quality Brand</h4><div class="exec-metric" style="color:#005530">Premium</div><div class="exec-sub">Customer Returns: &lt;0.5%</div></div>
+          <div class="exec-card" data-role="CFO"><h4>CFO — Hidden Costs</h4><div class="exec-metric" style="color:#D51635">€145K</div><div class="exec-sub">Annual Rework/Energy Loss</div></div>
+          <div class="exec-card" data-role="CTO"><h4>CTO — Process Data</h4><div class="exec-metric">88%</div><div class="exec-sub">IoT Connectivity</div></div>
+          <div class="exec-card" data-role="MD"><h4>MD/COO — Efficiency</h4><div class="exec-metric">92%</div><div class="exec-sub">OEE (Stenter Lines)</div></div>
+        </div>
+      </section>
+      <section class="card" id="trendSection" style="margin-bottom:24px;">
+        <h3>Defect & Rework Trend</h3>
+        <div id="finTrendSummary" class="muted skeleton skeleton-text">—</div>
+        <div id="finTrendCostSummary" class="muted skeleton skeleton-text">—</div>
+      </section>
+      <div class="card" style="margin-top:14px;margin-bottom:24px;">
+        <div style="padding:16px 18px;border-bottom:1px solid #eef2f7;">
+          <div style="font-weight:900;color:#02154e;font-size:16px;">Module Cost &amp; Impact (Stacked)</div>
+          <div style="color:#6b7280;font-size:12px;margin-top:4px;">Breakdown by process step (Energy, Chemical, Rework)</div>
+        </div>
+        <div style="padding:14px 18px;">
+          <canvas id="finStackCanvas" style="width:100%;height:220px;display:block;"></canvas>
+          <div id="finStackLegend" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:12px;color:#6b7280;"></div>
+        </div>
+      </div>
+      <section class="card" style="margin-bottom:24px;">
+        <h3>Finishing Process CO₂ (Monthly)</h3>
+        <div style="height:220px;margin-top:10px;">
+          <canvas id="finTrendCanvas" width="1100" height="220" style="width:100%;height:220px;border-radius:14px;background:#fff;border:1px solid rgba(2,21,78,.08);"></canvas>
+        </div>
+      </section>
+      <section class="card">
+        <h3>Finishing Process Details</h3>
+        <p class="muted">Metrics by process step</p>
+        <table class="table-hover" style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left;padding:8px;">Process</th>
+              <th style="text-align:left;padding:8px;">Type</th>
+              <th style="text-align:left;padding:8px;">Defect %</th>
+              <th style="text-align:left;padding:8px;">Loss (€)</th>
+              <th style="text-align:left;padding:8px;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="finModulesTbody"></tbody>
+        </table>
+      </section>
+    </main>
+    <div class="zero-modal" id="finExecModal" aria-hidden="true">
+      <div class="zero-modal-box">
+        <button class="zero-modal-close" id="finExecClose" style="float:right;border:none;background:none;font-size:1.2rem;cursor:pointer;">✕</button>
+        <h3 id="finModalTitle" style="margin-top:0;color:#02154e;"></h3>
+        <p id="finModalSub" style="color:#666;font-size:0.9rem;margin-bottom:1rem;"></p>
+        <div id="finModalContent"></div>
+      </div>
+    </div>
+    <script>
+      (function(){
+        const $ = (id)=>document.getElementById(id);
+        const TIME = $("finishingTimeframe");
+        if(TIME){
+          ["Q1 2025","Q2 2025","Q3 2025","Last 30 Days"].forEach(t=>{
+            const o=document.createElement("option");o.value=t;o.innerText=t;TIME.appendChild(o);
+          });
+        }
+        function facilityKey(){return $("finFacilitySelect")?$("finFacilitySelect").value:"line1";}
+        function badge(s){
+          var c="gray",t=s;if(s==="OK"||s==="SAFE")c="green";if(s==="HIGH"||s==="Alert"||s==="Waste")c="red";if(s==="MODERATE"||s==="Shrinkage"||s==="High Energy")c="orange";
+          var bg={green:"#dcfce7",red:"#fee2e2",orange:"#fef9c3",gray:"#f3f4f6"},fg={green:"#166534",red:"#991b1b",orange:"#854d0e",gray:"#374151"};
+          return `<span style="background:${bg[c]||bg.gray};color:${fg[c]||fg.gray};padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700">${t}</span>`;
+        }
+        function buildModules(f){
+          var base={co2:145.2,costK:85};if(f==="line1"){base.co2=145;base.costK=145;}else if(f==="line2"){base.co2=95;base.costK=65;}else{base.co2=60;base.costK=42;}
+          var logicKey=f;if(f==="line1")logicKey="BOSSA";if(f==="line2")logicKey="ISKO";if(f==="compact")logicKey="KIVANC";
+          var parts=[{m:"Finishing (Main)",area:"Process",pC:0.34,pK:0.30,s:"MODERATE"},{m:"Heat / Steam",area:"Utilities",pC:0.22,pK:0.26,s:"MODERATE"},{m:"Water & ETP",area:"Compliance",pC:0.18,pK:0.12,s:"HIGH"},{m:"Rework & Yield Loss",area:"Quality",pC:0.16,pK:0.20,s:"HIGH"},{m:"Lab & QC",area:"Quality",pC:0.10,pK:0.12,s:"SAFE"}];
+          if(logicKey==="BOSSA"){parts[3].pC=0.20;parts[3].pK=0.24;parts[3].s="HIGH";parts[2].s="HIGH";}
+          if(logicKey==="ISKO"){parts[3].s="MODERATE";parts[4].pC=0.12;parts[4].pK=0.14;}
+          if(logicKey==="KIVANC"){parts[0].s="SAFE";parts[3].s="MODERATE";}
+          function norm(key){var sum=0;for(var i=0;i<parts.length;i++)sum+=parts[i][key];for(var i2=0;i2<parts.length;i2++)parts[i2][key]=parts[i2][key]/sum;}
+          norm("pC");norm("pK");
+          return parts.map(function(x){return{module:x.m,area:x.area,co2:(base.co2*x.pC),costK:(base.costK*x.pK),status:x.s,pC:x.pC,pK:x.pK};});
+        }
+        function getTrendData(f){
+          if(f==="line1")return[{m:"Jan",val:24,cost:120},{m:"Feb",val:22,cost:115},{m:"Mar",val:25,cost:125},{m:"Apr",val:23,cost:118},{m:"May",val:28,cost:135},{m:"Jun",val:26,cost:130}];
+          if(f==="line2")return[{m:"Jan",val:18,cost:90},{m:"Feb",val:19,cost:92},{m:"Mar",val:17,cost:88},{m:"Apr",val:16,cost:85},{m:"May",val:18,cost:90},{m:"Jun",val:17,cost:88}];
+          return[{m:"Jan",val:12,cost:40},{m:"Feb",val:14,cost:45},{m:"Mar",val:15,cost:48},{m:"Apr",val:13,cost:42},{m:"May",val:16,cost:50},{m:"Jun",val:15,cost:48}];
+        }
+        function renderModules(){
+          var tb=$("finModulesTbody");if(!tb)return;var f=facilityKey();var rows=buildModules(f);
+          var totalCo2=0,totalCost=0;rows.forEach(r=>{totalCo2+=r.co2;totalCost+=r.costK;});
+          var reworkMod=rows.find(r=>r.module.includes("Rework"));var reworkVal=reworkMod?(reworkMod.pC*10).toFixed(1)+"%":"2.4%";var lossVal=reworkMod?"€"+Math.round(reworkMod.costK)+"K":"€145K";
+          if($("finTotalRework"))$("finTotalRework").innerText=reworkVal;if($("finTotalLoss"))$("finTotalLoss").innerText=lossVal;
+          tb.innerHTML=rows.map(function(r){return"<tr>"+
+            "<td style=\"padding:12px 10px;font-weight:800;color:#02154e\">"+r.module+"</td>"+
+            "<td style=\"padding:12px 10px;color:#6b7280\">"+r.area+"</td>"+
+            "<td style=\"padding:12px 10px;font-weight:800\">"+(r.co2.toFixed(1))+"t</td>"+
+            "<td style=\"padding:12px 10px;font-weight:800\">€"+Math.round(r.costK)+"K</td>"+
+            "<td style=\"padding:12px 10px\">"+badge(r.status)+"</td>"+
+          "</tr>";}).join("");
+          drawStack(rows);drawTrendChart("finTrendCanvas",getTrendData(f));
+        }
+        function prepCanvas(c){if(!c)return null;var dpr=Math.max(1,window.devicePixelRatio||1);var rect=c.getBoundingClientRect();var w=Math.max(10,Math.floor(rect.width));var h=Math.max(10,Math.floor(rect.height));c.width=Math.floor(w*dpr);c.height=Math.floor(h*dpr);var ctx=c.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx:ctx,w:w,h:h};}
+        window.__finStackHit=[];window.__finStackSelected=null;
+        function drawStack(rows){
+          var c=$("finStackCanvas");if(!c)return;var box=prepCanvas(c);if(!box)return;var ctx=box.ctx,W=box.w,H=box.h;ctx.clearRect(0,0,W,H);
+          var totalC=0,totalK=0;rows.forEach(function(r){totalC+=r.co2;totalK+=r.costK;});
+          var pad=14,barH=34,gap=18,x0=pad,x1=W-pad,yCo2=pad+18,yCost=yCo2+barH+gap+18;
+          function label(x,y,t){ctx.fillStyle="#02154e";ctx.font="800 12px system-ui,-apple-system,Segoe UI,Roboto";ctx.fillText(t,x,y);}
+          label(x0,yCo2-10,"CO₂ Share (by module)");label(x0,yCost-10,"Cost Share (K€) (by module)");
+          function segColor(i){var palette=["#02154e","#f9ba00","#005530","#D51635","#6b7280","#7c3aed"];return palette[i%palette.length];}
+          window.__finStackHit=[];
+          function drawBar(y,kind){
+            var cur=x0;rows.forEach(function(r,idx){var share=(kind==="co2")?(r.co2/totalC):(r.costK/totalK);var w=Math.max(2,(x1-x0)*share);ctx.fillStyle=segColor(idx);ctx.fillRect(cur,y,w,barH);window.__finStackHit.push({kind:kind,x:cur,y:y,w:w,h:barH,r:r,share:share});cur+=w;});
+            ctx.strokeStyle="rgba(2,21,78,.20)";ctx.lineWidth=1;ctx.strokeRect(x0,y,(x1-x0),barH);
+          }
+          drawBar(yCo2,"co2");drawBar(yCost,"cost");
+          if(window.__finStackSelected){drawTooltip(ctx,W,H,window.__finStackSelected);}
+        }
+        function drawTooltip(ctx,W,H,item){
+          var txt1=item.r.module,txt2=(item.kind==="co2"?"CO₂":"Cost")+": "+Math.round(item.share*100)+"%",txt3=(item.kind==="co2"?item.r.co2.toFixed(1)+"t":"€"+Math.round(item.r.costK)+"K");
+          ctx.font="800 12px system-ui,-apple-system,Segoe UI,Roboto";var w=Math.max(ctx.measureText(txt1).width,ctx.measureText(txt2).width,ctx.measureText(txt3).width)+24;var h=52;var x=Math.min(W-w-12,Math.max(12,item.x+item.w/2-w/2));var y=Math.max(12,item.y-h-10);
+          ctx.fillStyle="rgba(255,255,255,.96)";ctx.strokeStyle="rgba(2,21,78,.18)";ctx.lineWidth=1;roundRect(ctx,x,y,w,h,12,true,true);
+          ctx.fillStyle="#02154e";ctx.fillText(txt1,x+12,y+18);ctx.fillStyle="#6b7280";ctx.font="700 12px system-ui,-apple-system,Segoe UI,Roboto";ctx.fillText(txt2,x+12,y+34);ctx.fillStyle="#02154e";ctx.font="800 12px system-ui,-apple-system,Segoe UI,Roboto";ctx.fillText(txt3,x+w-12-ctx.measureText(txt3).width,y+34);
+        }
+        function roundRect(ctx,x,y,w,h,r,fill,stroke){if(w<2*r)r=w/2;if(h<2*r)r=h/2;ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();if(fill)ctx.fill();if(stroke)ctx.stroke();}
+        function bindStackEvents(){
+          var c=$("finStackCanvas");if(!c)return;
+          function pick(evt){
+            var rect=c.getBoundingClientRect();var x=(evt.touches?evt.touches[0].clientX:evt.clientX)-rect.left;var y=(evt.touches?evt.touches[0].clientY:evt.clientY)-rect.top;
+            if(!window.__finStackHit)return;var found=null;for(var i=0;i<window.__finStackHit.length;i++){var h=window.__finStackHit[i];if(x>=h.x&&x<=h.x+h.w&&y>=h.y&&y<=h.y+h.h){found=h;break;}}
+            if(found!==window.__finStackSelected){window.__finStackSelected=found;var f=facilityKey();var rows=buildModules(f);drawStack(rows);}
+          }
+          c.addEventListener("mousemove",pick);c.addEventListener("touchstart",pick,{passive:true});c.addEventListener("mouseleave",function(){window.__finStackSelected=null;var f=facilityKey();var rows=buildModules(f);drawStack(rows);});
+        }
+        function drawTrendChart(canvasId,data){
+          const cvs=document.getElementById(canvasId);if(!cvs)return;const box=prepCanvas(cvs);if(!box)return;const ctx=box.ctx,W=box.w,H=box.h;ctx.clearRect(0,0,W,H);
+          const pad=30,gw=W-pad*2,gh=H-pad*2,maxVal=Math.max(...data.map(d=>d.val))*1.2;
+          ctx.strokeStyle="#eef2f7";ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<=4;i++){const y=pad+gh-(gh*i/4);ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.fillStyle="#999";ctx.textAlign="right";ctx.font="10px sans-serif";ctx.fillText(Math.round(maxVal*i/4),pad-5,y+3);}ctx.stroke();
+          ctx.beginPath();const step=gw/(data.length-1);data.forEach((d,i)=>{const x=pad+step*i;const y=pad+gh-(d.val/maxVal*gh);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);});ctx.strokeStyle="#02154e";ctx.lineWidth=2;ctx.stroke();
+          ctx.lineTo(pad+step*(data.length-1),pad+gh);ctx.lineTo(pad,pad+gh);ctx.closePath();ctx.fillStyle="rgba(2,21,78,0.05)";ctx.fill();
+          data.forEach((d,i)=>{const x=pad+step*i;const y=pad+gh-(d.val/maxVal*gh);ctx.fillStyle="#fff";ctx.strokeStyle="#02154e";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle="#666";ctx.textAlign="center";ctx.fillText(d.m,x,H-10);});
+        }
+        function init(){const sel=$("finFacilitySelect");if(sel){const up=new URLSearchParams(location.search);const fac=up.get("facility");if(fac)sel.value=fac;sel.addEventListener("change",function(){renderModules();});}renderModules();bindStackEvents();}
+        document.addEventListener("DOMContentLoaded",init);init();
+      })();
+    </script>
+    <div id="execModal" style="position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(2,21,78,.45);z-index:9999;">
+      <div id="execModalCard" style="max-width:520px;width:92%;background:#fff;border-radius:18px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h2 id="execModalTitle" style="margin:0;color:#02154e;font-weight:900;"></h2>
+          <button id="execModalClose" style="border:none;background:none;font-size:22px;font-weight:900;cursor:pointer;">×</button>
+        </div>
+        <div id="execModalBody" style="margin-top:14px;font-size:15px;color:#374151;line-height:1.55;"></div>
+        <div id="execModalFooter" style="margin-top:18px;display:flex;gap:10px;">
+          <button id="execModalAction" style="padding:12px 16px;border-radius:12px;border:none;background:#f9ba00;font-weight:900;cursor:pointer;">Take Action</button>
+          <button id="execModalCancel" style="padding:12px 16px;border-radius:12px;border:1px solid #d1d5db;background:#fff;font-weight:800;cursor:pointer;">Close</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function(){
+        var modal=document.getElementById("execModal");
+        var title=document.getElementById("execModalTitle");
+        var body=document.getElementById("execModalBody");
+        var closeBtn=document.getElementById("execModalClose");
+        var cancelBtn=document.getElementById("execModalCancel");
+        function openModal(role){
+          if(role==="ceo"){
+            title.textContent="CEO Impact Summary";
+            body.innerHTML="<b>Strategic Signal:</b><br/>Finishing operations show material CO₂ and cost leverage.<br/><br/><ul><li>Brand & compliance risk is controllable</li><li>Supplier discipline directly impacts margins</li><li>Action here improves CSRD & customer trust</li></ul>";
+          }
+          if(role==="cfo"){
+            title.textContent="CFO Cost & Risk Brief";
+            body.innerHTML="<b>Financial Insight:</b><br/>Rework and energy drive disproportionate cost.<br/><br/><ul><li>Rework = hidden margin loss</li><li>Energy volatility hits EBITDA</li><li>Targeted fixes → fast ROI</li></ul>";
+          }
+          modal.style.display="flex";
+        }
+        function closeModal(){ modal.style.display="none"; }
+        document.querySelectorAll(".exec-card").forEach(function(card){
+          card.addEventListener("click",function(){
+            var r=(card.dataset.role||"").toLowerCase();
+            if(r) openModal(r);
+          });
+        });
+        closeBtn.onclick=closeModal;
+        cancelBtn.onclick=closeModal;
+        modal.addEventListener("click",function(e){ if(e.target===modal) closeModal(); });
+      })();
+    </script>
+  <a href="/" class="zero-back-btn">← Back</a>
+<style>
+.zero-back-btn{
+  position:fixed; top:16px; right:16px; z-index:9999;
+  display:inline-block; padding:10px 14px;
+  font-size:13px; font-weight:700;
+  color:#ffffff; background:#005530;
+  border:2px solid #005530; border-radius:10px;
+  text-decoration:none; letter-spacing:.4px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18);
+  transition:transform .12s ease, filter .12s ease;
+}
+.zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
+</style>
+</body>
+</html>
+
