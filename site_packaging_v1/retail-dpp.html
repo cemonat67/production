@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Retail & Distribution</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      /* ZERO_RETAIL_OS v1 */
+      :root {
+        --zero-navy: #02154e;
+        --zero-orange: #f9ba00;
+        --zero-green: #005530;
+        --zero-red: #D51635;
+        --zero-gray: #f8fafc;
+      }
+      body { background: var(--zero-gray); }
+      
+      /* CONTEXT BAR */
+      .context-bar {
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #64748b;
+      }
+      .context-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        color: var(--zero-navy);
+        font-weight: 600;
+      }
+
+      /* KPI ROW */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .kpi-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        position: relative;
+      }
+      .kpi-label { font-size: 0.75rem; text-transform: uppercase; color: #64748b; margin-bottom: 8px; letter-spacing: 0.5px; }
+      .kpi-value { font-size: 1.8rem; font-weight: 700; color: var(--zero-navy); }
+      .kpi-sub { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+      .status-ok { color: var(--zero-green); }
+      .status-monitor { color: var(--zero-orange); }
+      .status-action { color: var(--zero-red); }
+
+      /* ACTION BAR */
+      .action-bar {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .action-btn {
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        color: var(--zero-navy);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+      .action-btn:hover { background: #f8fafc; border-color: var(--zero-navy); }
+      .btn-primary { background: var(--zero-navy); color: #fff; border: none; }
+      .btn-primary:hover { background: #032070; }
+      .btn-risk { border-color: var(--zero-red); color: var(--zero-red); }
+      .btn-risk:hover { background: #fff5f5; }
+
+      /* MARKET REALITY SIGNALS */
+      .signal-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+      .signal-card {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        padding: 20px;
+        border-left: 4px solid var(--zero-navy);
+      }
+      .signal-title { font-weight: 700; color: var(--zero-navy); margin-bottom: 8px; font-size: 0.95rem; }
+      
+      /* FOOTER */
+      .governance-footer {
+        text-align: center;
+        padding: 24px;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        border-top: 1px solid #e2e8f0;
+        margin-top: 40px;
+      }
+
+      /* TOAST */
+      #zeroToast {
+        position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+        background: #333; color: #fff; padding: 12px 24px; border-radius: 30px;
+        z-index: 99999; opacity: 0; transition: opacity 0.3s; font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2); pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <div id="zeroToast"></div>
+    
+    <header class="app-header">
+        <div class="header-content">
+            <div style="display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 60px; margin-right: 15px;">
+                <div class="title">Zero <span class="title-at">Ecosystem</span> — Retail & Distribution</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEXT BAR -->
+    <div class="context-bar">
+      <div style="display:flex; gap:12px;">
+        <span class="context-tag">🇪🇺 Market: EU (Germany/France)</span>
+        <span class="context-tag">🛍️ Retailer: Major Key Account</span>
+        <span class="context-tag">📦 Season: AW25</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <span style="font-size:0.8rem; color:#94a3b8;">Downstream Scope 3</span>
+        <div style="width:8px; height:8px; background:var(--zero-orange); border-radius:50%;"></div>
+      </div>
+    </div>
+
+    <main class="container" style="padding-top: 24px;">
+      
+      <!-- EXECUTIVE KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Distributed Volume</div>
+          <div class="kpi-value">124,500</div>
+          <div class="kpi-sub">Units (AW25)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Downstream CO₂ (t)</div>
+          <div class="kpi-value">312.4</div>
+          <div class="kpi-sub">Logistics + Retail Energy</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Liability at Shelf (€)</div>
+          <div class="kpi-value" id="kpiLiability">€18,744</div>
+          <div class="kpi-sub">Carbon Cost (Est. €60/t)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Risk Status</div>
+          <div class="kpi-value status-ok" id="kpiRisk">OK</div>
+          <div class="kpi-sub">Margin Profile Stable</div>
+        </div>
+      </div>
+
+      <!-- DECISION LAYER -->
+      <div class="action-bar">
+        <div style="font-weight:700; color:var(--zero-navy); margin-right:12px;">Market Actions:</div>
+        <button class="action-btn btn-primary" onclick="showToast('Margin Impact Analysis generated.')">
+          <span>💶</span> € Margin Impact
+        </button>
+        <button class="action-btn" onclick="window.print()">
+          <span>📄</span> Retailer Report Export
+        </button>
+        <div style="flex-grow:1;"></div>
+        <button class="action-btn btn-risk" onclick="showToast('Market Risk flagged to Sales Director.')">
+          <span>🚩</span> Flag Market Risk
+        </button>
+      </div>
+
+      <!-- MARKET REALITY SIGNALS -->
+      <div class="signal-grid">
+        
+        <!-- Signal 1: Logistics Mix -->
+        <div class="signal-card">
+          <div class="signal-title">Logistics Mode Mix</div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+             <span>Road / Sea</span>
+             <span style="font-weight:700;">92%</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; color:var(--zero-red);">
+             <span>Air Freight</span>
+             <span style="font-weight:700;" id="airVal">8%</span>
+          </div>
+          <div style="margin-top:12px; font-size:0.8rem; color:#64748b;">
+             Air freight is <b id="airMult">14x</b> more carbon intensive.
+          </div>
+        </div>
+
+        <!-- Signal 2: Returns Impact -->
+        <div class="signal-card" style="border-left-color:var(--zero-orange);">
+          <div class="signal-title">Returns (Reverse Logistics)</div>
+          <div style="font-size:1.8rem; font-weight:700; color:var(--zero-navy);">12.4%</div>
+          <div class="kpi-sub">Avg Return Rate</div>
+          <div style="margin-top:12px; font-size:0.8rem; color:#64748b;">
+             Double carbon tax on rejected units.
+          </div>
+        </div>
+
+        <!-- Signal 3: Shelf Efficiency -->
+        <div class="signal-card">
+          <div class="signal-title">Shelf Carbon Efficiency</div>
+          <div style="font-size:1.8rem; font-weight:700; color:var(--zero-navy);">0.14 kg</div>
+          <div class="kpi-sub">CO₂ per € Revenue</div>
+          <div style="margin-top:12px; font-size:0.8rem; color:#64748b;">
+             Retail energy allocation included.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ANALYTICS -->
+      <section class="card" style="border:1px solid #e2e8f0;">
+         <h3 style="font-size:1rem; margin-bottom:16px; color:var(--zero-navy);">Downstream Allocation (Scope 3)</h3>
+         <canvas id="chartDownstream" height="80"></canvas>
+      </section>
+
+      <div class="governance-footer">
+        Downstream impact allocated by volume and logistics mode.<br>
+        Privacy-safe. Market-ready. Audit-defensible.
+      </div>
+
+    </main>
+
+    <script>
+      /* ZERO_RETAIL_LOGIC v1 */
+      
+      // Toast Helper
+      function showToast(msg){
+          let t = document.getElementById("zeroToast");
+          t.textContent = msg;
+          t.style.opacity = "1";
+          setTimeout(()=>t.style.opacity="0", 3000);
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        const demo = params.get('demo');
+
+        // Chart
+        const ctx = document.getElementById('chartDownstream');
+        if(ctx) {
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['Transport to DC', 'Warehousing', 'Last Mile', 'Retail Store', 'Use Phase', 'End of Life'],
+              datasets: [{
+                label: 'kg CO₂ / Unit',
+                data: [0.8, 0.2, 0.4, 1.2, 4.5, 0.5],
+                backgroundColor: '#02154e'
+              }]
+            },
+            options: {
+              responsive: true,
+              scales: { y: { beginAtZero: true } }
+            }
+          });
+        }
+
+        // DEMO SHOCK LOGIC
+        if(demo === 'retail_margin_shock') {
+           // 1. Liability Surge (CBAM + Air Freight)
+           document.getElementById('kpiLiability').textContent = "€28,450";
+           document.getElementById('kpiLiability').style.color = "#D51635";
+           
+           // 2. Risk Flip
+           const r = document.getElementById('kpiRisk');
+           r.textContent = "ACTION";
+           r.className = "kpi-value status-action";
+           r.nextElementSibling.textContent = "Margin Erosion > 12%";
+           
+           // 3. Air Freight Spike
+           document.getElementById('airVal').textContent = "23%";
+           document.getElementById('airVal').style.fontSize = "1.2rem";
+           document.getElementById('airMult').textContent = "Emergency Mode";
+           
+           // 4. Auto Toast
+           setTimeout(()=>{
+               showToast("Margin Shock Detected: CBAM + Air Freight Impact.");
+           }, 800);
+        }
+      });
+    </script>
+  </body>
+</html>

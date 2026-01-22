@@ -1,0 +1,36 @@
+:5680 {
+
+  # ---- OPS ----
+  handle_path /webhook/ops/incident {
+    reverse_proxy http://n8n:5678 {
+      uri replace /webhook/ops/incident /webhook/GqXdG0hQjJk4UEvV/webhook/ops/incident
+    }
+  }
+
+  handle_path /webhook/ops/incident-ack {
+    reverse_proxy http://n8n:5678 {
+      uri replace /webhook/ops/incident-ack /webhook/W0Z6rx9pGWoO9FV6/webhook/ops/incident-ack
+    }
+  }
+
+  # ---- GOVERNANCE ----
+  handle_path /webhook/governance/override-request {
+    reverse_proxy http://n8n:5678 {
+      uri replace /webhook/governance/override-request /webhook/B8oshEcSKVSf3JVJ/webhook/governance/override-request
+    }
+  }
+
+  handle_path /webhook/governance/override-approve {
+    reverse_proxy http://n8n:5678 {
+      uri replace /webhook/governance/override-approve /webhook/MI07aHOVou5zx6s6/webhook/governance/override-approve
+    }
+  }
+
+  handle_path /webhook/governance/generate-evidence-pack {
+    reverse_proxy http://n8n:5678 {
+      uri replace /webhook/governance/generate-evidence-pack /webhook/VoNlz2uP2lJBwIvY/webhook/governance/generate-evidence-pack
+    }
+  }
+
+  respond "NOT FOUND" 404
+}

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero@Production — Packaging DPP</title>
+    <link rel="stylesheet" href="assets/css/theme.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --zero-navy: #02154e;
+            --zero-orange: #f9ba00;
+            --zero-green: #005530;
+            --zero-red: #D51635;
+            --zero-white: #ffffff;
+            --zero-gray-bg: #f4f6f8;
+            --zero-border: #e0e0e0;
+        }
+        
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--zero-gray-bg); margin: 0; color: #1a1a1a; }
+        
+        .zero-color-bar { height: 4px; background: linear-gradient(90deg, var(--zero-green) 0%, var(--zero-green) 25%, var(--zero-red) 25%, var(--zero-red) 50%, var(--zero-navy) 50%, var(--zero-navy) 75%, var(--zero-orange) 75%, var(--zero-orange) 100%); position: fixed; top: 0; width: 100%; z-index: 1000; }
+        
+        .app-header { background: #fff; border-bottom: 1px solid var(--zero-border); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+        .header-left { display: flex; align-items: center; gap: 1rem; }
+        .header-title { font-size: 1.25rem; font-weight: 300; color: var(--zero-navy); }
+        .header-title span { color: var(--zero-orange); font-weight: 600; }
+        
+        .container { max-width: 1400px; margin: 2rem auto; padding: 0 1rem; }
+        
+        /* EXECUTIVE LENSES */
+        .lens-band { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+        .lens-card { background: #fff; padding: 1.5rem; border-radius: 8px; border: 1px solid var(--zero-border); border-top: 4px solid #ccc; transition: transform 0.2s; cursor: pointer; }
+        .lens-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        
+        .lens-ceo { border-top-color: var(--zero-navy); }
+        .lens-cfo { border-top-color: var(--zero-orange); }
+        .lens-cto { border-top-color: var(--zero-green); }
+        .lens-md { border-top-color: #666; }
+        
+        .lens-role { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: #666; font-weight: 700; margin-bottom: 0.5rem; }
+        .lens-metric { font-size: 1.8rem; font-weight: 800; color: var(--zero-navy); margin-bottom: 0.25rem; }
+        .lens-desc { font-size: 0.9rem; color: #666; margin-bottom: 1rem; }
+        .lens-badge { display: inline-block; background: #f0f2f5; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: #333; font-weight: 600; }
+        
+        /* FACTORY COCKPIT */
+        .cockpit-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+        
+        .panel { background: #fff; border: 1px solid var(--zero-border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .panel-title { font-size: 1.1rem; font-weight: 600; color: var(--zero-navy); display: flex; align-items: center; gap: 0.5rem; }
+        
+        /* TABLE */
+        .zero-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .zero-table th { text-align: left; padding: 12px; background: #f8fafc; color: #444; font-weight: 600; border-bottom: 2px solid var(--zero-border); }
+        .zero-table td { padding: 12px; border-bottom: 1px solid var(--zero-border); color: #333; }
+        .zero-table tr:last-child td { border-bottom: none; }
+        .zero-table tr:hover { background: #f9f9f9; }
+        
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+        .status-ready { background: #e6f4ea; color: var(--zero-green); }
+        .status-pending { background: #fff8e1; color: #b38600; }
+        .status-alert { background: #fce8e6; color: var(--zero-red); }
+        
+        /* FILTERS */
+        .filter-bar { display: flex; gap: 1rem; margin-bottom: 1rem; }
+        .search-box { flex: 1; position: relative; }
+        .search-box input { width: 100%; padding: 10px 10px 10px 35px; border: 1px solid var(--zero-border); border-radius: 6px; font-size: 0.9rem; }
+        .search-box i { position: absolute; left: 12px; top: 12px; color: #999; }
+        
+        .filter-select { padding: 10px; border: 1px solid var(--zero-border); border-radius: 6px; background: #fff; font-size: 0.9rem; min-width: 150px; }
+
+        /* ALERT LOG */
+        .alert-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .alert-icon { color: var(--zero-orange); }
+        .alert-content div { font-weight: 600; font-size: 0.9rem; color: #333; }
+        .alert-content span { font-size: 0.8rem; color: #666; }
+        
+        /* AI BAND */
+        .ai-band { background: linear-gradient(90deg, #02154e 0%, #032070 100%); color: white; padding: 10px 20px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-bottom: 1.5rem; }
+        .ai-confidence { font-weight: 700; color: var(--zero-orange); }
+    </style>
+</head>
+<body>
+    <div class="zero-color-bar"></div>
+    
+    <header class="app-header">
+        <div class="header-left">
+            <img src="assets/img/plogo.svg" alt="Logo" style="height: 50px;">
+            <div class="header-title">Zero@Production <span>Packaging DPP</span></div>
+        </div>
+        <div>
+            <a href="index.html" style="text-decoration:none; color: var(--zero-navy); font-weight: 600; font-size: 0.9rem;"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- AI CONFIDENCE LAYER -->
+        <div class="ai-band" id="aiBand" style="display:none;">
+            <div><i class="fa-solid fa-robot"></i> <strong>Zero AI Insight:</strong> <span id="aiMsg">Analyzing packaging compliance...</span></div>
+            <div class="ai-confidence">Confidence: 98.4%</div>
+        </div>
+
+        <!-- EXECUTIVE LENSES -->
+        <div class="lens-band">
+            <!-- CEO -->
+            <div class="lens-card lens-ceo" onclick="setRole('ceo')">
+                <div class="lens-role">CEO • Compliance</div>
+                <div class="lens-metric">98%</div>
+                <div class="lens-desc">GRS/FSC Certified Materials</div>
+                <div class="lens-badge">Brand Safety: High</div>
+            </div>
+            <!-- CFO -->
+            <div class="lens-card lens-cfo" onclick="setRole('cfo')">
+                <div class="lens-role">CFO • Cost Efficiency</div>
+                <div class="lens-metric">€0.42</div>
+                <div class="lens-desc">Avg. Cost per Unit</div>
+                <div class="lens-badge">Target: €0.40</div>
+            </div>
+            <!-- CTO -->
+            <div class="lens-card lens-cto" onclick="setRole('cto')">
+                <div class="lens-role">CTO • Digital ID</div>
+                <div class="lens-metric">100%</div>
+                <div class="lens-desc">QR/NFC Active</div>
+                <div class="lens-badge">Data: ML-Ready</div>
+            </div>
+            <!-- MD -->
+            <div class="lens-card lens-md" onclick="setRole('md')">
+                <div class="lens-role">MD • Inventory</div>
+                <div class="lens-metric">4.2d</div>
+                <div class="lens-desc">Stock Coverage</div>
+                <div class="lens-badge">Reorder Point</div>
+            </div>
+        </div>
+
+        <div class="cockpit-grid">
+            <!-- LEFT: ORDERS & INVENTORY -->
+            <div class="main-col">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fa-solid fa-boxes-packing"></i> Active Packaging Orders</div>
+                        <button class="status-badge status-ready" style="border:none; cursor:pointer;" onclick="renderTable()">Refresh</button>
+                    </div>
+                    
+                    <div class="filter-bar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" id="searchInput" placeholder="Search PO, Style, or Material..." onkeyup="filterTable()">
+                        </div>
+                        <select class="filter-select" id="statusFilter" onchange="filterTable()">
+                            <option value="all">All Status</option>
+                            <option value="Ready">Ready</option>
+                            <option value="In Production">In Production</option>
+                            <option value="Delayed">Delayed</option>
+                        </select>
+                    </div>
+
+                    <table class="zero-table">
+                        <thead>
+                            <tr>
+                                <th>PO #</th>
+                                <th>Style</th>
+                                <th>Polybag (Type)</th>
+                                <th>Carton (Type)</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersBody">
+                            <!-- JS Injection -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- RIGHT: CHARTS & ALERTS -->
+            <div class="side-col">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fa-solid fa-chart-pie"></i> Material Composition</div>
+                    </div>
+                    <canvas id="materialChart" height="200"></canvas>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fa-solid fa-recycle"></i> Waste Reduction</div>
+                    </div>
+                    <canvas id="wasteChart" height="200"></canvas>
+                    <div style="margin-top:1rem; text-align:center; font-size:0.85rem; color:#666;">
+                        Target: <span style="color:var(--zero-green); font-weight:700;">-20% Plastic Usage</span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><i class="fa-solid fa-bell"></i> Exception Log</div>
+                    </div>
+                    <div id="alertLog">
+                        <!-- Alerts -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATASET ---
+        const ZERO_PACKAGING_DATASET = [
+            { po: "PO-2024-001", style: "Organic Cotton T-Shirt", polybag: "Recycled LDPE (GRS)", carton: "FSC Mix Double Wall", status: "Ready", co2: 0.05, risk: "Low" },
+            { po: "PO-2024-002", style: "Denim Jeans Classic", polybag: "Bio-degradable PLA", carton: "FSC Recycled", status: "In Production", co2: 0.12, risk: "Low" },
+            { po: "PO-2024-003", style: "Silk Blouse", polybag: "Virgin LDPE (Legacy)", carton: "Standard Kraft", status: "Delayed", co2: 0.18, risk: "High" },
+            { po: "PO-2024-004", style: "Wool Coat", polybag: "Recycled LDPE (GRS)", carton: "Heavy Duty Corrugated", status: "Ready", co2: 0.22, risk: "Low" },
+            { po: "PO-2024-005", style: "Sport Leggings", polybag: "Recycled LDPE (GRS)", carton: "FSC Mix", status: "Ready", co2: 0.08, risk: "Low" },
+            { po: "PO-2024-006", style: "Linen Shirt", polybag: "Bio-degradable PLA", carton: "FSC Recycled", status: "In Production", co2: 0.10, risk: "Low" },
+            { po: "PO-2024-007", style: "Cargo Shorts", polybag: "Virgin LDPE (Legacy)", carton: "Standard Kraft", status: "In Production", co2: 0.15, risk: "Med" }
+        ];
+
+        // --- RENDER FUNCTIONS ---
+        function renderTable(filterText = "", statusFilter = "all") {
+            const tbody = document.getElementById("ordersBody");
+            tbody.innerHTML = "";
+            
+            ZERO_PACKAGING_DATASET.forEach(item => {
+                // Filter Logic
+                const matchText = (item.po + item.style + item.polybag).toLowerCase().includes(filterText.toLowerCase());
+                const matchStatus = statusFilter === "all" || item.status === statusFilter;
+                
+                if (matchText && matchStatus) {
+                    const tr = document.createElement("tr");
+                    
+                    let badgeClass = "status-ready";
+                    if(item.status === "In Production") badgeClass = "status-pending";
+                    if(item.status === "Delayed") badgeClass = "status-alert";
+
+                    tr.innerHTML = `
+                        <td style="font-weight:600; color:var(--zero-navy);">${item.po}</td>
+                        <td>${item.style}</td>
+                        <td>${item.polybag}</td>
+                        <td>${item.carton}</td>
+                        <td><span class="status-badge ${badgeClass}">${item.status}</span></td>
+                        <td>
+                            <button style="border:1px solid #ddd; background:#fff; border-radius:4px; cursor:pointer;" title="View Details">
+                                <i class="fa-solid fa-eye" style="color:#666;"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+        }
+
+        function filterTable() {
+            const txt = document.getElementById("searchInput").value;
+            const sts = document.getElementById("statusFilter").value;
+            renderTable(txt, sts);
+        }
+
+        function renderCharts() {
+            // Material Chart
+            new Chart(document.getElementById("materialChart"), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Recycled LDPE', 'Bio-PLA', 'Virgin LDPE', 'FSC Paper'],
+                    datasets: [{
+                        data: [45, 20, 15, 20],
+                        backgroundColor: ['#005530', '#81C784', '#D51635', '#f9ba00'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } },
+                    cutout: '70%'
+                }
+            });
+
+            // Waste Chart
+            new Chart(document.getElementById("wasteChart"), {
+                type: 'bar',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4 (Est)'],
+                    datasets: [{
+                        label: 'Plastic Waste (kg)',
+                        data: [1200, 950, 800, 650],
+                        backgroundColor: '#02154e',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } }
+                }
+            });
+        }
+
+        function renderAlerts() {
+            const container = document.getElementById("alertLog");
+            const alerts = [
+                { icon: "fa-triangle-exclamation", title: "Stock Low: Virgin LDPE", time: "2h ago", color: "#D51635" },
+                { icon: "fa-check-circle", title: "FSC Certification Renewed", time: "1d ago", color: "#005530" },
+                { icon: "fa-info-circle", title: "New Supplier Onboarded", time: "2d ago", color: "#02154e" }
+            ];
+            
+            container.innerHTML = alerts.map(a => `
+                <div class="alert-item">
+                    <div class="alert-icon" style="color:${a.color}"><i class="fa-solid ${a.icon}"></i></div>
+                    <div class="alert-content">
+                        <div>${a.title}</div>
+                        <span>${a.time}</span>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        // --- ROLE LOGIC ---
+        function setRole(role) {
+            // Update URL
+            const url = new URL(window.location);
+            url.searchParams.set("role", role);
+            window.history.pushState({}, "", url);
+            
+            applyRoleLogic(role);
+        }
+
+        function applyRoleLogic(role) {
+            const band = document.getElementById("aiBand");
+            const msg = document.getElementById("aiMsg");
+            
+            band.style.display = "flex";
+            
+            if(role === 'ceo') {
+                msg.textContent = "Executive View: Analyzing Brand Compliance & Plastic Tax Exposure.";
+                renderTable("", "all"); // Show all
+            } else if (role === 'cfo') {
+                msg.textContent = "Financial View: Highlighting Cost Deviations & Virgin Plastic Penalties.";
+                // Highlight High Cost/Risk items
+                // Simple visual cue: filter to show "Virgin" (High Risk/Cost) items mainly? Or just alert.
+                // Let's filter table to show non-recycled for CFO focus
+                document.getElementById("searchInput").value = "Virgin";
+                filterTable();
+            } else if (role === 'cto') {
+                msg.textContent = "Technical View: Verifying Digital Product Passport Data Integrity.";
+                document.getElementById("searchInput").value = "";
+                filterTable();
+            } else if (role === 'md') {
+                msg.textContent = "Operational View: Monitoring Stock Levels & Production Delays.";
+                document.getElementById("statusFilter").value = "Delayed";
+                filterTable();
+            }
+        }
+
+        // --- INIT ---
+        window.addEventListener('DOMContentLoaded', () => {
+            renderTable();
+            renderCharts();
+            renderAlerts();
+            
+            // Check URL Params
+            const p = new URLSearchParams(window.location.search);
+            const role = p.get("role");
+            if(role) applyRoleLogic(role);
+        });
+
+    </script>
+</body>
+</html>

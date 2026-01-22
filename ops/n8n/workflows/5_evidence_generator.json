@@ -1,0 +1,341 @@
+{
+  "name": "Governance - Evidence Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "governance/generate-evidence-pack",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/yarns",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "yarn_id",
+              "value": "eq.{{ $json.yarn_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get Yarn",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/governance_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "yarn_id",
+              "value": "eq.{{ $json.yarn_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get Events",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const yarn = items[0].json;\nconst events = $items('Get Events').map(i => i.json);\n\nconst snapshot = {\n  yarn,\n  events,\n  generated_at: new Date().toISOString(),\n  generator: 'Zero@Ecosystem Compliance Engine'\n};\n\nreturn [\n  {\n    json: snapshot,\n    binary: {\n      data: {\n        data: Buffer.from(JSON.stringify(snapshot, null, 2)).toString('base64'),\n        mimeType: 'application/json',\n        fileName: 'snapshot.json'\n      }\n    }\n  }\n];"
+      },
+      "name": "Create Snapshot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "compress",
+        "binaryPropertyName": "data",
+        "fileName": "={{ 'Evidence_' + $json.yarn.yarn_id + '.zip' }}"
+      },
+      "name": "Zip Evidence",
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/storage/v1/object/compliance-evidence/Evidence_{{ $json.yarn.yarn_id }}.zip",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/zip"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "name": "Upload to Storage",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/storage/v1/object/sign/compliance-evidence/Evidence_{{ $json.yarn.yarn_id }}.zip",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "expiresIn",
+              "value": 3600
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get Signed URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/audit_exports",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "yarn_id",
+              "value": "={{ $json.yarn.yarn_id }}"
+            },
+            {
+              "name": "file_url",
+              "value": "={{ $env.SUPABASE_URL }}/storage/v1/object/public/compliance-evidence/Evidence_{{ $json.yarn.yarn_id }}.zip"
+            },
+            {
+              "name": "file_hash",
+              "value": "PENDING"
+            },
+            {
+              "name": "generated_by",
+              "value": "n8n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Export",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ signed_url: $env.SUPABASE_URL + $items('Get Signed URL')[0].json.signedURL, url: $env.SUPABASE_URL + '/storage/v1/object/public/compliance-evidence/Evidence_' + $items('Get Yarn')[0].json.yarn_id + '.zip', hash: 'PENDING' }) }}",
+        "options": {}
+      },
+      "name": "Respond URL",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1700,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Yarn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Yarn": {
+      "main": [
+        [
+          {
+            "node": "Get Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Events": {
+      "main": [
+        [
+          {
+            "node": "Create Snapshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Snapshot": {
+      "main": [
+        [
+          {
+            "node": "Zip Evidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zip Evidence": {
+      "main": [
+        [
+          {
+            "node": "Upload to Storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Storage": {
+      "main": [
+        [
+          {
+            "node": "Get Signed URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Signed URL": {
+      "main": [
+        [
+          {
+            "node": "Log Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Export": {
+      "main": [
+        [
+          {
+            "node": "Respond URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "versionId": "0a9bed2a-8aad-42dd-bd22-021cb19e6053"
+}

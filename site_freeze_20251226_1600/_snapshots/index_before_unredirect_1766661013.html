@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uğurlular Tekstil — Digital Product Ecosystem</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+      (function(){
+        var here = (location.pathname||'').toLowerCase();
+        if (!/yarn-dpp\.html$/.test(here)) {
+          location.replace('yarn-dpp.html');
+        }
+      })();
+    </script>
+
+<style>
+    :root {
+        --zero-navy: #02154e;
+        --zero-orange: #f9ba00;
+        --zero-green: #005530;
+        --zero-red: #D51635;
+        --zero-white: #ffffff;
+        --zero-black: #1a1a1a;
+        --zero-gray-dark: #666666;
+        --zero-gray-light: #e0e0e0;
+        --zero-gray-bg: #fafafa;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        background: var(--zero-white);
+        color: var(--zero-black);
+        line-height: 1.6;
+        padding-top: 4px;
+    }
+    
+    .zero-color-bar {
+        height: 4px;
+        width: 100%;
+        background: linear-gradient(90deg, 
+            var(--zero-green) 0%, var(--zero-green) 25%, 
+            var(--zero-red) 25%, var(--zero-red) 50%, 
+            var(--zero-navy) 50%, var(--zero-navy) 75%, 
+            var(--zero-orange) 75%, var(--zero-orange) 100%);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+    }
+    
+    .app-header {
+        background: var(--zero-white);
+        color: var(--zero-navy);
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        border-bottom: 1px solid var(--zero-gray-light);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    }
+    
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 1600px;
+        margin: 0 auto;
+    }
+    
+    .title {
+        font-size: 1.5rem;
+        font-weight: 300;
+        color: var(--zero-navy);
+    }
+    
+    .title-at { color: var(--zero-orange); }
+    
+    .hero {
+        background: linear-gradient(135deg, rgba(2,21,78,0.05) 0%, rgba(255,255,255,1) 100%);
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.1rem;
+        color: var(--zero-navy);
+        font-weight: 300;
+    }
+    
+    .container {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 4rem 2rem;
+    }
+    
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+    
+    .product-card {
+        background: var(--zero-white);
+        border: 1px solid var(--zero-gray-light);
+        border-radius: 8px;
+        padding: 2rem;
+        position: relative;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .product-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--zero-orange);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    
+    .product-card:hover::after { transform: scaleX(1); }
+    
+    .product-logo {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 50px;
+        height: 50px;
+        background: rgba(2,21,78,0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: var(--zero-navy);
+        opacity: 0.8;
+    }
+    
+    .product-card:hover .product-logo { opacity: 1; }
+    
+    .product-title {
+        font-size: 1.3rem;
+        font-weight: 400;
+        color: var(--zero-navy);
+        margin-bottom: 1rem;
+    }
+    
+    .product-at { color: var(--zero-orange); }
+    
+    .product-description {
+        color: var(--zero-gray-dark);
+        margin-bottom: 2rem;
+        min-height: 3em;
+        font-size: 0.95rem;
+    }
+    
+    .action-btn {
+        padding: 0.5rem 1.25rem;
+        background: var(--zero-navy);
+        color: var(--zero-white);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .action-btn:hover {
+        background: var(--zero-orange);
+        color: var(--zero-navy);
+    }
+    
+    .features-section { margin: 4rem 0; }
+    
+    .features-title {
+        font-size: 1.3rem;
+        color: var(--zero-navy);
+        margin-bottom: 2rem;
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+    }
+    
+    .feature-card {
+        background: var(--zero-gray-bg);
+        border: 1px solid var(--zero-gray-light);
+        border-radius: 6px;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .feature-value {
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .feature-value.green { color: var(--zero-green); }
+    .feature-value.orange { color: var(--zero-orange); }
+    
+    .feature-label {
+        font-size: 0.85rem;
+        color: var(--zero-gray-dark);
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="zero-color-bar"></div>
+
+```
+<header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div style="display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Uğurlular Tekstil <span class="title-at">Ecosystem</span> — Digital Product Passport by Zero<span class="title-at">@</span>Ecosystem</div>
+            </div>
+            <img src="assets/img/ulogo.svg" alt="U Logo" style="height: 80px;">
+        </div>
+    </div>
+</header>
+
+<div class="hero">
+    <h1 style="font-weight: 300; margin-bottom: 1rem; color: var(--zero-navy);">Uğurlular Tekstil</h1>
+    <div class="hero-subtitle">Sustainable production with global standards. Exporting to 30+ countries with Ring, Compact & Open-End technologies.</div>
+</div>
+
+<main class="container">
+    <div class="product-grid">
+        <!-- 1. Fibre -->
+        <div class="product-card" onclick="window.location.href='fibre-dpp.html'">
+            <div class="product-logo">🧵</div>
+            <div class="product-title">Fibre<span class="product-at"> </span>DPP</div>
+            <div class="product-description">
+                Raw materials and fiber production — Yarn manufacturing
+            </div>
+            <a href="fibre-dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <!-- 2. Yarn -->
+        <div class="product-card" onclick="window.location.href='yarn-dpp.html'">
+            <div class="product-logo">🧶</div>
+            <div class="product-title">Yarn<span class="product-at"> </span>DPP</div>
+            <div class="product-description">
+                Yarn production tracking — Sustainability & Quality Metrics
+            </div>
+            <a href="yarn-dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <!-- 3. Fabric -->
+        <div class="product-card" onclick="window.location.href='fabric-dpp.html'">
+            <div class="product-logo">📐</div>
+            <div class="product-title">Fabric<span class="product-at"> </span>DPP</div>
+            <div class="product-description">
+                Fabric production and quality control — Weaving and knitting
+            </div>
+            <a href="fabric-dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <!-- 4. Chemicals & Dye -->
+        <div class="product-card" onclick="window.location.href='chemicals-dyes-management.dpp.html'">
+            <div class="product-logo">🧪</div>
+            <div class="product-title">Chemicals<span class="product-at"> & </span>Dye</div>
+            <div class="product-description">
+                Chemical processing and dyeing — Yarn stage orders tracking
+            </div>
+            <a href="chemicals-dyes-management.dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <!-- 5. Finishing -->
+        <div class="product-card" onclick="window.location.href='finishing-dpp.html'">
+            <div class="product-logo">✨</div>
+            <div class="product-title">Finishing<span class="product-at"> </span>DPP</div>
+            <div class="product-description">
+                Treatment and finishing processes — Quality enhancement
+            </div>
+            <a href="finishing-dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <!-- Rest -->
+        <div class="product-card" onclick="window.location.href='GarmentDPP.html'">
+            <div class="product-logo">👕</div>
+            <div class="product-title">Garment<span class="product-at"> </span>DPP</div>
+            <div class="product-description">
+                Garment assembly and production — Cut, make, trim operations
+            </div>
+            <a href="GarmentDPP.html" class="action-btn">View Module</a>
+        </div>
+
+        <div class="product-card" onclick="window.location.href='packaging-dpp.html'">
+            <div class="product-logo">📦</div>
+            <div class="product-title">Packaging<span class="product-at"></span></div>
+            <div class="product-description">
+                Packaging management — Ready to pack orders
+            </div>
+            <a href="packaging-dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <div class="product-card" onclick="window.location.href='delivery-dpp.html'">
+            <div class="product-logo">🚚</div>
+            <div class="product-title">Order<span class="product-at"> </span>Delivery</div>
+            <div class="product-description">
+                Delivery management — Completed and delivered orders
+            </div>
+            <a href="delivery-dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <div class="product-card" onclick="window.location.href='transport-dpp.html'">
+            <div class="product-logo">🚌</div>
+            <div class="product-title">Employee<span class="product-at"> </span>Transport</div>
+            <div class="product-description">
+                Logistics and transport — Orders in transit
+            </div>
+            <a href="transport-dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <!-- Energy -->
+        <div class="product-card" onclick="window.location.href='energy-dpp.html'">
+            <div class="product-logo">⚡</div>
+            <div class="product-title">Energy<span class="product-at"> & </span>Utilities</div>
+            <div class="product-description">
+                Energy consumption tracking — Sustainability & Resources
+            </div>
+            <a href="energy-dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <!-- Office -->
+        <div class="product-card" onclick="window.location.href='office-dpp.html'">
+            <div class="product-logo">🏢</div>
+            <div class="product-title">Office<span class="product-at"> </span>DPP</div>
+            <div class="product-description">
+                Corporate office operations — Administrative tracking
+            </div>
+            <a href="office-dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <!-- Retail -->
+        <div class="product-card" onclick="window.location.href='retail-dpp.html'">
+            <div class="product-logo">🛍️</div>
+            <div class="product-title">Retail<span class="product-at"> & </span>Distribution</div>
+            <div class="product-description">
+                Retail management and distribution — End-consumer tracking
+            </div>
+            <a href="retail-dpp.html" class="action-btn">View Module</a>
+        </div>
+
+        <!-- IT -->
+        <div class="product-card" onclick="window.location.href='it-dpp.html'">
+            <div class="product-logo">💻</div>
+            <div class="product-title">IT<span class="product-at"> </span>DPP</div>
+            <div class="product-description">
+                Information Technology — Systems & Infrastructure
+            </div>
+            <a href="it-dpp.html" class="action-btn">View Module</a>
+        </div>
+    </div>
+
+    <div class="features-section">
+        <h3 class="features-title">📊 System Overview</h3>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-value green">50</div>
+                <div class="feature-label">Total Orders</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-value orange">610,335</div>
+                <div class="feature-label">Total Pieces</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-value green">7</div>
+                <div class="feature-label">Countries</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-value orange">8</div>
+                <div class="feature-label">Active Modules</div>
+            </div>
+        </div>
+    </div>
+</main>
+```
+
+</body>
+</html>

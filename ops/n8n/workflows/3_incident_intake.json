@@ -1,0 +1,422 @@
+{
+  "name": "Ops - Incident Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ops/incident",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = items[0].json;\nlet severity = 3;\nif (payload.event_type.includes('SEV1')) severity = 1;\nif (payload.event_type.includes('SEV2')) severity = 2;\n\nreturn [{\n  json: {\n    ...payload,\n    severity,\n    dedupe_key: payload.event_type,\n    lookback_time: new Date(Date.now() - 30 * 60 * 1000).toISOString()\n  }\n}];"
+      },
+      "name": "Map Severity",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/incidents",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "eq.{{ $json.event_type }}"
+            },
+            {
+              "name": "status",
+              "value": "eq.OPEN"
+            },
+            {
+              "name": "last_seen",
+              "value": "gt.{{ $json.lookback_time }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Find Existing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $items('Find Existing').length > 0 && $items('Find Existing')[0].json.id }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Exists?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/incidents",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "eq.{{ $items('Find Existing')[0].json.id }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "counter",
+              "value": "={{ $items('Find Existing')[0].json.counter + 1 }}"
+            },
+            {
+              "name": "last_seen",
+              "value": "={{ new Date().toISOString() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Existing",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        900,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/incidents",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "={{ $items('Map Severity')[0].json.event_type }}"
+            },
+            {
+              "name": "severity",
+              "value": "={{ $items('Map Severity')[0].json.severity }}"
+            },
+            {
+              "name": "status",
+              "value": "OPEN"
+            },
+            {
+              "name": "details",
+              "value": "={{ JSON.stringify($items('Map Severity')[0].json.details) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Insert Incident",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        900,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/system_health",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "component",
+              "value": "={{ $items('Map Severity')[0].json.event_type }}"
+            },
+            {
+              "name": "status",
+              "value": "DEGRADED"
+            },
+            {
+              "name": "incident_id",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "last_check",
+              "value": "={{ new Date().toISOString() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update System Health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/governance_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "INCIDENT"
+            },
+            {
+              "name": "actor_role",
+              "value": "SYSTEM"
+            },
+            {
+              "name": "details",
+              "value": "={{ JSON.stringify($items('Map Severity')[0].json) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Incident",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ incident_id: $items('Insert Incident')[0].json.id }) }}",
+        "options": {}
+      },
+      "name": "Respond New ID",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ incident_id: $json.id, updated: true }) }}",
+        "options": {}
+      },
+      "name": "Respond Existing ID",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Map Severity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Severity": {
+      "main": [
+        [
+          {
+            "node": "Find Existing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Existing": {
+      "main": [
+        [
+          {
+            "node": "Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exists?": {
+      "main": [
+        [
+          {
+            "node": "Update Existing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Existing": {
+      "main": [
+        [
+          {
+            "node": "Respond Existing ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Incident": {
+      "main": [
+        [
+          {
+            "node": "Update System Health",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update System Health": {
+      "main": [
+        [
+          {
+            "node": "Log Incident",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Incident": {
+      "main": [
+        [
+          {
+            "node": "Respond New ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "versionId": "d0793e1d-9ccb-49fa-87a0-b95ac8d7db04"
+}

@@ -1,0 +1,2168 @@
+<!DOCTYPE html>
+<html lang="en" class="dpp-header-on">
+<head>
+<link rel="stylesheet" href="assets/css/dpp-typography.css">
+<link rel="stylesheet" href="assets/css/dpp-intent-cards.css">
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Yarn DPP</title>
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <style>
+ :root{
+ --green:#005530;
+ --navy:#02154e;
+ --gold:#f9ba00;
+ --light:#f8f9fa;
+ --ink:#333;
+ --muted:#666;
+ --muter:#888;
+ --ring:#f0f0f0;
+ --danger:#D51635;
+ }
+
+ /* All your CSS styles remain unchanged */
+ * {
+ margin: 0;
+ padding: 0;
+ box-sizing: border-box;
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ }
+ 
+ :root {
+ --primary: #005530; /* Green */
+ --secondary: #02154e; /* Navy */
+ --accent: #f9ba00; /* Orange */
+ --danger: #D51635; /* Red */
+ --light: #f8f9fa;
+ --medium: #e0e0e0;
+ --dark: #333;
+ --text: #333;
+ --border: #d0d0d0;
+ }
+ 
+ body {
+ background: white;
+ color: var(--text);
+ line-height: 1.6;
+ padding: 20px;
+ min-height: 100vh;
+ background: linear-gradient(to bottom, #f5f7fa, #ffffff);
+ }
+ 
+ .container {
+ max-width: 1400px;
+ margin: 0 auto;
+ display: grid;
+ grid-template-columns: 300px 1fr;
+ gap: 25px;
+ }
+ 
+ header {
+ grid-column: 1 / -1;
+ text-align: center;
+ padding: 30px 0;
+ margin-bottom: 20px;
+ border-bottom: 1px solid var(--border);
+ position: relative; /* back link konumlandırma için */
+ }
+ 
+ h1 {
+ color: var(--secondary);
+ font-size: 2.8rem;
+ margin-bottom: 10px;
+ font-weight:600;
+ }
+ 
+ .subtitle {
+ color: var(--dark);
+ font-size: 1.3rem;
+ font-weight: 400;
+ max-width: 800px;
+ margin: 0 auto;
+ }
+ 
+ .tabs {
+ display: flex;
+ justify-content: center;
+ margin: 25px 0;
+ gap: 10px;
+ }
+ 
+ .tab-btn {
+ padding: 12px 24px;
+ background: white;
+ border: 1px solid var(--border);
+ 
+ cursor: pointer;
+ font-weight: 600;
+ transition: all 0.3s;
+ color: var(--secondary);
+ }
+ 
+ .tab-btn.active {
+ background: var(--secondary);
+ color: white;
+ border-color: var(--secondary);
+ }
+ 
+ .tab-btn:hover:not(.active) {
+ background: rgba(2, 21, 78, 0.05);
+ }
+ 
+ .sidebar {
+ background: white;
+ 
+ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+ padding: 25px;
+ height: fit-content;
+ border: 1px solid var(--border);
+ }
+ 
+ .search-box {
+ margin-bottom: 25px;
+ position: relative;
+ }
+ 
+ .search-box input {
+ width: 100%;
+ padding: 14px 20px 14px 50px;
+ border: 1px solid var(--border);
+ 
+ font-size: 1.1rem;
+ transition: all 0.3s;
+ background: white;
+ }
+ 
+ .search-box input:focus {
+ outline: none;
+ border-color: var(--secondary);
+ box-shadow: 0 0 0 2px rgba(2, 21, 78, 0.1);
+ }
+ 
+ .search-box i {
+ position: absolute;
+ left: 20px;
+ top: 50%;
+ transform: translateY(-50%);
+ color: #6c757d;
+ font-size: 1.2rem;
+ }
+ 
+ .category-filter {
+ margin-bottom: 30px;
+ }
+ 
+ .category-title {
+ font-size: 1.2rem;
+ color: var(--secondary);
+ margin-bottom: 15px;
+ padding-bottom: 8px;
+ border-bottom: 1px solid var(--border);
+ display: flex;
+ align-items: center;
+ font-weight: 600;
+ }
+ 
+ .category-title i {
+ margin-right: 10px;
+ color: var(--secondary);
+ width: 24px;
+ text-align: center;
+ }
+ 
+ .category-list {
+ list-style: none;
+ }
+ 
+ .category-item {
+ padding: 12px 16px;
+ margin-bottom: 8px;
+ 
+ cursor: pointer;
+ transition: all 0.2s;
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ border: 1px solid transparent;
+ }
+ 
+ .category-item:hover {
+ background: rgba(2, 21, 78, 0.03);
+ border-color: var(--border);
+ }
+ 
+ .category-item.active {
+ background: rgba(2, 21, 78, 0.05);
+ color: var(--secondary);
+ font-weight: 500;
+ border-color: var(--secondary);
+ }
+ 
+ .category-count {
+ background: var(--light);
+ padding: 4px 10px;
+ 
+ font-size: 0.9rem;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .active .category-count {
+ background: rgba(2, 21, 78, 0.1);
+ color: var(--secondary);
+ }
+ 
+ .main-content {
+ background: white;
+ 
+ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+ padding: 25px;
+ border: 1px solid var(--border);
+ }
+ 
+ .filters {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ margin-bottom: 25px;
+ padding-bottom: 20px;
+ border-bottom: 1px solid var(--border);
+ }
+ 
+ .results-info {
+ font-size: 1.2rem;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .sort-filter select {
+ padding: 12px 18px;
+ border: 1px solid var(--border);
+ 
+ background: white;
+ font-size: 1.1rem;
+ cursor: pointer;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .sort-filter select:focus {
+ outline: none;
+ border-color: var(--secondary);
+ box-shadow: 0 0 0 2px rgba(2, 21, 78, 0.1);
+ }
+ 
+ .yarn-grid {
+ display: grid;
+ grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+ gap: 25px;
+ margin-top: 20px;
+ }
+ 
+ .yarn-card {
+ background: white;
+ 
+ overflow: hidden;
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+ transition: all 0.3s;
+ border: 1px solid var(--border);
+ display: flex;
+ flex-direction: column;
+ min-height: 480px;
+ }
+ 
+ .yarn-card:hover {
+ transform: translateY(-8px);
+ box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+ border-color: var(--secondary);
+ }
+ 
+ .yarn-header {
+ background: white;
+ color: var(--text);
+ padding: 20px;
+ position: relative;
+ border-bottom: 1px solid var(--border);
+ }
+ 
+ .yarn-type {
+ position: absolute;
+ top: 15px;
+ right: 15px;
+ background: rgba(2, 21, 78, 0.05);
+ padding: 6px 14px;
+ 
+ font-size: 0.9rem;
+ font-weight: 600;
+ color: var(--secondary);
+ }
+ 
+ .yarn-name {
+ font-size: 1.6rem;
+ font-weight:600;
+ margin-bottom: 5px;
+ color: var(--secondary);
+ }
+ 
+ .yarn-brand {
+ font-size: 1.1rem;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .yarn-body {
+ padding: 20px;
+ flex: 1;
+ display: flex;
+ flex-direction: column;
+ }
+ 
+ .yarn-composition {
+ color: var(--dark);
+ margin-bottom: 15px;
+ font-weight: 500;
+ font-style: italic;
+ font-size: 1.1rem;
+ }
+ 
+ .metrics {
+ display: flex;
+ justify-content: space-between;
+ margin-bottom: 20px;
+ gap: 10px;
+ }
+ 
+ .metric {
+ text-align: center;
+ padding: 18px;
+ 
+ flex: 1;
+ border: 1px solid var(--border);
+ }
+ 
+ .metric.co2 {
+ background: rgba(0, 85, 48, 0.03);
+ border-color: rgba(0, 85, 48, 0.1);
+ }
+ 
+ .metric.score {
+ background: rgba(2, 21, 78, 0.03);
+ border-color: rgba(2, 21, 78, 0.1);
+ }
+ 
+ .metric-title {
+ font-size: 1rem;
+ margin-bottom: 8px;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .metric-value {
+ font-size: 1.8rem;
+ font-weight:600;
+ }
+ 
+ .co2-value {
+ color: var(--primary);
+ }
+ 
+ .score-value {
+ color: var(--secondary);
+ }
+ 
+ .score-bar {
+ height: 8px;
+ background: var(--light);
+ 
+ margin-top: 12px;
+ overflow: hidden;
+ }
+ 
+ .score-fill {
+ height: 100%;
+ background: var(--secondary);
+ 
+ }
+ 
+ .badges {
+ display: flex;
+ flex-wrap: wrap;
+ gap: 8px;
+ margin-top: 20px;
+ margin-bottom: 15px;
+ }
+ 
+ .badge {
+ display: inline-block;
+ padding: 8px 14px;
+ background: rgba(2, 21, 78, 0.05);
+ color: var(--dark);
+ 
+ font-size: 0.95rem;
+ font-weight: 500;
+ border: 1px solid var(--border);
+ }
+ 
+ .badge.recycled {
+ background: rgba(0, 85, 48, 0.05);
+ color: var(--primary);
+ border-color: rgba(0, 85, 48, 0.1);
+ }
+ 
+ .badge.synthetic {
+ background: rgba(213, 22, 53, 0.05);
+ color: var(--danger);
+ border-color: rgba(213, 22, 53, 0.1);
+ }
+ 
+ .badge.organic {
+ background: rgba(249, 186, 0, 0.05);
+ color: var(--accent);
+ border-color: rgba(249, 186, 0, 0.1);
+ }
+ 
+ .yarn-footer {
+ padding: 15px 20px;
+ background: var(--light);
+ border-top: 1px solid var(--border);
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ }
+ 
+ .yarn-weight {
+ font-size: 1.05rem;
+ color: var(--dark);
+ font-weight: 600;
+ }
+ 
+ .detail-btn {
+ background: var(--secondary);
+ color: white;
+ border: none;
+ padding: 10px 20px;
+ 
+ cursor: pointer;
+ font-weight: 600;
+ transition: background 0.3s;
+ font-size: 1.05rem;
+ }
+ 
+ .detail-btn:hover {
+ background: #0a1d3d;
+ }
+ 
+ .chart-container {
+ margin-top: 30px;
+ padding: 25px;
+ background: white;
+ 
+ border: 1px solid var(--border);
+ }
+ 
+ .chart-title {
+ text-align: center;
+ color: var(--secondary);
+ margin-bottom: 20px;
+ font-size: 1.4rem;
+ font-weight:600;
+ }
+ 
+ .info-section {
+ margin-top: 40px;
+ padding-top: 25px;
+ border-top: 1px solid var(--border);
+ }
+ 
+ .info-title {
+ font-size: 1.7rem;
+ color: var(--secondary);
+ margin-bottom: 20px;
+ text-align: center;
+ font-weight:600;
+ }
+ 
+ .blend-section {
+ margin-top: 40px;
+ padding: 30px;
+ background: white;
+ border: 1px solid var(--border);
+ box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+ 
+ }
+ 
+ .blend-title {
+ font-size: 1.8rem;
+ color: var(--secondary);
+ margin-bottom: 25px;
+ text-align: center;
+ font-weight:600;
+ }
+ 
+ .blend-container {
+ display: grid;
+ grid-template-columns: 1fr 1fr;
+ gap: 30px;
+ }
+ 
+ .blend-form {
+ background: rgba(2, 21, 78, 0.02);
+ padding: 25px;
+ 
+ border: 1px solid var(--border);
+ }
+ 
+ .blend-result {
+ background: white;
+ padding: 25px;
+ 
+ border: 1px solid var(--border);
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ }
+ 
+ .form-group {
+ margin-bottom: 20px;
+ }
+ 
+ .form-group label {
+ display: block;
+ margin-bottom: 8px;
+ font-weight: 600;
+ color: var(--secondary);
+ }
+ 
+ .form-group select, .form-group input {
+ width: 100%;
+ padding: 12px 15px;
+ border: 1px solid var(--border);
+ 
+ font-size: 1.1rem;
+ background: white;
+ }
+ 
+ .add-btn {
+ background: var(--secondary);
+ color: white;
+ border: none;
+ padding: 12px 20px;
+ 
+ cursor: pointer;
+ font-weight: 600;
+ font-size: 1.1rem;
+ transition: background 0.3s;
+ width: 100%;
+ margin-top: 10px;
+ }
+ 
+ .add-btn:hover {
+ background: #0a1d3d;
+ }
+ 
+ .blend-components {
+ margin: 20px 0;
+ max-height: 300px;
+ overflow-y: auto;
+ }
+ 
+ .blend-item {
+ display: flex;
+ justify-content: space-between;
+ align-items: center;
+ padding: 12px 15px;
+ background: white;
+ border: 1px solid var(--border);
+ 
+ margin-bottom: 10px;
+ }
+ 
+ .blend-item-name {
+ font-weight: 500;
+ }
+ 
+ .blend-item-percentage {
+ font-weight: 600;
+ color: var(--secondary);
+ }
+ 
+ .remove-btn {
+ background: var(--danger);
+ color: white;
+ border: none;
+ width: 30px;
+ height: 30px;
+ 
+ cursor: pointer;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ }
+ 
+ .blend-result-card {
+ background: white;
+ 
+ padding: 25px;
+ border: 1px solid var(--border);
+ text-align: center;
+ }
+ 
+ .blend-result-title {
+ font-size: 1.6rem;
+ color: var(--secondary);
+ margin-bottom: 20px;
+ font-weight:600;
+ }
+ 
+ .blend-metrics {
+ display: flex;
+ justify-content: center;
+ gap: 30px;
+ margin-bottom: 30px;
+ }
+ 
+ .blend-metric {
+ text-align: center;
+ padding: 20px;
+ 
+ min-width: 180px;
+ border: 1px solid var(--border);
+ }
+ 
+ .blend-metric.co2 {
+ background: rgba(0, 85, 48, 0.03);
+ border-color: rgba(0, 85, 48, 0.1);
+ }
+ 
+ .blend-metric.score {
+ background: rgba(2, 21, 78, 0.03);
+ border-color: rgba(2, 21, 78, 0.1);
+ }
+ 
+ .blend-metric-title {
+ font-size: 1.1rem;
+ margin-bottom: 10px;
+ color: var(--dark);
+ font-weight: 500;
+ }
+ 
+ .blend-metric-value {
+ font-size: 2.2rem;
+ font-weight:600;
+ }
+ 
+ .blend-co2-value {
+ color: var(--primary);
+ }
+ 
+ .blend-score-value {
+ color: var(--secondary);
+ }
+ 
+ .blend-composition {
+ font-size: 1.2rem;
+ margin-top: 20px;
+ font-weight: 500;
+ }
+ 
+ /* Modal styles */
+ .modal {
+ display: none;
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0, 0, 0, 0.7);
+ z-index: 1000;
+ justify-content: center;
+ align-items: center;
+ }
+ 
+ .modal-content {
+ background: white;
+ 
+ width: 90%;
+ max-width: 600px;
+ max-height: 90vh;
+ overflow-y: auto;
+ padding: 30px;
+ position: relative;
+ }
+ 
+ .close-btn {
+ position: absolute;
+ top: 15px;
+ right: 15px;
+ font-size: 1.5rem;
+ cursor: pointer;
+ color: var(--dark);
+ }
+ 
+ .modal-title {
+ color: var(--secondary);
+ margin-bottom: 20px;
+ font-size: 1.8rem;
+ padding: 10px 12px; /* başlığa arka plan verebilmek için */
+ 
+ }
+ 
+ .modal-section {
+ margin-bottom: 20px;
+ }
+ 
+ .modal-section h4 {
+ color: var(--secondary);
+ margin-bottom: 10px;
+ font-size: 1.3rem;
+ }
+ 
+ @media (max-width: 1100px) {
+ .container {
+ grid-template-columns: 1fr;
+ }
+ 
+ .yarn-grid {
+ grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+ }
+ 
+ .blend-container {
+ grid-template-columns: 1fr;
+ }
+ }
+ 
+ @media (max-width: 768px) {
+ .tabs {
+ flex-direction: column;
+ }
+ 
+ .yarn-grid {
+ grid-template-columns: 1fr;
+ }
+ 
+ .metrics, .blend-metrics {
+ flex-direction: column;
+ gap: 15px;
+ }
+ }
+ 
+ footer {
+ grid-column: 1 / -1;
+ text-align: center;
+ padding: 30px 0;
+ margin-top: 40px;
+ border-top: 1px solid var(--border);
+ color: var(--dark);
+ font-size: 1.1rem;
+ }
+ 
+.logo-title {
+ display: flex;
+ align-items: center;
+ gap: 15px;
+ justify-content: flex-start;
+}
+.zero-production {
+ color: var(--primary);
+ font-weight: bold;
+}
+.dpp {
+ color: var(--accent);
+ font-weight: bold;
+}
+.blend-icon {
+ margin-right: 8px;
+ font-size: 1.1rem;
+ color: inherit;
+}
+.yarn-card.blend .yarn-header {
+ background: #f9ba00;
+ color: var(--secondary);
+}
+
+.back-link {
+ margin-left: auto;
+ display: inline-flex;
+ align-items: center;
+ gap: 8px;
+ height: 40px;
+ padding: 0 14px;
+ 
+ background: #005530;
+ color: #fff;
+ font-weight: 600;
+ text-decoration: none;
+ border: 1px solid transparent;
+ box-shadow: 0 2px 8px rgba(0,85,48,0.25);
+ transition: transform .15s, box-shadow .15s, background .15s;
+ position: absolute; top: 10px; right: 14px;
+}
+.back-link:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,85,48,0.35); }
+.back-link:active { transform: translateY(0); }
+ /* Header Styles */
+ .header{background:#fff;padding:20px;border-bottom:2px solid var(--ring);position:relative}
+ .logo-container{display:flex;align-items:center;gap:20px;max-width:1400px;margin:0 auto}
+ 
+ .header-text h1{color:var(--green);font-size:36px;font-weight:600;margin:0}
+ .header-text .subtitle{color:var(--muted);font-size:16px;margin:5px 0 0 0;line-height:1.2;white-space:nowrap;overflow:visible}
+ .back-to-dashboard{position:absolute;top:20px;right:20px}
+ .back-btn{background:var(--navy);color:white;padding:12px 20px;text-decoration:none;font-weight:600;transition:.3s;display:inline-block}
+ .back-btn:hover{background:var(--green);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,85,48,0.3)}
+ @media (max-width:768px){
+ .logo-container{flex-direction:column;text-align:center;gap:15px}
+ 
+ .header-text .subtitle{font-size:14px;white-space:normal}
+ .back-to-dashboard{position:static;text-align:center;margin-top:15px}
+ }
+
+ 
+ 
+ /* Loading States */
+ .loading {
+ position: relative;
+ pointer-events: none;
+ opacity: 0.7;
+ }
+ 
+ .loading::after {
+ content: '';
+ position: absolute;
+ top: 50%;
+ left: 50%;
+ width: 20px;
+ height: 20px;
+ margin: -10px 0 0 -10px;
+ border: 2px solid #f3f3f3;
+ border-top: 2px solid var(--navy);
+ 
+ animation: spin 1s linear infinite;
+ z-index: 1000;
+ }
+ 
+ @keyframes spin {
+ 0% { transform: rotate(0deg); }
+ 100% { transform: rotate(360deg); }
+ }
+ 
+ /* Error States */
+ .error {
+ border-color: var(--danger) !important;
+ background-color: rgba(213, 22, 53, 0.05) !important;
+ }
+ 
+ .error-message {
+ color: var(--danger);
+ font-size: 14px;
+ margin-top: 5px;
+ display: none;
+ }
+ 
+ .error .error-message {
+ display: block;
+ }
+ 
+ /* Success States */
+ .success {
+ border-color: var(--green) !important;
+ background-color: rgba(0, 85, 48, 0.05) !important;
+ }
+ 
+ .success-message {
+ color: var(--green);
+ font-size: 14px;
+ margin-top: 5px;
+ display: none;
+ }
+ 
+ .success .success-message {
+ display: block;
+ }
+ 
+ 
+ /* Print Styles */
+ @media print {
+ .no-print,
+ .back-btn,
+ button,
+ .btn {
+ display: none !important;
+ }
+ 
+ body {
+ font-size: 12pt;
+ line-height: 1.3;
+ color: #000 !important;
+ background: #fff !important;
+ }
+ 
+ .header {
+ border-bottom: 2px solid #000;
+ margin-bottom: 20pt;
+ }
+ 
+ .dpp-card,
+ .stat-card {
+ border: 1px solid #000;
+ page-break-inside: avoid;
+ margin-bottom: 10pt;
+ }
+ 
+ .page-break {
+ page-break-before: always;
+ }
+ 
+ a[href]:after {
+ content: " (" attr(href) ")";
+ font-size: 90%;
+ }
+ 
+ .chart-container {
+ max-height: 300pt;
+ overflow: hidden;
+ }
+ }
+ 
+
+/* ===== ZERO Landing Header v1 ===== */
+.page-header{margin:0 0 28px 0}
+.page-header .brand{font-size:14px;font-weight:500;color:#6b7280;letter-spacing:.4px}
+.page-header .brand span{color:#f9ba00}
+.page-header .page-title{font-size:32px;font-weight:600;color:#02154e;margin:6px 0 4px}
+.page-header .page-subtitle{font-size:15px;color:#6b7280;max-width:720px}
+
+
+/* Standalone logo (top-left) */
+.zero-standalone-logo{
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 99999;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0,0,0,.10);
+  border: 1px solid rgba(2,21,78,.10);
+}
+.zero-standalone-logo img{
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+@media (max-width: 980px){
+  .zero-standalone-logo{ top: 10px; left: 10px; width: 52px; height: 52px; }
+  .zero-standalone-logo img{ width: 38px; height: 38px; }
+}
+
+
+/* ZERO FIX: move badges above title (no overlap) */
+.badges{
+  position: static !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin: 0 0 10px 0 !important;
+  align-items: center !important;
+}
+.badge{ white-space: nowrap; }
+
+</style>
+<style>
+
+/* ZERO@PRODUCTION — GLOBAL DPP HEADER STANDARD (LEFT + NAVY) */
+:root{
+ --zero-navy:#02154e;
+ --zero-orange:#f9ba00;
+ --zero-gray:#6b7280;
+}
+
+/* Common header containers across pages (safe, broad, non-breaking) */
+header, .header, .page-header, .top-bar, .hero, .hero-header, .app-header {
+ text-align: left !important;
+}
+
+/* If a page uses a centered flex header, force left */
+header, .header, .page-header, .top-bar, .app-header {
+ justify-content: flex-start !important;
+ align-items: flex-start !important;
+}
+
+/* Typical title/subtitle patterns */
+h1, .title, .page-title {
+ color: var(--zero-navy) !important;
+ font-weight: 600 !important; /* never 700 */
+ letter-spacing: .2px;
+ text-align:left !important;
+}
+
+/* Subtitle-like elements */
+.subtitle, .sub-title, .page-subtitle, header p, .header p {
+ color: var(--zero-gray) !important;
+ text-align:left !important;
+ max-width: 920px;
+}
+
+/* Your specific “Zero@Production” span-brand headers */
+h1 span, .brand span {
+ color: var(--zero-navy) !important;
+ font-weight: 600 !important;
+}
+h1 span[style*="#f9ba00"], h1 span[style*="#F9BA00"] {
+ color: var(--zero-orange) !important; /* keep @ orange */
+}
+
+</style>
+ <link rel="stylesheet" href="assets/css/dpp-header.css?v=0">
+ <script src="assets/js/dpp-header.js?v=0" defer></script>
+</head>
+<body style="padding-left:90px;">
+  <!-- Zero@Production Standalone Logo -->
+  <a class="zero-standalone-logo" href="#" onclick="return false" aria-label="Zero@Production">
+    <img src="assets/img/<GERCEK_LOGO_DOSYASI>" alt="Zero@Production" />
+  </a>
+
+
+<!-- SIMPLE TOP-LEFT LOGO -->
+<div style="position:fixed;top:12px;left:12px;z-index:9999;"></div>
+
+<div class="dpp-header">
+<div>
+<div class="dpp-title">Yarn DPP</div>
+ <div class="dpp-subtitle">
+ 
+ </div>
+ </div>
+</div>
+<header class="header">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+    <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+      <div class="header-text" style="min-width:0;">
+        <h1 style="margin:0;">Yarn DPP</h1>
+        <div class="subtitle" style="margin-top:6px;">Yarn Sustainability Database - ML Ready</div>
+      </div>
+    </div>
+</div>
+</header>
+
+ <!-- Modal for yarn details -->
+ <div class="modal" id="yarnModal">
+ <div class="modal-content">
+ <span class="close-btn" id="closeModal">&times;</span>
+      <h2 class="dpp-subtitle" id="modalYarnName"></h2>
+      <div class="intent-cards">
+ <div class="intent-card" data-intent="overview"><h3>CEO View</h3><p>Strategy, risk & compliance snapshot</p></div>
+ <div class="intent-card" data-intent="cost"><h3>CFO View</h3><p>Cost, CO₂ impact & savings</p></div>
+ <div class="intent-card" data-intent="flow"><h3>CTO View</h3><p>Process flow & operations</p></div>
+</div>
+ <div class="modal-section">
+ <h4>Composition</h4>
+ <p id="modalComposition"></p>
+ </div>
+ <div class="modal-section">
+ <h4>Environmental Metrics</h4>
+ <div class="metrics">
+ <div class="metric co2">
+ <div class="metric-title">CO₂/kg</div>
+ <div class="metric-value co2-value" id="modalCo2"></div>
+ <div class="metric-desc">kg CO₂ per kg yarn</div>
+ </div>
+ <div class="metric score">
+ <div class="metric-title">DPI Score</div>
+ <div class="metric-value score-value" id="modalScore"></div>
+ <div class="score-bar">
+ <div class="score-fill" id="modalScoreBar"></div>
+ </div>
+ </div>
+ </div>
+ </div>
+ <div class="modal-section">
+ <h4>Characteristics</h4>
+ <div id="modalBadges"></div>
+ </div>
+ <div class="modal-section">
+ <h4>Common Uses</h4>
+ <ul id="modalUses"></ul>
+ </div>
+ <div class="modal-section">
+ <h4>Additional Information</h4>
+ <p><strong>Brand:</strong> <span id="modalBrand"></span></p>
+ <p><strong>Weight:</strong> <span id="modalWeight"></span></p>
+ <p><strong>Type:</strong> <span id="modalType"></span></p>
+ </div>
+ </div>
+ </div>
+
+ <div class="container">
+
+ <aside class="sidebar">
+ <div class="search-box">
+ <i class="fas fa-search"></i>
+ <input type="text" id="searchInput" placeholder="Search yarns...">
+ </div>
+ 
+ <div class="category-filter">
+ <h3 class="category-title"><i class="fas fa-globe"></i> All Yarns</h3>
+ <ul class="category-list" id="allYarns">
+
+<li class="category-item" data-category="cotton">Cotton <span class="category-count">0</span></li>
+<li class="category-item" data-category="cellulosic">Cellulosic <span class="category-count">0</span></li>
+<li class="category-item" data-category="blends">Blends <span class="category-count">0</span></li>
+<li class="category-item" data-category="technology">Technology <span class="category-count">0</span></li>
+
+ </ul>
+ </div>
+ 
+ <div class="category-filter">
+ <h3 class="category-title"><i class="fas fa-wool"></i> Cotton Yarns</h3>
+ <ul class="category-list" id="woolYarns">
+
+
+ <!-- Will be populated by JavaScript -->
+ </ul>
+ </div>
+ 
+ <div class="category-filter">
+ <h3 class="category-title"><i class="fas fa-leaf"></i> Plant-Based Yarns</h3>
+ <ul class="category-list" id="plantBasedYarns">
+
+
+ <!-- Will be populated by JavaScript -->
+ </ul>
+ </div>
+ 
+ <div class="category-filter">
+ <h3 class="category-title"><i class="fas fa-recycle"></i> Recycled Yarns</h3>
+ <ul class="category-list" id="recycledYarns">
+
+
+ <!-- Will be populated by JavaScript -->
+ </ul>
+ </div>
+ 
+ <div class="category-filter">
+ <h3 class="category-title"><i class="fas fa-seedling"></i> Cellulosic Yarns</h3>
+ <ul class="category-list" id="organicYarns">
+
+
+ <!-- Will be populated by JavaScript -->
+ </ul>
+ </div>
+ 
+ <div class="category-filter">
+ <h3 class="category-title"><i class="fas fa-flask"></i> Technology Yarns</h3>
+ <ul class="category-list" id="syntheticYarns">
+
+
+ <!-- Will be populated by JavaScript -->
+ </ul>
+ </div>
+ 
+ <div class="category-filter">
+ <h3 class="category-title"><i class="fas fa-blender"></i> Blended Yarns</h3>
+ <ul class="category-list" id="blendedYarns">
+ <!-- Will be populated by JavaScript -->
+ </ul>
+ </div>
+ </aside>
+ 
+ <main class="main-content" id="yarn-database">
+ <div class="filters">
+ <div class="results-info">
+ Showing <span id="yarnCount">15</span> yarns
+ </div>
+ <div class="sort-filter">
+ <select id="sortSelect">
+ <option value="name">Sort by Name</option>
+ <option value="co2-asc">CO₂: Low to High</option>
+ <option value="co2-desc">CO₂: High to Low</option>
+ <option value="score-asc">Score: Low to High</option>
+ <option value="score-desc">Score: High to Low</option>
+ </select>
+ </div>
+ </div>
+ 
+ <div class="yarn-grid" id="yarnGrid">
+ <!-- Yarn cards will be populated by JavaScript -->
+ </div>
+ 
+ <div class="chart-container">
+ <h3 class="chart-title">Average Environmental Impact by Yarn Category</h3>
+ <canvas id="impactChart"></canvas>
+ </div>
+ </main>
+ 
+ <div class="blend-section" id="blend-calculator" style="display: none;">
+ <h2 class="dpp-subtitle">Create Your Custom Yarn Blend</h2>
+<div class="intent-cards">
+ <div class="intent-card" data-intent="overview"><h3>CEO View</h3><p>Strategy, risk & compliance snapshot</p></div>
+ <div class="intent-card" data-intent="cost"><h3>CFO View</h3><p>Cost, CO₂ impact & savings</p></div>
+ <div class="intent-card" data-intent="flow"><h3>CTO View</h3><p>Process flow & operations</p></div>
+</div>
+ <div class="blend-container">
+ <div class="blend-form">
+ <div class="form-group">
+ <label for="fiberSelect">Select Fiber:</label>
+ <select id="fiberSelect">
+ <option value="">-- Choose a fiber --</option>
+ <!-- Options will be populated by JavaScript -->
+ </select>
+ </div>
+ 
+ <div class="form-group">
+ <label for="percentageInput">Percentage (%):</label>
+ <input type="number" id="percentageInput" min="1" max="100" placeholder="Enter percentage">
+ </div>
+ 
+ <button class="add-btn" onclick="addComponent()">
+ <i class="fas fa-plus"></i> Add to Blend
+ </button>
+ 
+ <h3 style="margin: 25px 0 15px; color: var(--secondary);">Blend Composition</h3>
+ <div class="blend-components" id="blendComponents">
+ <p style="text-align: center; padding: 20px; color: #777;">No fibers added yet</p>
+ </div>
+ 
+ <div class="form-group">
+ <label for="blendName">Blend Name:</label>
+ <input type="text" id="blendName" placeholder="Enter a name for your blend">
+ </div>
+ 
+ <button class="add-btn" onclick="calculateBlend()" style="background: var(--primary);">
+ <i class="fas fa-calculator"></i> Calculate Blend and Add to Database
+ </button>
+ </div>
+ 
+ <div class="blend-result">
+ <div class="blend-result-card">
+ <h3 class="blend-result-title">Your Custom Blend</h3>
+ <div class="blend-metrics">
+ <div class="blend-metric co2">
+ <div class="blend-metric-title">CO₂/kg</div>
+ <div class="blend-metric-value blend-co2-value" id="blendCo2">0.0</div>
+ <div class="metric-desc">kg CO₂ per kg yarn</div>
+ </div>
+ <div class="blend-metric score">
+ <div class="blend-metric-title">DPI Score</div>
+ <div class="blend-metric-value blend-score-value" id="blendScore">0</div>
+ <div class="metric-desc">Sustainability score</div>
+ </div>
+ </div>
+ <div class="blend-composition" id="blendComposition">
+ Add fibers to see your custom blend composition
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ 
+ <footer>
+ <p>Yarn Sustainability Database &copy; 2023 | For Sustainable Textile Innovation</p>
+ </footer>
+ </div>
+
+ <script>
+ // Enhanced fiber database for blending
+ const fiberDatabase = {
+ "Organic Cotton": { co2: 3.8, score: 87 },
+ "Recycled Polyester": { co2: 4.2, score: 75 },
+ "Merino Wool": { co2: 6.2, score: 82 },
+ "Tencel": { co2: 5.5, score: 85 },
+ "Hemp": { co2: 2.1, score: 92 },
+ "Bamboo": { co2: 7.5, score: 75 },
+ "Recycled Nylon": { co2: 6.1, score: 72 },
+ "Organic Linen": { co2: 3.2, score: 91 },
+ "Recycled Wool": { co2: 3.2, score: 84 },
+ "Silk": { co2: 11.5, score: 65 },
+ "Cashmere": { co2: 8.7, score: 70 },
+ "Mohair": { co2: 7.3, score: 68 },
+ "Angora": { co2: 6.8, score: 65 },
+ "Ramie": { co2: 3.5, score: 88 },
+ "Soy Silk": { co2: 4.3, score: 80 },
+ "Banana Fiber": { co2: 3.8, score: 85 },
+ "Coir": { co2: 2.5, score: 90 },
+ "Corn Fiber": { co2: 5.1, score: 78 },
+ "Lyocell": { co2: 4.8, score: 83 },
+ "Modal": { co2: 5.2, score: 81 }
+ };
+
+ // Yarn database with CO2 and Score values
+ 
+let yarnDatabase = [];
+async function __ZERO_LOAD_YARNS(){
+  const url = "data/ugurlular-yarns.json?v=" + Date.now();
+  const res = await fetch(url, { cache: "no-store" });
+  if(!res.ok) throw new Error("Failed to load yarns: " + res.status);
+  const data = await res.json();
+  if(!Array.isArray(data)) throw new Error("Yarn JSON is not an array");
+  yarnDatabase = data;
+  return yarnDatabase;
+}
+// DOM Elements
+ const yarnGrid = document.getElementById('yarnGrid');
+ const searchInput = document.getElementById('searchInput');
+ const sortSelect = document.getElementById('sortSelect');
+ const yarnCount = document.getElementById('yarnCount');
+ const categoryLists = {
+ "Cotton Yarns": document.getElementById('woolYarns'),
+ "Plant-Based Yarns": document.getElementById('plantBasedYarns'),
+ "Recycled Yarns": document.getElementById('recycledYarns'),
+ "Cellulosic Yarns": document.getElementById('organicYarns'),
+ "Technology Yarns": document.getElementById('syntheticYarns'),
+ "Blended Yarns": document.getElementById('blendedYarns')
+ };
+
+ // Modal elements
+ const modal = document.getElementById('yarnModal');
+ const closeModal = document.getElementById('closeModal');
+
+ // Chart instance
+ let impactChart = null;
+ 
+ // Blend components
+ let blendComponents = [];
+
+ // Initialize application
+ function init() {
+ renderCategoryFilters();
+ 
+(async function(){
+  try{
+    await __ZERO_LOAD_YARNS();
+  }catch(e){
+    console.error(e);
+    // fail-safe: keep empty list so UI doesn't crash
+    yarnDatabase = yarnDatabase || [];
+  }
+  renderYarnCards(yarnDatabase);
+  renderImpactChart(yarnDatabase);
+})();
+setupEventListeners();
+ populateFiberDropdown();
+ 
+ // Setup modal event listeners
+ closeModal.addEventListener('click', () => {
+ modal.style.display = 'none';
+ });
+ 
+ window.addEventListener('click', (e) => {
+ if (e.target === modal) {
+ modal.style.display = 'none';
+ }
+ });
+ }
+
+ // Populate fiber dropdown with all fiber types
+ function populateFiberDropdown() {
+ const fiberSelect = document.getElementById('fiberSelect');
+ fiberSelect.innerHTML = '<option value="">-- Choose a fiber --</option>';
+ 
+ for (const fiber in fiberDatabase) {
+ const option = document.createElement('option');
+ option.value = fiber;
+ option.textContent = fiber;
+ fiberSelect.appendChild(option);
+ }
+ }
+
+ // Render category filters with counts
+ function renderCategoryFilters() {
+ for (const category in categoryLists) {
+ const list = categoryLists[category];
+ list.innerHTML = ''; // Clear existing items
+ 
+ const yarnsInCategory = yarnDatabase.filter(yarn => yarn.category === category);
+ 
+ // Create "All [Category]" item
+ const allItem = document.createElement('li');
+ allItem.className = 'category-item';
+ allItem.dataset.category = category;
+ allItem.innerHTML = `All ${category} <span class="category-count">${yarnsInCategory.length}</span>`;
+ allItem.addEventListener('click', () => {
+ filterByCategory(category);
+ setActiveItem(allItem);
+ });
+ list.appendChild(allItem);
+ 
+ // Add individual yarns
+ yarnsInCategory.forEach(yarn => {
+ const li = document.createElement('li');
+ li.className = 'category-item';
+ li.dataset.category = category;
+ li.dataset.yarn = yarn.name;
+ li.innerHTML = `${yarn.name} <span class="category-count">${yarn.co2} kg</span>`;
+ li.addEventListener('click', () => {
+ filterByCategory(category, yarn.name);
+ setActiveItem(li);
+ });
+ list.appendChild(li);
+ });
+ }
+ 
+ // Update "All Yarns" count
+ document.querySelector('#allYarns .category-count').textContent = yarnDatabase.length;
+ }
+
+ // Set active item in sidebar
+ function setActiveItem(activeItem) {
+ document.querySelectorAll('.category-item').forEach(item => {
+ item.classList.remove('active');
+ });
+ activeItem.classList.add('active');
+ }
+
+ // Render yarn cards
+ function renderYarnCards(yarns) {
+ yarnGrid.innerHTML = '';
+ yarnCount.textContent = yarns.length;
+ 
+ if (yarns.length === 0) {
+ yarnGrid.innerHTML = '<p class="no-results">No yarns match your search criteria</p>';
+ return;
+ }
+ 
+ yarns.forEach(yarn => {
+ const card = document.createElement('div');
+ card.className = 'yarn-card' + (yarn.type === 'Blend' ? ' blend' : '');
+ 
+ card.innerHTML = `
+ <div class="yarn-header">
+ ${yarn.type === 'Blend' ? '<i class="fas fa-layer-group blend-icon"></i>' : ''}<div class="yarn-type">${yarn.type}</div>
+ <div class="intent-cards">
+ <div class="intent-card" data-intent="overview"><h3>CEO View</h3><p>Strategy, risk & compliance snapshot</p></div>
+ <div class="intent-card" data-intent="cost"><h3>CFO View</h3><p>Cost, CO₂ impact & savings</p></div>
+ <div class="intent-card" data-intent="flow"><h3>CTO View</h3><p>Process flow & operations</p></div>
+</div>
+ <p class="yarn-brand">Brand: ${yarn.brand}</p>
+ </div>
+ <div class="yarn-body">
+ <p class="yarn-composition">${yarn.composition}</p>
+ <div class="metrics">
+ <div class="metric co2">
+ <div class="metric-title">CO₂/kg</div>
+ <div class="metric-value co2-value">${yarn.co2}</div>
+ <div class="metric-desc">kg CO₂ per kg yarn</div>
+ </div>
+ <div class="metric score">
+ <div class="metric-title">DPI Score</div>
+ <div class="metric-value score-value">${yarn.score}</div>
+ <div class="score-bar">
+ <div class="score-fill" style="width: ${yarn.score}%"></div>
+ </div>
+ </div>
+ </div>
+ <div class="badges">
+ ${yarn.badges.map(badge => {
+ let badgeClass = '';
+ if (badge.includes('Recycled')) badgeClass = 'recycled';
+ if (badge.includes('Organic')) badgeClass = 'organic';
+ if (badge.includes('Synthetic')) badgeClass = 'synthetic';
+ return `<span class="badge ${badgeClass}">${badge}</span>`;
+ }).join('')}
+ </div><h2 class="dpp-subtitle">${yarn.name}</h2>
+
+ </div>
+ <div class="yarn-footer">
+ <div class="yarn-weight">Weight: ${yarn.weight}</div>
+ <button class="detail-btn" data-id="${yarn.name.replace(/\s+/g, '-')}">Details</button>
+ </div>
+ `;
+ 
+ yarnGrid.appendChild(card);
+ 
+ // Add event listener to details button
+ const detailsBtn = card.querySelector('.detail-btn');
+ detailsBtn.addEventListener('click', () => {
+ showYarnDetails(yarn);
+ });
+ });
+ }
+
+ // Show yarn details in modal (FIXED: .modal-header -> .modal-title)
+ function showYarnDetails(yarn) {
+ const modalTitleElem = document.getElementById('modalYarnName');
+ if (yarn.type === 'Blend') {
+ modalTitleElem.innerHTML = '<i class="fas fa-layer-group blend-icon"></i>' + yarn.name;
+ modalTitleElem.style.background = '#f9ba00';
+ modalTitleElem.style.color = 'var(--secondary)';
+ } else {
+ modalTitleElem.innerHTML = yarn.name;
+ modalTitleElem.style.background = 'var(--primary)';
+ modalTitleElem.style.color = '#fff';
+ }
+
+ document.getElementById('modalComposition').textContent = yarn.composition;
+ document.getElementById('modalCo2').textContent = yarn.co2;
+ document.getElementById('modalScore').textContent = yarn.score;
+ document.getElementById('modalScoreBar').style.width = `${yarn.score}%`;
+ document.getElementById('modalBrand').textContent = yarn.brand;
+ document.getElementById('modalWeight').textContent = yarn.weight;
+ document.getElementById('modalType').textContent = yarn.type;
+ 
+ // Render badges
+ const badgesContainer = document.getElementById('modalBadges');
+ badgesContainer.innerHTML = '';
+ yarn.badges.forEach(badge => {
+ let badgeClass = '';
+ if (badge.includes('Recycled')) badgeClass = 'recycled';
+ if (badge.includes('Organic')) badgeClass = 'organic';
+ if (badge.includes('Synthetic')) badgeClass = 'synthetic';
+ 
+ const badgeElem = document.createElement('span');
+ badgeElem.className = `badge ${badgeClass}`;
+ badgeElem.textContent = badge;
+ badgesContainer.appendChild(badgeElem);
+ });
+ 
+ // Render uses
+ const usesContainer = document.getElementById('modalUses');
+ usesContainer.innerHTML = '';
+ yarn.uses.forEach(use => {
+ const li = document.createElement('li');
+ li.textContent = use;
+ usesContainer.appendChild(li);
+ });
+ 
+ // Show modal
+ modal.style.display = 'flex';
+ }
+
+ // Filter by category
+ function filterByCategory(category, yarnName) {
+ let filteredYarns;
+ if (category === 'all') {
+ filteredYarns = yarnDatabase;
+ } else if (yarnName) {
+ filteredYarns = yarnDatabase.filter(yarn => 
+ yarn.category === category && yarn.name === yarnName
+ );
+ } else {
+ filteredYarns = yarnDatabase.filter(yarn => yarn.category === category);
+ }
+ 
+ renderYarnCards(filteredYarns);
+ renderImpactChart(filteredYarns);
+ }
+
+ // Sort yarns
+ function sortYarns(yarns, criteria) {
+ return [...yarns].sort((a, b) => {
+ switch(criteria) {
+ case 'name':
+ return a.name.localeCompare(b.name);
+ case 'co2-asc':
+ return a.co2 - b.co2;
+ case 'co2-desc':
+ return b.co2 - a.co2;
+ case 'score-asc':
+ return a.score - b.score;
+ case 'score-desc':
+ return b.score - a.score;
+ default:
+ return 0;
+ }
+ });
+ }
+
+ // Search yarns
+ function searchYarns(query) {
+ if (!query) return yarnDatabase;
+ 
+ const lowerQuery = query.toLowerCase();
+ return yarnDatabase.filter(yarn => 
+ yarn.name.toLowerCase().includes(lowerQuery) ||
+ yarn.brand.toLowerCase().includes(lowerQuery) ||
+ yarn.composition.toLowerCase().includes(lowerQuery) ||
+ yarn.badges.some(badge => badge.toLowerCase().includes(lowerQuery)) ||
+ yarn.uses.some(use => use.toLowerCase().includes(lowerQuery))
+ );
+ }
+
+ // Render impact chart
+ function renderImpactChart(yarns) {
+ const categories = [...new Set(yarns.map(yarn => yarn.category))];
+ 
+ // Calculate average CO2 and Score for each category
+ const avgCo2 = categories.map(category => {
+ const yarnsInCat = yarns.filter(y => y.category === category);
+ const totalCo2 = yarnsInCat.reduce((sum, yarn) => sum + yarn.co2, 0);
+ return totalCo2 / yarnsInCat.length;
+ });
+ 
+ const avgScore = categories.map(category => {
+ const yarnsInCat = yarns.filter(y => y.category === category);
+ const totalScore = yarnsInCat.reduce((sum, yarn) => sum + yarn.score, 0);
+ return totalScore / yarnsInCat.length;
+ });
+
+ const ctx = document.getElementById('impactChart').getContext('2d');
+ 
+ // Destroy previous chart if it exists
+ if (impactChart) {
+ impactChart.destroy();
+ }
+ 
+ // Create new chart
+ impactChart = new Chart(ctx, {
+ type: 'bar',
+ data: {
+ labels: categories,
+ datasets: [
+ {
+ label: 'Average CO₂/kg',
+ data: avgCo2,
+ backgroundColor: 'rgba(0, 85, 48, 0.5)',
+ borderColor: 'rgba(0, 85, 48, 1)',
+ borderWidth: 1
+ },
+ {
+ label: 'Average DPI Score',
+ data: avgScore,
+ backgroundColor: 'rgba(2, 21, 78, 0.5)',
+ borderColor: 'rgba(2, 21, 78, 1)',
+ borderWidth: 1,
+ type: 'line',
+ yAxisID: 'y1'
+ }
+ ]
+ },
+ options: {
+ responsive: true,
+ scales: {
+ y: {
+ beginAtZero: true,
+ title: {
+ display: true,
+ text: 'CO₂/kg (kg)',
+ font: {
+ size: 14,
+ weight: 'bold'
+ }
+ }
+ },
+ y1: {
+ position: 'right',
+ beginAtZero: true,
+ max: 100,
+ title: {
+ display: true,
+ text: 'DPI Score',
+ font: {
+ size: 14,
+ weight: 'bold'
+ }
+ },
+ grid: {
+ drawOnChartArea: false
+ }
+ }
+ },
+ plugins: {
+ legend: {
+ labels: {
+ font: {
+ size: 14
+ }
+ }
+ },
+ tooltip: {
+ callbacks: {
+ label: function(context) {
+ let label = context.dataset.label || '';
+ if (label) {
+ label += ': ';
+ }
+ label += context.parsed.y.toFixed(1);
+ return label;
+ }
+ }
+ }
+ }
+ }
+ });
+ }
+
+ // Setup event listeners
+ function setupEventListeners() {
+ searchInput.addEventListener('input', () => {
+ const results = searchYarns(searchInput.value);
+ const sorted = sortYarns(results, sortSelect.value);
+ renderYarnCards(sorted);
+ renderImpactChart(sorted);
+ });
+ 
+ sortSelect.addEventListener('change', () => {
+ const results = searchYarns(searchInput.value);
+ const sorted = sortYarns(results, sortSelect.value);
+ renderYarnCards(sorted);
+ renderImpactChart(sorted);
+ });
+ 
+ // Add event listener for the "All Yarns" filter
+ document.querySelector('#allYarns .category-item').addEventListener('click', function() {
+ filterByCategory('all');
+ setActiveItem(this);
+ });
+ }
+ 
+ // Tab navigation
+ function showTab(tabId) {
+ document.querySelectorAll('.tab-btn').forEach(btn => {
+ btn.classList.remove('active');
+ });
+ event.target.classList.add('active');
+ 
+ document.getElementById('yarn-database').style.display = 'none';
+ document.getElementById('blend-calculator').style.display = 'none';
+ 
+ document.getElementById(tabId).style.display = tabId === 'yarn-database' ? 'block' : 'grid';
+ }
+ 
+ // Add blend component
+ function addComponent() {
+ const fiberSelect = document.getElementById('fiberSelect');
+ const percentageInput = document.getElementById('percentageInput');
+ 
+ if (!fiberSelect.value || !percentageInput.value) {
+ alert("Please select a fiber and enter a percentage");
+ return;
+ }
+ 
+ const percentage = parseInt(percentageInput.value);
+ if (isNaN(percentage)) {
+ alert("Please enter a valid percentage");
+ return;
+ }
+ 
+ // Check if total percentage would exceed 100%
+ const totalPercentage = blendComponents.reduce((sum, comp) => sum + comp.percentage, 0);
+ if (totalPercentage + percentage > 100) {
+ alert("Total percentage cannot exceed 100%");
+ return;
+ }
+ 
+ blendComponents.push({
+ name: fiberSelect.value,
+ percentage: percentage,
+ co2: fiberDatabase[fiberSelect.value].co2,
+ score: fiberDatabase[fiberSelect.value].score
+ });
+ 
+ renderBlendComponents();
+ 
+ // Reset inputs
+ fiberSelect.value = "";
+ percentageInput.value = "";
+ }
+ 
+ // Render blend components
+ function renderBlendComponents() {
+ const container = document.getElementById('blendComponents');
+ container.innerHTML = '';
+ 
+ if (blendComponents.length === 0) {
+ container.innerHTML = '<p style="text-align: center; padding: 20px; color: #777;">No fibers added yet</p>';
+ return;
+ }
+ 
+ blendComponents.forEach((comp, index) => {
+ const item = document.createElement('div');
+ item.className = 'blend-item';
+ item.innerHTML = `
+ <div class="blend-item-name">${comp.name}</div>
+ <div class="blend-item-percentage">${comp.percentage}%</div>
+ <button class="remove-btn" onclick="removeComponent(${index})">
+ <i class="fas fa-times"></i>
+ </button>
+ `;
+ container.appendChild(item);
+ });
+ }
+ 
+ // Remove blend component
+ function removeComponent(index) {
+ blendComponents.splice(index, 1);
+ renderBlendComponents();
+ }
+ 
+ // Calculate blend and add to database
+ function calculateBlend() {
+ if (blendComponents.length === 0) {
+ alert("Please add at least one fiber to the blend");
+ return;
+ }
+ 
+ const totalPercentage = blendComponents.reduce((sum, comp) => sum + comp.percentage, 0);
+ if (totalPercentage !== 100) {
+ alert(`Total percentage is ${totalPercentage}%. It must equal 100%`);
+ return;
+ }
+ 
+ let totalCo2 = 0;
+ let totalScore = 0;
+ 
+ blendComponents.forEach(comp => {
+ totalCo2 += comp.co2 * (comp.percentage / 100);
+ totalScore += comp.score * (comp.percentage / 100);
+ });
+ 
+ document.getElementById('blendCo2').textContent = totalCo2.toFixed(1);
+ document.getElementById('blendScore').textContent = Math.round(totalScore);
+ 
+ // Update composition text
+ const composition = blendComponents.map(comp => {
+ return `${comp.percentage}% ${comp.name}`;
+ }).join(' + ');
+ 
+ document.getElementById('blendComposition').textContent = composition;
+ 
+ // Get blend name
+ const blendName = document.getElementById('blendName').value || "Custom Blend";
+ 
+ // Create new yarn object for the blend
+ const newBlend = {
+ name: blendName,
+ category: "Blended Yarns",
+ brand: "Custom Blend",
+ composition: composition,
+ co2: parseFloat(totalCo2.toFixed(1)),
+ score: Math.round(totalScore),
+ badges: ["Custom Blend"],
+ uses: ["Varies depending on composition"],
+ weight: "Custom",
+ type: "Blend"
+ };
+ 
+ // Add to yarn database
+ yarnDatabase.push(newBlend);
+ 
+ // Update UI
+ renderCategoryFilters();
+ renderYarnCards(yarnDatabase);
+ renderImpactChart(yarnDatabase);
+ 
+ // Show success message
+ alert(`"${blendName}" has been added to the Yarn Database!`);
+ 
+ // Reset blend calculator
+ blendComponents = [];
+ renderBlendComponents();
+ document.getElementById('blendCo2').textContent = '0.0';
+ document.getElementById('blendScore').textContent = '0';
+ document.getElementById('blendComposition').textContent = 'Add fibers to see your custom blend composition';
+ document.getElementById('blendName').value = '';
+ 
+ // Switch to yarn database tab
+ document.querySelectorAll('.tab-btn').forEach(btn => {
+ btn.classList.remove('active');
+ });
+ document.querySelector('.tab-btn:first-child').classList.add('active');
+ document.getElementById('yarn-database').style.display = 'block';
+ document.getElementById('blend-calculator').style.display = 'none';
+ }
+
+ // Initialize the app
+ document.addEventListener('DOMContentLoaded', init);
+ </script>
+
+<script>
+
+ /* Enhanced Loading and Error Handling */
+ class ZeroProductionEnhancer {
+ constructor() {
+ this.init();
+ }
+ 
+ init() {
+ this.addLoadingStates();
+ this.addFormValidation();
+ this.addKeyboardNavigation();
+ this.optimizeImages();
+ }
+ 
+ addLoadingStates() {
+ // Add loading states to all buttons
+ document.querySelectorAll('button, .btn, input[type="submit"]').forEach(btn => {
+ btn.addEventListener('click', (e) => {
+ if (!btn.classList.contains('no-loading')) {
+ btn.classList.add('loading');
+ setTimeout(() => btn.classList.remove('loading'), 2000);
+ }
+ });
+ });
+ 
+ // Add loading states to form submissions
+ document.querySelectorAll('form').forEach(form => {
+ form.addEventListener('submit', (e) => {
+ form.classList.add('loading');
+ setTimeout(() => form.classList.remove('loading'), 3000);
+ });
+ });
+ }
+ 
+ addFormValidation() {
+ // Real-time form validation
+ document.querySelectorAll('input, select, textarea').forEach(input => {
+ input.addEventListener('blur', this.validateField);
+ input.addEventListener('input', this.clearValidation);
+ });
+ }
+ 
+ validateField(e) {
+ const field = e.target;
+ const value = field.value.trim();
+ 
+ // Clear previous states
+ field.classList.remove('error', 'success');
+ 
+ // Required field validation
+ if (field.hasAttribute('required') && !value) {
+ field.classList.add('error');
+ this.showMessage(field, 'This field is required', 'error');
+ return false;
+ }
+ 
+ // Email validation
+ if (field.type === 'email' && value) {
+ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+ if (!emailRegex.test(value)) {
+ field.classList.add('error');
+ this.showMessage(field, 'Please enter a valid email', 'error');
+ return false;
+ }
+ }
+ 
+ // Number validation
+ if (field.type === 'number' && value) {
+ if (isNaN(value) || value < 0) {
+ field.classList.add('error');
+ this.showMessage(field, 'Please enter a valid number', 'error');
+ return false;
+ }
+ }
+ 
+ // Success state
+ if (value) {
+ field.classList.add('success');
+ }
+ 
+ return true;
+ }
+ 
+ clearValidation(e) {
+ const field = e.target;
+ field.classList.remove('error', 'success');
+ this.hideMessage(field);
+ }
+ 
+ showMessage(field, message, type) {
+ this.hideMessage(field); // Clear existing message
+ 
+ const messageEl = document.createElement('div');
+ messageEl.className = `${type}-message`;
+ messageEl.textContent = message;
+ 
+ field.parentNode.insertBefore(messageEl, field.nextSibling);
+ }
+ 
+ hideMessage(field) {
+ const messages = field.parentNode.querySelectorAll('.error-message, .success-message');
+ messages.forEach(msg => msg.remove());
+ }
+ 
+ addKeyboardNavigation() {
+ // Enhanced keyboard navigation
+ document.addEventListener('keydown', (e) => {
+ // ESC key to close modals
+ if (e.key === 'Escape') {
+ document.querySelectorAll('.modal').forEach(modal => {
+ if (modal.style.display !== 'none') {
+ modal.style.display = 'none';
+ }
+ });
+ }
+ 
+ // Ctrl+/ for help/shortcuts
+ if (e.ctrlKey && e.key === '/') {
+ e.preventDefault();
+ this.showKeyboardShortcuts();
+ }
+ });
+ }
+ 
+ showKeyboardShortcuts() {
+ const shortcuts = `
+ Keyboard Shortcuts:
+ • Esc - Close modals/dialogs
+ • Ctrl+/ - Show this help
+ • Tab - Navigate between elements
+ • Enter - Activate buttons/links
+ • Space - Toggle checkboxes
+ `;
+ 
+ if (typeof alert !== 'undefined') {
+ alert(shortcuts);
+ }
+ }
+ 
+ optimizeImages() {
+ // Lazy load images
+ if ('IntersectionObserver' in window) {
+ const imageObserver = new IntersectionObserver((entries, observer) => {
+ entries.forEach(entry => {
+ if (entry.isIntersecting) {
+ const img = entry.target;
+ if (img.dataset.src) {
+ img.src = img.dataset.src;
+ img.removeAttribute('data-src');
+ observer.unobserve(img);
+ }
+ }
+ });
+ });
+ 
+ document.querySelectorAll('img[data-src]').forEach(img => {
+ imageObserver.observe(img);
+ });
+ }
+ }
+ }
+ 
+ // Initialize when DOM is ready
+ if (document.readyState === 'loading') {
+ document.addEventListener('DOMContentLoaded', () => new ZeroProductionEnhancer());
+ } else {
+ new ZeroProductionEnhancer();
+ }
+ 
+</script>
+
+<!-- BACK2DASHBOARD-INJECTED -->
+<script>
+ (function () {
+ function getBasePath() {
+ const parts = location.pathname.split('/').filter(Boolean);
+ // Proje sayfası ise "/repo-adi/", user/org pages ise "/"
+ return parts.length > 0 ? `/${parts[0]}/` : '/';
+ }
+ const base = getBasePath();
+ document.querySelectorAll('a.back-to-dashboard').forEach(a => {
+ a.setAttribute('href', `${base}index.html`);
+ a.addEventListener('click', function (e) {
+ e.preventDefault();
+ window.location.href = `${base}index.html`;
+ });
+ });
+ })();
+</script>
+
+<script src="assets/js/freeze-guard.js"></script>
+
+<script>
+/* ZERO FIX: sidebar totals (standalone) */
+(() => {
+  const q = (sel) => document.querySelector(sel);
+  const setCount = (cat, n) => {
+    const el = q(`.category-item[data-category="${cat}"] .category-count`);
+    if(el) el.textContent = String(n);
+  };
+
+  const norm = (v) => String(v||"").toLowerCase();
+  const hasAny = (y, words) => {
+    const hay = [
+      y?.name, y?.category, y?.type, y?.fiber, y?.material,
+      ...(y?.badges||[]), ...(y?.tags||[]), ...(y?.certifications||[])
+    ].map(norm).join(" | ");
+    return words.some(w => hay.includes(w));
+  };
+
+  const isWool = (y) => hasAny(y, ["wool","merino","cashmere","alpaca","mohair","angora"]);
+  const isPlant = (y) => hasAny(y, ["cotton","organic cotton","viscose","modal","lyocell","tencel","linen","flax","hemp","bamboo"]);
+  const isSynthetic = (y) => hasAny(y, ["polyester","nylon","polyamide","acrylic","elastane","spandex","synthetic"]);
+  const isRecycled = (y) => hasAny(y, ["recycled","grs"]);
+  const isOrganic = (y) => hasAny(y, ["organic","gots"]);
+
+  fetch("data/ugurlular-yarns.json", { cache: "no-store" })
+    .then(r => r.json())
+    .then(data => {
+      const items = Array.isArray(data) ? data : (data.items || data.yarns || data.data || []);
+      const allEl = q('.category-item[data-category="all"] .category-count');
+      if(allEl) allEl.textContent = String(items.length);
+
+      setCount("wool", items.filter(isWool).length);
+      setCount("plant", items.filter(isPlant).length);
+      setCount("recycled", items.filter(isRecycled).length);
+      setCount("organic", items.filter(isOrganic).length);
+      setCount("synthetic", items.filter(isSynthetic).length);
+    })
+    .catch(() => {});
+})();
+</script>
+
+
+<!-- ZERO FIX: sidebar totals (Ugurlular taxonomy) -->
+<script>
+(function(){
+  const q = (sel) => document.querySelector(sel);
+
+  function setCount(cat, n){
+    const el = q('.category-item[data-category="'+cat+'"] .category-count');
+    if(el) el.textContent = String(n);
+  }
+
+  function norm(x){ return String(x||"").toLowerCase(); }
+
+  function bucket(y){
+    const name = norm(y.name);
+    const comp = norm(y.composition);
+    const cat  = norm(y.category);
+    const typ  = norm(y.type);
+    const all  = [name, comp, cat, typ].join(" ");
+
+    // Technology (process / spinning tech)
+    if (/(compact|ring|open[- ]?end|slub|softtwist|siro|siro[- ]spun|prosoft|ecosoft)/.test(all)) return "technology";
+
+    // Cellulosic (viscose/modal/lyocell/tencel/ecovero/seacell/bamboo etc.)
+    if (/(tencel|lyocell|modal|viscose|ecovero|lenzing|bamboo|seacell|livaeco|sa?xcell)/.test(all)) return "cellulosic";
+
+    // Blends (explicit blend markers or multiple fibers)
+    if (/(blend|\/|%.*%|cotton.*poly|poly.*cotton|cotton.*viscose|viscose.*cotton|wool.*silk|silk.*wool)/.test(all)) return "blends";
+
+    // Cotton default
+    if (/(cotton|bci|supima|giza|turkish cotton|u\.s\. cotton|organic cotton|regenerative cotton)/.test(all)) return "cotton";
+
+    // Fallback: if nothing matched, treat as blends (safer than losing it)
+    return "blends";
+  }
+
+  fetch("data/ugurlular-yarns.json", {cache:"no-store"})
+    .then(r => r.json())
+    .then(data => {
+      const items = Array.isArray(data) ? data : (data.items || data.yarns || []);
+      // All Yarns
+      const allEl = q('.category-item[data-category="all"] .category-count');
+      if(allEl) allEl.textContent = String(items.length);
+
+      let c=0, ce=0, b=0, t=0;
+      for(const y of items){
+        const k = bucket(y);
+        if(k==="cotton") c++;
+        else if(k==="cellulosic") ce++;
+        else if(k==="blends") b++;
+        else if(k==="technology") t++;
+      }
+
+      setCount("cotton", c);
+      setCount("cellulosic", ce);
+      setCount("blends", b);
+      setCount("technology", t);
+    })
+    .catch(()=>{});
+})();
+</script>
+
+</body>
+</html>

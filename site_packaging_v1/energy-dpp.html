@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Energy & Utilities</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      /* ZERO_ENERGY_OS v1 */
+      :root {
+        --zero-navy: #02154e;
+        --zero-orange: #f9ba00;
+        --zero-green: #005530;
+        --zero-red: #D51635;
+        --zero-gray: #f8fafc;
+      }
+      body { background: var(--zero-gray); }
+      
+      /* CONTEXT BAR */
+      .context-bar {
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #64748b;
+      }
+      .context-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        color: var(--zero-navy);
+        font-weight: 600;
+      }
+
+      /* KPI ROW */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .kpi-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+      }
+      .kpi-label { font-size: 0.75rem; text-transform: uppercase; color: #64748b; margin-bottom: 8px; letter-spacing: 0.5px; }
+      .kpi-value { font-size: 1.8rem; font-weight: 700; color: var(--zero-navy); }
+      .kpi-sub { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+      .status-ok { color: var(--zero-green); }
+      .status-monitor { color: var(--zero-orange); }
+      .status-action { color: var(--zero-red); }
+
+      /* ACTION BAR */
+      .action-bar {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .action-btn {
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        color: var(--zero-navy);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+      .action-btn:hover { background: #f8fafc; border-color: var(--zero-navy); }
+      .btn-primary { background: var(--zero-navy); color: #fff; border: none; }
+      .btn-primary:hover { background: #032070; }
+      .btn-risk { border-color: var(--zero-red); color: var(--zero-red); }
+      .btn-risk:hover { background: #fff5f5; }
+
+      /* RISK SIGNALS */
+      .risk-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .risk-card {
+        background: #fff;
+        border-left: 4px solid var(--zero-navy);
+        border-radius: 4px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      }
+      .risk-card.red { border-left-color: var(--zero-red); }
+      .risk-card.orange { border-left-color: var(--zero-orange); }
+      
+      /* CHARTS & INSIGHT */
+      .chart-section {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+      }
+      .chart-card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+      }
+      .insight-panel {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 20px;
+      }
+      .insight-title { font-weight: 700; color: var(--zero-navy); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+      .insight-text { font-size: 0.95rem; color: #334155; line-height: 1.6; margin-bottom: 16px; }
+      .rec-box { background: #fff; padding: 12px; border-radius: 6px; border-left: 3px solid var(--zero-orange); font-size: 0.9rem; }
+
+      /* MODAL */
+      .modal-overlay {
+        position: fixed; inset: 0; background: rgba(2,21,78,0.6); backdrop-filter: blur(2px);
+        display: none; align-items: center; justify-content: center; z-index: 9999;
+      }
+      .modal-box {
+        background: #fff; width: 600px; max-width: 90%; border-radius: 8px; overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2); animation: slideUp 0.3s ease;
+      }
+      @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      .modal-header { background: var(--zero-navy); color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+      .modal-body { padding: 24px; }
+      
+      @media (max-width: 1024px) {
+        .kpi-grid, .risk-grid { grid-template-columns: repeat(2, 1fr); }
+        .chart-section { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 600px) {
+        .kpi-grid, .risk-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    
+    <header class="app-header">
+        <div class="header-content">
+            <div style="display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 60px; margin-right: 15px;">
+                <div class="title">Zero <span class="title-at">Ecosystem</span> — Energy & Utilities</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEXT BAR -->
+    <div class="context-bar">
+      <div style="display:flex; gap:12px;">
+        <span class="context-tag">🏭 Facility: UGURLULAR</span>
+        <span class="context-tag">👤 Role: <span id="userRole">Executive</span></span>
+        <span class="context-tag">📅 Oct 2025</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <span style="font-size:0.8rem; color:#94a3b8;">Scope 2 Authority</span>
+        <div style="width:8px; height:8px; background:var(--zero-green); border-radius:50%;"></div>
+      </div>
+    </div>
+
+    <main class="container" style="padding-top: 24px;">
+      
+      <!-- TOP KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Energy (MWh)</div>
+          <div class="kpi-value">1,420</div>
+          <div class="kpi-sub">▼ 2% vs last month</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total CO₂e (t)</div>
+          <div class="kpi-value">482</div>
+          <div class="kpi-sub">Scope 2 Location-Based</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Energy Cost</div>
+          <div class="kpi-value" id="kpiCost">€142k</div>
+          <div class="kpi-sub" id="kpiCostSub">Avg €0.10/kWh</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Risk Status</div>
+          <div class="kpi-value status-monitor" id="kpiRisk">MONITOR</div>
+          <div class="kpi-sub">Grid volatility detected</div>
+        </div>
+      </div>
+
+      <!-- DECISION LAYER -->
+      <div class="action-bar">
+        <div style="font-weight:700; color:var(--zero-navy); margin-right:12px;">Decisions:</div>
+        <button class="action-btn btn-primary" onclick="openImpactModal()">
+          <span>💶</span> € Impact View
+        </button>
+        <button class="action-btn">
+          <span>📄</span> Board Export
+        </button>
+        <button class="action-btn">
+          <span>✉️</span> Notify Ops
+        </button>
+        <div style="flex-grow:1;"></div>
+        <button class="action-btn btn-risk">
+          <span>🚩</span> Flag Risk
+        </button>
+      </div>
+
+      <!-- RISK SIGNALS -->
+      <h3 style="font-size:1rem; color:var(--zero-navy); margin-bottom:16px;">Executive Risk Signals</h3>
+      <div class="risk-grid">
+        <div class="risk-card orange">
+          <div class="kpi-label">Energy Cost Exposure</div>
+          <div style="font-size:1.4rem; font-weight:700; color:var(--zero-navy);">High Volatility</div>
+          <div class="kpi-sub">Market dependent pricing</div>
+        </div>
+        <div class="risk-card red">
+          <div class="kpi-label">Grid Dependency Risk</div>
+          <div style="font-size:1.4rem; font-weight:700; color:var(--zero-navy);">82%</div>
+          <div class="kpi-sub">Reliance on external grid</div>
+        </div>
+        <div class="risk-card">
+          <div class="kpi-label">Carbon Intensity Risk</div>
+          <div style="font-size:1.4rem; font-weight:700; color:var(--zero-navy);">0.34 kg</div>
+          <div class="kpi-sub">CO₂ per kg product</div>
+        </div>
+        <div class="risk-card orange">
+          <div class="kpi-label">Peak Load Dependency</div>
+          <div style="font-size:1.4rem; font-weight:700; color:var(--zero-navy);">45%</div>
+          <div class="kpi-sub">Cost driven by peak hours</div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS & INSIGHT -->
+      <div class="chart-section">
+        <!-- Charts -->
+        <div style="display:flex; flex-direction:column; gap:24px;">
+          <div class="chart-card">
+            <h4 style="margin-bottom:16px; color:var(--zero-navy);">Energy Mix vs Cost Divergence</h4>
+            <canvas id="chartMix" height="100"></canvas>
+          </div>
+          <div class="chart-card">
+            <h4 style="margin-bottom:16px; color:var(--zero-navy);">Peak Dependency Visualization</h4>
+            <canvas id="chartPeak" height="80"></canvas>
+          </div>
+        </div>
+
+        <!-- Decision Insight Panel -->
+        <div class="insight-panel">
+          <div class="insight-title">
+            <span>🧠</span> Decision Insight
+          </div>
+          <div class="insight-text">
+            <strong>Observation:</strong> Energy cost is increasing without proportional CO₂ reduction.
+            <br><br>
+            <strong>Root Cause:</strong> High dependency on grid electricity during peak pricing hours (14:00-18:00), driving 45% of total cost.
+          </div>
+          <div class="rec-box">
+            <strong>Recommended Focus:</strong>
+            <ul style="margin:8px 0 0 16px; padding:0; color:#444;">
+              <li>Re-negotiate peak tariff contract</li>
+              <li>Shift heavy finishing load to off-peak</li>
+              <li>Evaluate on-site solar (Scope 2 reduction)</li>
+            </ul>
+          </div>
+          <div style="margin-top:20px; font-size:0.8rem; color:#64748b; text-align:center;">
+            OS Recommendation Engine v1.0
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- IMPACT MODAL -->
+    <div class="modal-overlay" id="impactModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 style="margin:0;">Financial Impact Assessment</h3>
+          <button onclick="closeImpactModal()" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex; justify-content:space-between; margin-bottom:24px;">
+             <div>
+               <div style="font-size:0.8rem; color:#64748b;">CURRENT EXPOSURE</div>
+               <div style="font-size:2rem; font-weight:800; color:var(--zero-navy);" id="modalExposure">€142,000</div>
+             </div>
+             <div style="text-align:right;">
+               <div style="font-size:0.8rem; color:#64748b;">SCENARIO IMPACT (+25%)</div>
+               <div style="font-size:2rem; font-weight:800; color:var(--zero-red);" id="modalImpact">+€35,500</div>
+             </div>
+          </div>
+          
+          <div style="background:#f8fafc; padding:16px; border-radius:6px; margin-bottom:24px;">
+            <h4 style="margin:0 0 12px 0; color:var(--zero-navy); font-size:1rem;">Allocation Logic (Audit Defense)</h4>
+            <p style="font-size:0.9rem; color:#334155; margin:0;">
+              Total Facility Energy Cost is allocated to production output based on weight (kg).
+              <br>
+              <strong>Formula:</strong> (Total Cost / Total Output) × Order Weight.
+            </p>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:12px;">
+            <button class="action-btn" onclick="closeImpactModal()">Dismiss</button>
+            <button class="action-btn btn-primary">Download Risk Report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ZERO_ENERGY_LOGIC v1 */
+      
+      // Data Load Helper
+      async function loadEnergyData() {
+        try {
+          const [energyRes, prodRes, ordersRes] = await Promise.all([
+            fetch('data/energy_monthly.json'),
+            fetch('data/production_output.json'),
+            fetch('data/orders.json')
+          ]);
+          
+          const energyData = await energyRes.json();
+          const prodData = await prodRes.json();
+          const ordersData = await ordersRes.json();
+          return { energyData, prodData, ordersData };
+        } catch(e) {
+          console.error("Data Load Error", e);
+          return null;
+        }
+      }
+
+      // Charts
+      document.addEventListener('DOMContentLoaded', async function() {
+        
+        // --- 1. ALLOCATION LOGIC ---
+        const data = await loadEnergyData();
+        const params = new URLSearchParams(window.location.search);
+        const orderId = params.get('order_id');
+        const facility = params.get('facility') || "UGURLULAR";
+        
+        if (data && orderId) {
+          const order = data.ordersData.find(o => o.order_id === orderId);
+          if (order) {
+            const month = order.month || "2025-10"; // Fallback to Oct
+            
+            // Facility Monthly Totals
+            const facEnergy = data.energyData[facility]?.[month];
+            const facProd = data.prodData[facility]?.[month];
+            
+            if (facEnergy && facProd) {
+              // Derived Metrics (The OS Muscle)
+              const eurPerKg = facEnergy.cost_eur / facProd.total_output_kg;
+              const kgCo2PerKg = (facEnergy.co2e_t * 1000) / facProd.total_output_kg;
+              
+              // Order Allocation
+              const orderWeight = order.order_weight_kg || 0;
+              const orderCost = orderWeight * eurPerKg;
+              const orderCo2 = orderWeight * kgCo2PerKg;
+              
+              // UI Update: Inject Order Context
+              // 1. Update Context Bar
+              const ctxBar = document.querySelector('.context-bar > div:first-child');
+              const orderTag = document.createElement('span');
+              orderTag.className = 'context-tag';
+              orderTag.innerHTML = `📦 Order: ${orderId}`;
+              ctxBar.appendChild(orderTag);
+              
+              // 2. Update KPI Cards to show Order Allocation instead of Facility Total?
+              // OR: Show "Order Impact" as a new row or overwrite?
+              // Strategy: Overwrite KPI values with Order Specifics if Order Context exists.
+              // "Decision-First": If I am looking at an Order, I want Order Data.
+              
+              document.querySelector('.kpi-grid').innerHTML = `
+                <div class="kpi-card" style="border-left:4px solid var(--zero-orange);">
+                  <div class="kpi-label">Order Energy Allocation</div>
+                  <div class="kpi-value">${Math.round(orderCo2).toLocaleString()} <span style="font-size:1rem;">kg CO₂</span></div>
+                  <div class="kpi-sub">Allocated Scope 2 Share</div>
+                </div>
+                <div class="kpi-card" style="border-left:4px solid var(--zero-navy);">
+                  <div class="kpi-label">Order Energy Cost</div>
+                  <div class="kpi-value">€${Math.round(orderCost).toLocaleString()}</div>
+                  <div class="kpi-sub">Financial Exposure</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-label">Energy Intensity</div>
+                  <div class="kpi-value">${kgCo2PerKg.toFixed(3)} <span style="font-size:1rem;">kg/kg</span></div>
+                  <div class="kpi-sub">Facility Efficiency Factor</div>
+                </div>
+                <div class="kpi-card">
+                  <div class="kpi-label">Audit Status</div>
+                  <div class="kpi-value status-ok">VERIFIED</div>
+                  <div class="kpi-sub">Allocation Logic: Weight-Based</div>
+                </div>
+              `;
+              
+              // 3. Add Allocation Note
+              const main = document.querySelector('main');
+              const note = document.createElement('div');
+              note.style.textAlign = 'center';
+              note.style.fontSize = '0.8rem';
+              note.style.color = '#94a3b8';
+              note.style.marginTop = '20px';
+              note.innerHTML = "Allocation: Shared Scope 2 footprint allocated by production output (kg). Privacy-safe. Audit-ready.";
+              main.appendChild(note);
+            }
+          }
+        }
+        
+        // --- 2. CHARTS ---
+
+        const ctxMix = document.getElementById('chartMix');
+        if(ctxMix) {
+          new Chart(ctxMix, {
+            type: 'line',
+            data: {
+              labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+              datasets: [
+                {
+                  label: 'Cost Index',
+                  data: [100, 102, 105, 110, 118, 125], // Rising
+                  borderColor: '#D51635',
+                  yAxisID: 'y',
+                  tension: 0.3
+                },
+                {
+                  label: 'CO₂ Intensity',
+                  data: [100, 99, 98, 98, 97, 97], // Flat/Slow drop
+                  borderColor: '#005530',
+                  yAxisID: 'y1',
+                  tension: 0.3,
+                  borderDash: [5, 5]
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              interaction: { mode: 'index', intersect: false },
+              scales: {
+                y: { type: 'linear', display: true, position: 'left', title: {display:true, text:'Cost Index'} },
+                y1: { type: 'linear', display: true, position: 'right', grid: {drawOnChartArea: false}, title: {display:true, text:'Carbon Index'} }
+              }
+            }
+          });
+        }
+
+        // Peak Chart
+        const ctxPeak = document.getElementById('chartPeak');
+        if(ctxPeak) {
+          new Chart(ctxPeak, {
+            type: 'bar',
+            data: {
+              labels: ['00-06 (Off)', '06-14 (Std)', '14-18 (Peak)', '18-24 (Std)'],
+              datasets: [{
+                label: 'Cost Share (%)',
+                data: [10, 30, 45, 15],
+                backgroundColor: ['#005530', '#f9ba00', '#D51635', '#f9ba00']
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
+
+        // DEMO LOGIC
+        // params already declared above
+        const demo = params.get('demo');
+        const role = params.get('role');
+
+        if(role) {
+          document.getElementById('userRole').textContent = role.toUpperCase();
+        }
+
+        if(demo === 'energy_cost_shock') {
+          // Trigger Shock Scenario
+          document.getElementById('kpiCost').textContent = "€177k"; // +25%
+          document.getElementById('kpiCost').style.color = "#D51635";
+          document.getElementById('kpiCostSub').textContent = "SURGE: €0.125/kWh";
+          
+          document.getElementById('kpiRisk').textContent = "ACTION";
+          document.getElementById('kpiRisk').className = "kpi-value status-action";
+          
+          // Auto Open Modal
+          setTimeout(openImpactModal, 800);
+        }
+      });
+
+      function openImpactModal() {
+        document.getElementById('impactModal').style.display = 'flex';
+      }
+      function closeImpactModal() {
+        document.getElementById('impactModal').style.display = 'none';
+      }
+      
+      // Close on outside click
+      document.getElementById('impactModal').addEventListener('click', (e) => {
+        if(e.target === document.getElementById('impactModal')) closeImpactModal();
+      });
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PORT="${1:-8087}"
+
+cd "$(dirname "$0")/dist/site"
+
+echo "✅ ZeroAtYarnDeploy serving on:"
+
+# Default route interface (macOS)
+IF="$(route get default 2>/dev/null | awk '/interface:/{print $2}')"
+IP="$(ipconfig getifaddr "$IF" 2>/dev/null || true)"
+
+# fallback: en0 / en1 dene
+if [ -z "${IP:-}" ]; then
+  IP="$(ipconfig getifaddr en0 2>/dev/null || true)"
+fi
+if [ -z "${IP:-}" ]; then
+  IP="$(ipconfig getifaddr en1 2>/dev/null || true)"
+fi
+if [ -z "${IP:-}" ]; then
+  IP="127.0.0.1"
+fi
+
+echo "   http://$IP:$PORT/yarn-dpp.html"
+echo ""
+
+python3 -m http.server "$PORT"

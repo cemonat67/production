@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Employee Transport</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Zero@Production <span class="title-at">Ecosystem</span> — Employee Transport by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+        </div>
+    </div>
+</header>
+    <main class="container">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="row" style="justify-content: space-between; align-items: center;">
+          <div>
+            <h3>Employee Transport — Total CO₂ and Cost</h3>
+            <p class="muted">Employee Transport metrics and sustainability data</p>
+          </div>
+          <div class="row" style="gap:8px; align-items:center;">
+             <button class="btn">Filter</button>
+          </div>
+        </div>
+        <div class="row" style="gap:32px; align-items:flex-start;">
+          <div class="card" style="min-width:260px;">
+            <h3>—</h3>
+            <p class="muted">Total CO₂</p>
+          </div>
+          <div class="card" style="min-width:260px;">
+            <h3>—</h3>
+            <p class="muted">Estimated Cost (K)</p>
+          </div>
+        </div>
+      </div>
+
+      <section class="card" style="margin-bottom: 24px;">
+        <h3>Trend</h3>
+        <div class="muted">Data integration pending...</div>
+      </section>
+
+      <!-- Consistent Charts Section (ZaE Theme) -->
+      <section class="card" style="margin: 24px;">
+        <h3>Charts</h3>
+        <div class="row" style="gap:16px; flex-wrap:wrap;">
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Distribution by Area</h4>
+            <canvas id="chartDomain" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>Scope 1/2/3</h4>
+            <canvas id="chartScope" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>CO₂ Trend (Aylık)</h4>
+            <canvas id="chartTrend" height="140"></canvas>
+          </div>
+          <div class="card" style="min-width:280px; flex:1;">
+            <h4>CO₂ vs Cost</h4>
+            <canvas id="chartCompare" height="140"></canvas>
+          </div>
+        </div>
+      </section>
+      <script>
+        (function(){
+          if(!window.Chart) return;
+          try {
+            var ctxDomain = document.getElementById('chartDomain');
+            if (ctxDomain) {
+              new Chart(ctxDomain, {
+                type: 'pie',
+                data: {
+                  labels: ['Production', 'Energy', 'Logistics'],
+                  datasets: [{ data: [40, 35, 25], backgroundColor: ['#005530','#FFC107','#02154e'] }]
+                },
+                options: { plugins: { legend: { position: 'bottom' } } }
+              });
+            }
+            var ctxScope = document.getElementById('chartScope');
+            if (ctxScope) {
+              new Chart(ctxScope, {
+                type: 'bar',
+                data: {
+                  labels: ['Scope 1','Scope 2','Scope 3'],
+                  datasets: [{ label: 'tCO₂', data: [5, 10, 20], backgroundColor: ['#005530','#FFC107','#02154e'] }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+              });
+            }
+            var ctxTrend = document.getElementById('chartTrend');
+            if (ctxTrend) {
+              new Chart(ctxTrend, {
+                type: 'line',
+                data: {
+                  labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                  datasets: [{ label: 'CO₂ (t)', data: [20,22,25,24,26,28,27,26,25,24,24,25], borderColor: '#005530', backgroundColor: 'rgba(0,85,48,0.15)', tension: 0.25 }]
+                },
+                options: { plugins: { legend: { display: true } }, scales: { y: { beginAtZero: false } } }
+              });
+            }
+            var ctxCompare = document.getElementById('chartCompare');
+            if (ctxCompare) {
+              new Chart(ctxCompare, {
+                type: 'bar',
+                data: {
+                  labels: ['Employee Transport'],
+                  datasets: [
+                    { label: 'CO₂ (t)', data: [30], backgroundColor: '#005530' },
+                    { label: 'Cost (K€)', data: [100], backgroundColor: '#FFC107' }
+                  ]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+              });
+            }
+          } catch(e) {}
+        })();
+      </script>
+    </main>
+  </body>
+</html>

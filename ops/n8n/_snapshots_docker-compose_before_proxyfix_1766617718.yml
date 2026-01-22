@@ -1,0 +1,36 @@
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - DB_SQLITE_POOL_SIZE=2
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_GIT_NODE_DISABLE_BARE_REPOS=true
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+      - N8N_SECURE_COOKIE=false
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://192.168.68.112:5678
+      - GENERIC_TIMEZONE=Europe/Istanbul
+
+      # Supabase
+      - SUPABASE_URL=http://127.0.0.1:54321
+      - SUPABASE_SERVICE_ROLE_KEY=YOUR_LOCAL_SERVICE_ROLE_KEY
+      - EVIDENCE_BUCKET=compliance-evidence
+
+    volumes:
+      - n8n_data:/home/node/.n8n
+volumes:
+  n8n_data:
+
+  proxy:
+    image: caddy:2-alpine
+    ports:
+      - "5680:5680"
+    volumes:
+      - ./proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - n8n

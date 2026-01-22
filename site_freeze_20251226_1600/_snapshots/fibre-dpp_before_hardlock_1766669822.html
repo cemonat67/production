@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Fiber DPP</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="assets/libs/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <!-- <script defer src="assets/js/inject-backlink.js"></script> -->
+    <!-- <script defer src="assets/js/agent.js"></script> -->
+    <!-- <script defer src="assets/js/agent-ui.js"></script> -->
+    <!-- <script defer src="assets/js/trend.js"></script> -->
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" onclick="try{if(window.top&&window.top!==window){window.top.location.href='index.html';return false;}}catch(e){}" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Zero <span class="title-at">Ecosystem</span> — Fibre DPP by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+            <!-- <img src="assets/img/ulogo.svg" alt="U Logo" style="height: 80px;"> -->
+        </div>
+    </div>
+</header>
+    <main class="container">
+      <div class="card" style="margin-bottom: 24px;">
+        <h3>RAW MATERIALS</h3>
+        <p class="muted">Track raw fiber sourcing, quality control, and supplier sustainability.</p>
+        <div class="row" style="gap:16px; flex-wrap:wrap;">
+          <div class="card" style="min-width:220px;">
+            <h3>847</h3>
+            <p class="muted">Active Batches</p>
+          </div>
+          <div class="card" style="min-width:220px;">
+            <h3>12.5t</h3>
+            <p class="muted">CO₂ / Month</p>
+          </div>
+          <div class="card" style="min-width:220px;">
+            <h3>€85K</h3>
+            <p class="muted">Monthly Cost</p>
+          </div>
+          <div class="card" style="min-width:220px;">
+            <h3><span class="badge">Active</span></h3>
+            <p class="muted">Status</p>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom: 24px;">
+        <h3>Trend</h3>
+        <div class="row" style="gap:8px; flex-wrap:wrap;">
+          <div id="fibreTrendSummary" class="muted" style="min-width:280px;">—</div>
+          <div id="fibreTrendCostSummary" class="muted" style="min-width:280px;">—</div>
+        </div>
+      </div>
+
+      <section class="card" style="margin-bottom: 24px;">
+        <h3>Fibre CO₂ (Aylık)</h3>
+        <canvas id="fibreChart"></canvas>
+      </section>
+    </main>
+    <!-- Tutarlı Grafikler Bölümü (ZaE Tema) -->
+    <section class="card" style="margin: 24px;">
+      <h3>Grafikler</h3>
+      <div class="row" style="gap:16px; flex-wrap:wrap;">
+        <div class="card" style="min-width:280px; flex:1;">
+          <h4>Alanlara Göre Dağılım</h4>
+          <canvas id="chartDomain" height="140"></canvas>
+        </div>
+        <div class="card" style="min-width:280px; flex:1;">
+          <h4>Scope 1/2/3</h4>
+          <canvas id="chartScope" height="140"></canvas>
+        </div>
+        <div class="card" style="min-width:280px; flex:1;">
+          <h4>CO₂ Trend (Aylık)</h4>
+          <canvas id="chartTrend" height="140"></canvas>
+        </div>
+        <div class="card" style="min-width:280px; flex:1;">
+          <h4>CO₂ vs Maliyet</h4>
+          <canvas id="chartCompare" height="140"></canvas>
+        </div>
+      </div>
+    </section>
+    <script>
+      (function(){
+        if(!window.Chart) return;
+        try {
+          // Alanlara Göre Dağılım (örnek)
+          var ctxDomain = document.getElementById('chartDomain');
+          if (ctxDomain) {
+            new Chart(ctxDomain, {
+              type: 'pie',
+              data: {
+                labels: ['Hammadde', 'İşleme', 'Lojistik'],
+                datasets: [{ data: [48, 37, 15], backgroundColor: ['#005530','#FFC107','#02154e'] }]
+              },
+              options: { plugins: { legend: { position: 'bottom' } } }
+            });
+          }
+
+          // Scope 1/2/3 (örnek)
+          var ctxScope = document.getElementById('chartScope');
+          if (ctxScope) {
+            new Chart(ctxScope, {
+              type: 'bar',
+              data: {
+                labels: ['Scope 1','Scope 2','Scope 3'],
+                datasets: [{ label: 'tCO₂', data: [3.2, 4.8, 9.1], backgroundColor: ['#005530','#FFC107','#02154e'] }]
+              },
+              options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+          }
+
+          // CO₂ Trend (örnek)
+          var ctxTrend = document.getElementById('chartTrend');
+          if (ctxTrend) {
+            new Chart(ctxTrend, {
+              type: 'line',
+              data: {
+                labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                datasets: [{ label: 'CO₂ (t)', data: [12.1,12.3,12.6,12.4,12.7,12.5,12.3,12.4,12.2,12.0,12.1,12.5], borderColor: '#005530', backgroundColor: 'rgba(0,85,48,0.15)', tension: 0.25 }]
+              },
+              options: { plugins: { legend: { display: true } }, scales: { y: { beginAtZero: false } } }
+            });
+          }
+
+          // CO₂ vs Maliyet (örnek)
+          var ctxCompare = document.getElementById('chartCompare');
+          if (ctxCompare) {
+            new Chart(ctxCompare, {
+              type: 'bar',
+              data: {
+                labels: ['Fibre'],
+                datasets: [
+                  { label: 'CO₂ (t)', data: [12.5], backgroundColor: '#005530' },
+                  { label: 'Maliyet (K€)', data: [85], backgroundColor: '#FFC107' }
+                ]
+              },
+              options: { responsive: true, scales: { y: { beginAtZero: true } } }
+            });
+          }
+        } catch(e) {}
+      })();
+    </script>
+    <!-- <script type="module">
+      import { loadData, scaleValue } from 'assets/js/data.js';
+      (async function(){
+        const PAGE_KEY = 'fibre';
+        const TIMEFRAME = 'month';
+        try {
+          const DATA = await loadData();
+          const fibre = DATA.modules.find(m => m.key === 'raw_fiber');
+          if (fibre) {
+            const co2Total = scaleValue(fibre.co2_month, TIMEFRAME, DATA.scaling);
+            const costTotal = scaleValue(fibre.cost_month, TIMEFRAME, DATA.scaling);
+            if (window.Trend) {
+              window.Trend.renderSummaryWithReset({
+                pageKey: PAGE_KEY,
+                timeframe: TIMEFRAME,
+                elementId: 'fibreTrendSummary',
+                metricKey: 'co2Total',
+                currentTotal: co2Total,
+                unitLabel: 'tCO₂',
+                locale: 'tr-TR',
+                precision: 2
+              });
+              window.Trend.renderSummaryWithReset({
+                pageKey: PAGE_KEY,
+                timeframe: TIMEFRAME,
+                elementId: 'fibreTrendCostSummary',
+                metricKey: 'costTotal',
+                currentTotal: costTotal,
+                unitLabel: 'K€',
+                locale: 'tr-TR',
+                precision: 1
+              });
+            }
+            // Publish metrics to Agent
+            try { window.Agent && window.Agent.publish('metrics', { page: 'fibre', timeframe: TIMEFRAME, filter: null, co2Total, costTotal }); } catch(_) {}
+            // Chart: prefer real monthly series if available, fallback to synthetic
+            const ctx = document.getElementById('fibreChart');
+            if (ctx && window.Chart) {
+              const base = co2Total;
+              let series = null;
+              try {
+                // Try common locations for a monthly CO₂ series in demo-data.json
+                if (Array.isArray(fibre.series_co2)) series = fibre.series_co2;
+                else if (fibre.series && Array.isArray(fibre.series.co2)) series = fibre.series.co2;
+                else if (DATA.series && DATA.series.fibre && Array.isArray(DATA.series.fibre.co2)) series = DATA.series.fibre.co2;
+                else if (DATA.series && DATA.series.raw_fiber && Array.isArray(DATA.series.raw_fiber.co2)) series = DATA.series.raw_fiber.co2;
+              } catch (_) { /* ignore */ }
+              if (!Array.isArray(series) || series.length === 0) {
+                series = [0.92,0.95,0.98,1.00,1.02,1.04,1.03,1.01,0.99,0.98,0.97,1.00].map(f => Number((base * f).toFixed(2)));
+              }
+              new window.Chart(ctx, {
+                type: 'line',
+                data: {
+                  labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                  datasets: [{ label: 'CO₂ (t)', data: series, borderColor: '#005530', backgroundColor: 'rgba(0,85,48,0.15)', tension: 0.2 }]
+                },
+                options: { responsive: true, plugins: { legend: { display: true }, tooltip: { enabled: true } }, scales: { y: { beginAtZero: false } } }
+              });
+            }
+          }
+        } catch (e) { /* noop */ }
+      })();
+    </script> -->
+  <script>
+/* FIBRE_V1: KPI + trend bootstrap (local demo data) */
+(async function(){
+  const $ = (q)=>document.querySelector(q);
+  const setText = (el, v)=>{ if(!el) return; el.textContent = v; };
+
+  // Try to locate KPI slots by their visible labels (light-touch, no DOM restructure)
+  const kpiCards = Array.from(document.querySelectorAll(".kpi-card, .kpi, .card, .metric"));
+  const findCardByLabel = (label)=>{
+    const L = label.toLowerCase();
+    for(const c of kpiCards){
+      const t = (c.textContent||"").toLowerCase();
+      if(t.includes(L)) return c;
+    }
+    return null;
+  };
+  const setCardValue = (label, value)=>{
+    const c = findCardByLabel(label);
+    if(!c) return;
+    const h3 = c.querySelector("h3");
+    if(h3) h3.textContent = value;
+  };
+
+  // Load local demo data
+  let data = null;
+  try{
+    const res = await fetch("assets/data/fibre-demo.json", { cache: "no-store" });
+    data = await res.json();
+  }catch(e){
+    console.warn("FIBRE_V1: demo data load failed", e);
+    return;
+  }
+
+  const fibre = data?.fibre;
+  if(!fibre) return;
+
+  // KPI updates (match your current labels)
+  setCardValue("Active Batches", String(fibre.active_batches));
+  setCardValue("CO₂ / Month", String(fibre.co2_month_t) + "t");
+  setCardValue("Monthly Cost", "€" + String(Math.round(fibre.monthly_cost_eur/1000)) + "K");
+  setCardValue("Status", fibre.status);
+
+  // Trend summaries
+  const series = Array.isArray(fibre.monthly_series) ? fibre.monthly_series : [];
+  const last = series[series.length-1];
+  const prev = series[series.length-2];
+  const pct = (a,b)=> (b && isFinite(b) && b!==0) ? ((a-b)/b*100) : null;
+
+  if(last && prev){
+    const co2p = pct(last.co2_t, prev.co2_t);
+    const cosp = pct(last.cost_k, prev.cost_k);
+    const co2Txt = (co2p===null)? "—" : (co2p>=0? `↑ ${co2p.toFixed(1)}%` : `↓ ${Math.abs(co2p).toFixed(1)}%`);
+    const cosTxt = (cosp===null)? "—" : (cosp>=0? `↑ ${cosp.toFixed(1)}%` : `↓ ${Math.abs(cosp).toFixed(1)}%`);
+    setText($("#fibreTrendSummary"), `CO₂ MoM: ${co2Txt}`);
+    setText($("#fibreTrendCostSummary"), `Cost MoM: ${cosTxt}`);
+  }
+
+  // Main fibre chart (if canvas exists)
+  const canvas = document.getElementById("fibreChart");
+  if(canvas && window.Chart){
+    const labels = series.map(x=>x.m);
+    const co2 = series.map(x=>x.co2_t);
+    const cost = series.map(x=>x.cost_k);
+
+    try{
+      new Chart(canvas.getContext("2d"), {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            { label: "CO₂ (t)", data: co2, tension: 0.35, fill: true },
+            { label: "Cost (€K)", data: cost, tension: 0.35, fill: false, yAxisID: "y2" }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: true } },
+          scales: {
+            y: { beginAtZero: false, title: { display: true, text: "CO₂ (t)" } },
+            y2: { beginAtZero: false, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "Cost (€K)" } }
+          }
+        }
+      });
+    }catch(e){
+      console.warn("FIBRE_V1: chart init failed", e);
+    }
+  }
+})();
+</script>
+</body>
+  </html>

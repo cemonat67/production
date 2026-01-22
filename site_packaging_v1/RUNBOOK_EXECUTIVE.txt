@@ -1,0 +1,79 @@
+Zero@Ecosystem — Executive Demo Runbook (v1.1)
+
+What you are seeing
+This is not a dashboard.
+This is an Order-Centric Operating System for Sustainable Production.
+
+The demo is designed for C-level decision makers.
+Each link opens a ready-made executive scenario — no clicks, no setup.
+
+--------------------------------------------------------------------------------
+
+🎯 DEMO LINKS (ONE-CLICK)
+
+1️⃣ CFO SHOCK — Financial Impact
+
+👉 http://localhost:8083/index.html?demo=cfo_shock
+
+What happens
+• Opens a real production order
+• Shows total CO₂ footprint
+• Instantly translates CO₂ → € impact
+• Allows direct action (email, flag, PDF)
+
+What to say (30 sec)
+
+“This is a single order.
+CO₂ is not a report here — it’s a financial exposure.
+One click, I see the impact and I can act.”
+
+--------------------------------------------------------------------------------
+
+2️⃣ CEO BOARD — Strategic View
+
+👉 http://localhost:8083/index.html?demo=ceo_board
+
+What happens
+• Opens a board-level sustainability view
+• No operational noise
+• One slide, ready for leadership discussion
+
+What to say
+
+“Executives don’t need raw data.
+They need clarity and direction.
+This is what the board sees.”
+
+--------------------------------------------------------------------------------
+
+3️⃣ PROCUREMENT RISK — Supplier Action
+
+👉 http://localhost:8083/index.html?demo=procurement_risk
+
+What happens
+• Detects supplier-related sustainability risk
+• Highlights critical exposure
+• Prepares supplier communication instantly
+
+What to say
+
+“Risk is useless if it doesn’t trigger action.
+Here, risk becomes supplier communication in one step.”
+
+--------------------------------------------------------------------------------
+
+🧠 KEY MESSAGE
+• Order-centric (not product-centric)
+• Action-driven (not report-driven)
+• Offline-first, iPad-ready
+• ML-ready by design
+
+This system is designed to scale across:
+Textile • Manufacturing • Logistics • Healthcare • Industrial supply chains
+
+--------------------------------------------------------------------------------
+
+⛔ DEMO RULES
+• Do not click around menus
+• Do not explain the UI
+• Let the flow speak

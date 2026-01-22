@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zero@Production — Launchpad</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root{
+      --zero-navy:#02154e;
+      --zero-green:#005530;
+      --zero-orange:#f9ba00;
+      --zero-red:#D51635;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --muted:rgba(2,21,78,.65);
+      --line:rgba(2,21,78,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:linear-gradient(180deg,#fff 0%, var(--bg) 100%);
+      color:var(--zero-navy);
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 16px 40px}
+    .hero{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px 18px 16px;
+      background:linear-gradient(135deg, rgba(2,21,78,.06) 0%, rgba(249,186,0,.08) 45%, rgba(0,85,48,.06) 100%);
+      box-shadow:0 18px 50px rgba(2,21,78,.10);
+    }
+    .top{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{
+      width:44px;height:44px;border-radius:12px;
+      display:grid;place-items:center;
+      background:rgba(2,21,78,.10);
+      border:1px solid var(--line);
+      font-weight:900;
+    }
+    .title{font-size:18px;font-weight:900;letter-spacing:.2px}
+    .sub{font-size:12px;color:var(--muted);margin-top:2px}
+    .pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .pill{
+      font-size:12px;font-weight:800;
+      border-radius:999px;padding:6px 10px;
+      border:1px solid var(--line);
+      background:#fff;
+    }
+    .pill.ml{border-color:rgba(0,85,48,.28);background:rgba(0,85,48,.08)}
+    .pill.off{border-color:rgba(2,21,78,.18);background:rgba(2,21,78,.06)}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(240px,1fr));
+      gap:12px;
+      margin-top:14px;
+    }
+    @media (max-width: 920px){ .grid{grid-template-columns:repeat(2, minmax(240px,1fr));} }
+    @media (max-width: 620px){ .grid{grid-template-columns:1fr;} }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 10px 28px rgba(2,21,78,.08);
+      transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+      text-decoration:none;
+      color:inherit;
+      display:block;
+      min-height:118px;
+    }
+    .card:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(2,21,78,.12);filter:saturate(1.02)}
+    .k{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .h{font-weight:950}
+    .d{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.35}
+    .tag{
+      font-size:11px;font-weight:900;
+      border-radius:999px;padding:5px 9px;
+      border:1px solid var(--line);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .tag.green{border-color:rgba(0,85,48,.28);background:rgba(0,85,48,.08)}
+    .tag.orange{border-color:rgba(249,186,0,.55);background:rgba(249,186,0,.18)}
+    .tag.navy{border-color:rgba(2,21,78,.22);background:rgba(2,21,78,.06)}
+    .tag.red{border-color:rgba(213,22,53,.28);background:rgba(213,22,53,.07)}
+    .foot{
+      margin-top:14px;
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .btn{
+      display:inline-block;
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:900;
+      border:1px solid rgba(2,21,78,.18);
+      background:var(--zero-orange);
+      color:#000;
+      text-decoration:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="top">
+        <div class="brand">
+          <div class="logo">Z@</div>
+          <div>
+            <div class="title">Zero@Production — Launchpad</div>
+            <div class="sub">Demo-safe entry • GitHub Pages ready • iPad-friendly</div>
+          </div>
+        </div>
+        <div class="pills">
+          <span class="pill ml">ML READY</span>
+          <span class="pill off">OFFLINE-FIRST</span>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+
+      <div class="foot">
+        <div>Tip: append <b>?role=ceo</b> / <b>?role=cfo</b> to pages that support auto-open cards.</div>
+        <a class="btn" href="dashboard.html">Open Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Add/adjust entries as your site grows
+    const PAGES = [
+      { href: "dashboard.html", title: "Production Dashboard", desc: "Executive view • modules • quick actions", tag: "ENTRY", tone:"navy" },
+      { href: "fabric-dpp.html", title: "Fabric DPP", desc: "Fabrics table + CO₂ sorting • Supabase live", tag: "LIVE", tone:"green" },
+      { href: "fibre-dpp.html", title: "Fibre DPP", desc: "Fibre library + CO₂ (proxy monthly chart ok)", tag: "LIVE", tone:"green" },
+      { href: "garment.html", title: "Garment DPP", desc: "Garment module (if present) — demo content", tag: "DEMO", tone:"orange" },
+      { href: "finishingdpp.html", title: "Finishing DPP", desc: "Process view — demo/sim model", tag: "DEMO", tone:"orange" },
+      { href: "chemicals.html", title: "Chemicals & Dyes", desc: "Compliance + risk narrative", tag: "RISK", tone:"red" }
+    ];
+
+    const grid = document.getElementById("grid");
+
+    // Filter out missing files gracefully (works locally only; on Pages, it will just show all)
+    function card(p){
+      const a = document.createElement("a");
+      a.className = "card";
+      a.href = p.href;
+      a.innerHTML = `
+        <div class="k">
+          <div class="h">${p.title}</div>
+          <span class="tag ${p.tone||"navy"}">${p.tag||"OPEN"}</span>
+        </div>
+        <div class="d">${p.desc||""}</div>
+      `;
+      return a;
+    }
+
+    PAGES.forEach(p => grid.appendChild(card(p)));
+  </script>
+</body>
+</html>

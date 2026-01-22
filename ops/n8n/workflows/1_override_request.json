@@ -1,0 +1,387 @@
+{
+  "name": "Governance - Override Request",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "governance/override-request",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload = items[0].json;\nconst required = ['request_id', 'yarn_id', 'requester_role', 'violation_type', 'justification'];\nconst missing = required.filter(f => !payload[f]);\n\nif (missing.length > 0) {\n  throw new Error(`Missing fields: ${missing.join(', ')}`);\n}\n\nreturn items;"
+      },
+      "name": "Validate Fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [
+        300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.requester_role }}",
+              "operation": "regex",
+              "value2": "^(CEO|BOARD)$"
+            }
+          ]
+        }
+      },
+      "name": "RBAC Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.violation_type }}",
+              "value2": "LEGAL_BAN"
+            }
+          ]
+        }
+      },
+      "name": "Legal Ban Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        700,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"FORBIDDEN\",\n  \"message\": \"Only Executive roles can request overrides.\"\n}",
+        "options": {}
+      },
+      "name": "Respond 403",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        700,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/governance_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "OVERRIDE_REJECTED_LEGAL_BAN"
+            },
+            {
+              "name": "actor_role",
+              "value": "={{ $json.requester_role }}"
+            },
+            {
+              "name": "yarn_id",
+              "value": "={{ $json.yarn_id }}"
+            },
+            {
+              "name": "details",
+              "value": "={{ JSON.stringify($json) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Legal Rejection",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        900,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"REJECTED\",\n  \"reason\": \"LEGAL_BAN\"\n}",
+        "options": {}
+      },
+      "name": "Respond Legal Reject",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/override_requests",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "request_id",
+              "value": "={{ $json.request_id }}"
+            },
+            {
+              "name": "yarn_id",
+              "value": "={{ $json.yarn_id }}"
+            },
+            {
+              "name": "requester_role",
+              "value": "={{ $json.requester_role }}"
+            },
+            {
+              "name": "requester_id",
+              "value": "={{ $json.requester_id }}"
+            },
+            {
+              "name": "violation_type",
+              "value": "={{ $json.violation_type }}"
+            },
+            {
+              "name": "current_value",
+              "value": "={{ $json.current_value }}"
+            },
+            {
+              "name": "threshold",
+              "value": "={{ $json.threshold }}"
+            },
+            {
+              "name": "justification",
+              "value": "={{ $json.justification }}"
+            },
+            {
+              "name": "status",
+              "value": "PENDING"
+            },
+            {
+              "name": "approver_role",
+              "value": "={{ $json.violation_type == 'MARGIN_RISK' ? 'CFO' : 'CTO' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Insert Override Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        900,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/governance_events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $env.SUPABASE_SERVICE_ROLE_KEY }}"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "event_type",
+              "value": "OVERRIDE_REQUEST"
+            },
+            {
+              "name": "actor_role",
+              "value": "={{ $json.requester_role }}"
+            },
+            {
+              "name": "yarn_id",
+              "value": "={{ $json.yarn_id }}"
+            },
+            {
+              "name": "details",
+              "value": "={{ JSON.stringify($json) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Log Override Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"PENDING\", override_request_id: $items('Insert Override Request')[0].json.id, approver_role: $items('Webhook')[0].json.violation_type == 'MARGIN_RISK' ? 'CFO' : 'CTO' }) }}",
+        "options": {}
+      },
+      "name": "Respond Pending",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Fields": {
+      "main": [
+        [
+          {
+            "node": "RBAC Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RBAC Check": {
+      "main": [
+        [
+          {
+            "node": "Legal Ban Check",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 403",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Legal Ban Check": {
+      "main": [
+        [
+          {
+            "node": "Log Legal Rejection",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Override Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Legal Rejection": {
+      "main": [
+        [
+          {
+            "node": "Respond Legal Reject",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Override Request": {
+      "main": [
+        [
+          {
+            "node": "Log Override Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Override Request": {
+      "main": [
+        [
+          {
+            "node": "Respond Pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "versionId": "e2533d2b-685a-42ce-a5c0-9794bf2af64f"
+}

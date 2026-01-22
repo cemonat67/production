@@ -1,0 +1,68 @@
+Zero@Ecosystem — Technical Demo Runbook (v1.1)
+
+1️⃣ Unzip
+
+unzip Zero@Ecosystem_Demo_v1.1_YYYYMMDD_HHMM.zip
+cd site_packaging_v1
+
+
+--------------------------------------------------------------------------------
+
+2️⃣ Start Local Server
+
+python3 -m http.server 8083
+
+Open in browser:
+
+http://localhost:8083
+
+
+--------------------------------------------------------------------------------
+
+3️⃣ Demo Links
+• CFO Shock
+http://localhost:8083/index.html?demo=cfo_shock
+• CEO Board
+http://localhost:8083/index.html?demo=ceo_board
+• Procurement Risk
+http://localhost:8083/index.html?demo=procurement_risk
+
+--------------------------------------------------------------------------------
+
+4️⃣ Environment Notes
+• No CDN
+• Works offline (local files)
+• Optimized for iPad Safari
+• No backend required
+• Demo data included (data/orders.json)
+
+--------------------------------------------------------------------------------
+
+5️⃣ File Structure (Core)
+
+site_packaging_v1/
+├── index.html
+├── delivery-dpp.html
+├── GarmentDPP.html
+├── fabric-dpp.html
+├── chemicals-dyes-management.dpp.html
+├── finishing-dpp.html
+├── data/
+│   └── orders.json
+
+
+--------------------------------------------------------------------------------
+
+6️⃣ Troubleshooting
+• If port 8083 is busy:
+
+lsof -tiTCP:8083 -sTCP:LISTEN | xargs kill -9
+python3 -m http.server 8083
+
+
+--------------------------------------------------------------------------------
+
+🔒 VERSION STATUS
+• Version: v1.1
+• Status: DEMO FREEZE
+• Changes allowed: bugfix only

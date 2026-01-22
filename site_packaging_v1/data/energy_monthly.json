@@ -1,0 +1,7 @@
+{
+  "UGURLULAR": {
+    "2025-10": { "energy_mwh": 1420, "cost_eur": 142000, "co2e_t": 482 },
+    "2025-11": { "energy_mwh": 1550, "cost_eur": 155000, "co2e_t": 520 },
+    "2025-12": { "energy_mwh": 1600, "cost_eur": 160000, "co2e_t": 540 }
+  }
+}

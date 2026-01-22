@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Order Delivery</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+        .zero-action-btn { 
+            background: white; border: 1px solid #e2e8f0; color: #02154e; 
+            padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;
+        }
+        .zero-action-btn:hover { background: #f8fafc; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .zero-action-btn.primary { background: #02154e; color: white; border-color: #02154e; }
+        .zero-action-btn.primary:hover { background: #032070; }
+        .zero-action-btn.danger { border-color: #D51635; color: #D51635; }
+        .zero-action-btn.danger:hover { background: #fff0f2; }
+        
+        .cfo-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(2, 21, 78, 0.6); backdrop-filter: blur(4px);
+            z-index: 9999; display: none; align-items: center; justify-content: center;
+        }
+        .cfo-modal-panel {
+            background: #fff; width: 90%; max-width: 500px;
+            border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            overflow: hidden; animation: cfoSlideUp 0.3s ease-out;
+        }
+        @keyframes cfoSlideUp { from {transform: translateY(20px); opacity:0;} to {transform: translateY(0); opacity:1;} }
+    </style>
+</head>
+<body>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+        <div class="header-content">
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                <a href="index.html" style="text-decoration: none; display: flex; align-items: center;">
+                    <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                    <div class="title">Zero@Production <span class="title-at">Ecosystem</span> — Order Delivery by Zero<span class="title-at">@</span>Ecosystem</div>
+                </a>
+            </div>
+        </div>
+    </header>
+    <main class="container">
+        <!-- Context Line -->
+        <div class="card" style="margin-bottom: 24px; background: #f8fafc; border-left: 4px solid #02154e;">
+            <div id="ctxLine" style="font-size: 16px; color: #02154e; display:flex; flex-wrap:wrap; gap:16px;">
+                <span><span style="opacity:.6">Order:</span> <b id="ctxOrder">—</b></span>
+                <span><span style="opacity:.6">Facility:</span> <b id="ctxFac">—</b></span>
+                <span><span style="opacity:.6">Buyer:</span> <b id="ctxBuyer">—</b></span>
+                <span><span style="opacity:.6">Role:</span> <b id="ctxRole">—</b></span>
+                <span id="ctxRiskPill" style="margin-left:auto; display:inline-block; padding:4px 10px; border-radius:999px; background:#f3f4f6; color:#111; font-weight:900; font-size:12px;">RISK: —</span>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div id="orderKpis" class="row" style="gap:16px; margin-bottom: 24px; display: flex; flex-wrap: wrap;">
+            <div class="card" style="flex:1; min-width:200px;">
+                <div class="muted">Loading Order Intelligence...</div>
+            </div>
+        </div>
+
+        <!-- ZERO: ENERGY ALLOCATION CARD (Inserted by MASTER FLOW) -->
+        <div id="energyAllocCard" class="card" style="margin-bottom: 24px; display:none; border-left: 4px solid var(--zero-orange);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="margin:0; font-size:1.1rem; color:var(--zero-navy);">📦 Energy Allocation</h3>
+                <span style="background:#fff7ed; color:#c2410c; font-size:0.75rem; padding:4px 8px; border-radius:4px; font-weight:700;">SCOPE 2 SHARED FOOTPRINT</span>
+            </div>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+                <div>
+                    <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase;">Allocated CO₂</div>
+                    <div style="font-size:1.6rem; font-weight:700; color:var(--zero-navy);" id="eaCo2">—</div>
+                </div>
+                <div>
+                    <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase;">Allocated Cost</div>
+                    <div style="font-size:1.6rem; font-weight:700; color:var(--zero-navy);" id="eaCost">—</div>
+                </div>
+                <div>
+                    <div style="font-size:0.75rem; color:#64748b; text-transform:uppercase;">Energy Intensity</div>
+                    <div style="font-size:1.6rem; font-weight:700; color:var(--zero-navy);" id="eaInt">—</div>
+                </div>
+            </div>
+            <div style="margin-top:16px; padding-top:12px; border-top:1px solid #e2e8f0; font-size:0.85rem; color:#64748b; display:flex; align-items:center; gap:8px;">
+                <span>🔒 Allocation based on facility energy consumption normalized by production output. Privacy-safe. Audit-ready.</span>
+                <a href="#" id="linkEnergyDetail" style="margin-left:auto; color:var(--zero-navy); font-weight:600; text-decoration:none;">View Detail →</a>
+            </div>
+        </div>
+
+
+        <!-- Executive Action Bar -->
+        <div class="card" style="margin-bottom: 24px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h3 style="margin:0;">Executive Actions</h3>
+                <span class="badge" style="background:#e0f2fe; color:#0369a1;">Decision Layer</span>
+            </div>
+            <div class="row" style="gap:12px; flex-wrap: wrap;">
+                <button id="btnEmail" class="zero-action-btn primary">
+                    <span>✉️</span> Email Supplier
+                </button>
+                <button id="btnImpact" class="zero-action-btn">
+                    <span>💶</span> Show € Impact
+                </button>
+                <button id="btnExport" class="zero-action-btn">
+                    <span>📄</span> Export Order PDF
+                </button>
+                <button id="btnRisk" class="zero-action-btn danger">
+                    <span>🚩</span> Flag Delivery Risk
+                </button>
+            </div>
+        </div>
+
+        <!-- Jump Links -->
+        <div class="card" style="margin-bottom: 24px;">
+            <h3>Process Drilldown</h3>
+            <p class="muted" style="margin-bottom:16px;">Navigate to specific production stages for this order context.</p>
+            <div class="row" style="gap:12px; flex-wrap: wrap;">
+                <a id="goFabric" href="#" class="zero-action-btn">Fabric DPP</a>
+                <a id="goChem" href="#" class="zero-action-btn">Chemicals DPP</a>
+                <a id="goFin" href="#" class="zero-action-btn">Finishing DPP</a>
+                <a id="goGarment" href="#" class="zero-action-btn">Garment DPP</a>
+                <a id="goEnergy" href="#" class="zero-action-btn" style="border-color:#f9ba00; color:#02154e;">⚡ Energy Allocation</a>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <section class="card" style="margin-bottom: 24px;">
+            <h3>Delivery Impact Analysis</h3>
+            <div class="row" style="gap:16px; flex-wrap:wrap;">
+                <div class="card" style="min-width:280px; flex:1;">
+                    <h4>Impact Distribution</h4>
+                    <canvas id="chartDomain" height="140"></canvas>
+                </div>
+                <div class="card" style="min-width:280px; flex:1;">
+                    <h4>Scope 1/2/3</h4>
+                    <canvas id="chartScope" height="140"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- CFO Impact Modal -->
+    <div id="cfoModal" class="cfo-modal-overlay">
+        <div class="cfo-modal-panel">
+            <div style="background:#02154e; color:white; padding:16px; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="margin:0; font-size:18px;">Financial Impact Analysis (Scope 2)</h3>
+                <button onclick="document.getElementById('cfoModal').style.display='none'" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <div style="padding:24px;">
+                <!-- Block 1: Before vs After -->
+                <div style="display:flex; justify-content:space-between; margin-bottom:16px; border-bottom:1px solid #e2e8f0; padding-bottom:16px;">
+                    <div>
+                        <div style="font-size:12px; color:#64748b; text-transform:uppercase;">Baseline Cost</div>
+                        <div style="font-size:18px; font-weight:700; color:#02154e;" id="cfoBase">€—</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:12px; color:#64748b; text-transform:uppercase;">Shock Scenario (+25%)</div>
+                        <div style="font-size:18px; font-weight:700; color:#D51635;" id="cfoShock">€—</div>
+                    </div>
+                </div>
+                
+                <!-- Block 2: Margin Pressure -->
+                <div style="background:#fff7ed; border-left:4px solid #f97316; padding:12px; border-radius:4px; margin-bottom:24px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:14px; color:#c2410c; font-weight:700;">Delta Impact</span>
+                        <span style="font-size:20px; font-weight:800; color:#c2410c;" id="cfoDelta">+€—</span>
+                    </div>
+                    <p style="font-size:12px; color:#9a3412; margin:8px 0 0 0;">
+                        This volatility erodes approx <b id="cfoMargin">0.8%</b> of order margin via allocated energy exposure.
+                    </p>
+                </div>
+                
+                <!-- Block 3: Mitigation Options -->
+                <div style="display:grid; gap:8px; margin-bottom:24px;">
+                    <button class="zero-action-btn" style="justify-content:center; font-size:13px;">Shift production off-peak</button>
+                    <button class="zero-action-btn" style="justify-content:center; font-size:13px;">Negotiate energy clause with supplier</button>
+                    <button class="zero-action-btn primary" style="justify-content:center; font-size:13px;">Contract renewable mix (Scope 2)</button>
+                </div>
+                
+                <!-- Block 4: Board Summary -->
+                <div style="background:#f1f5f9; padding:12px; border-radius:4px; font-size:12px; color:#475569; display:flex; gap:8px; align-items:center;">
+                    <span id="cfoSummary">Energy price volatility adds risk via normalized allocation.</span>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('cfoSummary').innerText); showToast('Summary copied to clipboard')" style="margin-left:auto; background:none; border:none; color:#02154e; font-weight:700; cursor:pointer;">COPY</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (async function(){
+      const qs = new URLSearchParams(location.search);
+      const orderId = qs.get("order_id") || "PO-Unknown";
+      const facility = qs.get("facility") || "Unknown Facility";
+      const role = (qs.get("role") || "cfo").toLowerCase();
+
+      // Setup Headers
+      document.getElementById("ctxOrder").textContent = orderId;
+      document.getElementById("ctxFac").textContent = facility;
+      document.getElementById("ctxRole").textContent = role.toUpperCase();
+
+      // Load Data
+      async function loadJSON(p){
+        const r = await fetch(p, {cache:"no-store"});
+        if(!r.ok) throw new Error("Failed to load "+p);
+        return await r.json();
+      }
+
+      // ZERO_POLISH_V1: Toast Feedback
+      function showToast(msg){
+          let t = document.getElementById("zeroToast");
+          if(!t){
+              t = document.createElement("div");
+              t.id = "zeroToast";
+              t.style.cssText = "position:fixed; bottom:30px; left:50%; transform:translateX(-50%); background:#333; color:#fff; padding:12px 24px; border-radius:30px; z-index:99999; opacity:0; transition:opacity 0.3s; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,0.2);";
+              document.body.appendChild(t);
+          }
+          t.textContent = msg;
+          t.style.opacity = "1";
+          setTimeout(()=>t.style.opacity="0", 3000);
+      }
+
+      let order = null;
+      try{
+        const orders = await loadJSON("data/orders.json");
+        order = orders.find(o => (o.order_id||"") === orderId) || null;
+        
+        // ZERO_POLISH_V1: Demo Fallback (No Unknowns)
+        if(!order && (qs.get("demo") || orderId.startsWith("PO-UGR"))){
+             order = {
+                order_id: orderId || "PO-UGR-10492",
+                facility: facility || "UGURLULAR",
+                buyer: "MANGO",
+                qty: 45000,
+                co2_total_kg: 104400,
+                stage: "Logistics",
+                risk: "monitor"
+            };
+        }
+      }catch(e){
+        console.warn(e);
+      }
+
+      if(order){
+          // Update Buyer in header
+          document.getElementById("ctxBuyer").textContent = order.buyer || "Unknown";
+          
+          // Risk Pill Logic
+          const risk = (order.risk || "").toLowerCase();
+          const pill = document.getElementById("ctxRiskPill");
+          if(pill){
+            const map = { ok:["OK","#1bbf6a"], monitor:["MONITOR","#f9ba00"], action:["ACTION","#D51635"] };
+            const it = map[risk] || ["—","#e5e7eb"];
+            pill.textContent = "RISK: " + it[0];
+            pill.style.background = it[1];
+            pill.style.color = (it[0]==="ACTION") ? "#fff" : "#000";
+            
+            // ZERO_POLISH_V1: Risk Tooltip
+            if(risk === "monitor"){
+                pill.title = "MONITOR\n• Scope 3 exposure\n• Logistics dependency";
+                pill.style.cursor = "help";
+            }
+          }
+          
+          // Render KPIs
+          const fmt = (n)=> (Math.round(n)).toLocaleString("en-GB");
+          document.getElementById("orderKpis").innerHTML = `
+            <div class="card" style="flex:1; min-width:180px; padding:16px;">
+                <div style="font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Buyer</div>
+                <div style="font-size:24px; font-weight:800; color:#02154e;">${order.buyer}</div>
+            </div>
+            <div class="card" style="flex:1; min-width:180px; padding:16px;">
+                <div style="font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Current Stage</div>
+                <div style="font-size:24px; font-weight:800; color:#02154e;">${order.stage}</div>
+            </div>
+            <div class="card" style="flex:1; min-width:180px; padding:16px;">
+                <div style="font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Quantity</div>
+                <div style="font-size:24px; font-weight:800; color:#02154e;">${fmt(order.qty)}</div>
+            </div>
+            <div class="card" style="flex:1; min-width:180px; padding:16px;">
+                <div style="font-size:12px; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">CO₂ Impact</div>
+                <div style="font-size:24px; font-weight:800; color:#02154e;">${fmt(order.co2_total_kg)} kg</div>
+            </div>
+          `;
+          
+          // ZERO_POLISH_V1: Connect KPI to Chart Title
+          const chartTitle = document.querySelector("#chartDomain").parentElement.querySelector("h4");
+          if(chartTitle){
+              chartTitle.innerHTML = `Impact Distribution <span style="font-weight:400; font-size:0.85em; color:#666;">(Total: ${fmt(order.co2_total_kg)} kg CO₂)</span>`;
+          }
+
+          // ZERO: ENERGY ALLOCATION LOGIC (Inserted by MASTER FLOW)
+          async function computeEnergyAllocation(ord) {
+            try {
+               const [eRes, pRes] = await Promise.all([
+                  fetch('data/energy_monthly.json'),
+                  fetch('data/production_output.json')
+               ]);
+               const eData = await eRes.json();
+               const pData = await pRes.json();
+               
+               const fac = ord.facility || "UGURLULAR";
+               const mo = ord.month || "2025-10";
+               
+               const ef = eData[fac]?.[mo];
+               const prod = pData[fac]?.[mo];
+               
+               if(ef && prod && ord.order_weight_kg) {
+                  // Logic
+                  const kgCo2PerKg = (ef.co2e_t * 1000) / prod.total_output_kg;
+                  const eurPerKg = ef.cost_eur / prod.total_output_kg;
+                  
+                  const allocCo2 = ord.order_weight_kg * kgCo2PerKg;
+                  const allocCost = ord.order_weight_kg * eurPerKg;
+                   
+                   // Render
+                   document.getElementById("energyAllocCard").style.display = "block";
+                   document.getElementById("eaCo2").innerHTML = Math.round(allocCo2).toLocaleString() + " <span style='font-size:1rem'>kg</span>";
+                   document.getElementById("eaCost").innerHTML = "€" + Math.round(allocCost).toLocaleString();
+                   document.getElementById("eaInt").innerHTML = kgCo2PerKg.toFixed(3) + " <span style='font-size:1rem'>kg/kg</span>";
+                   
+                   // Link
+                   document.getElementById("linkEnergyDetail").href = `energy-dpp.html?order_id=${ord.order_id}&facility=${fac}&role=${role}`;
+
+                   // ZERO: CFO SHOCK LOGIC (Inserted by MASTER FLOW)
+                   const qs = new URLSearchParams(location.search);
+                   if(qs.get("demo") === "cfo_shock") {
+                       // 1. Simulate +25%
+                       const shockCost = allocCost * 1.25;
+                       const delta = shockCost - allocCost;
+                       
+                       // 2. Update Risk Pill
+                       const pill = document.getElementById("ctxRiskPill");
+                       if(delta > 4000) {
+                           pill.textContent = "RISK: ACTION";
+                           pill.style.background = "#D51635";
+                           pill.style.color = "#fff";
+                       } else if (delta > 2000) {
+                           pill.textContent = "RISK: MONITOR";
+                           pill.style.background = "#f9ba00";
+                       }
+
+                       // 3. Populate Modal
+                       document.getElementById("cfoBase").textContent = "€" + Math.round(allocCost).toLocaleString();
+                       document.getElementById("cfoShock").textContent = "€" + Math.round(shockCost).toLocaleString();
+                       document.getElementById("cfoDelta").textContent = "+€" + Math.round(delta).toLocaleString();
+                       
+                       // Margin Logic (Assumed Order Value = Qty * €12)
+                       const orderVal = (ord.qty || 10000) * 12; 
+                       const marginErosion = (delta / orderVal) * 100;
+                       document.getElementById("cfoMargin").textContent = marginErosion.toFixed(2) + "%";
+                       
+                       const summary = `Energy price volatility adds €${Math.round(delta).toLocaleString()} risk to Order ${ord.order_id} via normalized allocation (Scope 2).`;
+                       document.getElementById("cfoSummary").textContent = summary;
+
+                       // 4. Auto-Open
+                       setTimeout(()=>{
+                           document.getElementById("cfoModal").style.display = "flex";
+                           showToast("€ impact view opened — energy price shock applied.");
+                       }, 1000);
+                   }
+                }
+             } catch(e) { console.warn("Energy Alloc Failed", e); }
+           }
+          // Trigger
+          if(order.order_weight_kg) computeEnergyAllocation(order);
+
+      }
+
+      // Wiring Actions
+      document.getElementById("btnEmail").onclick = ()=>{
+          // ZERO_POLISH_V1: Toast Feedback
+          showToast("Email draft opened for supplier follow-up.");
+          
+          setTimeout(()=>{
+              const to = "sales@zeroatecosystem.com";
+              const subject = `Order ${orderId} — Supplier Action`;
+              const body = `Order: ${orderId}\nFacility: ${facility}\n\nPlease provide status update.`;
+              location.href = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+          }, 1000);
+      };
+      
+      document.getElementById("btnImpact").onclick = ()=>{
+          document.getElementById("cfoModal").style.display = "flex";
+      };
+      
+      document.getElementById("btnExport").onclick = ()=>{
+          window.print();
+      };
+      
+      document.getElementById("btnRisk").onclick = ()=>{
+          // ZERO_POLISH_V1: Toast Feedback
+          showToast("Risk flagged. Procurement notified.");
+      };
+
+      // Jump Links
+      const base = (p)=> `${p}?order_id=${encodeURIComponent(orderId)}&facility=${encodeURIComponent(facility)}&role=${encodeURIComponent(role)}&nocache=1`;
+      const setHref = (id, path)=>{
+        const a = document.querySelector(id);
+        if(a) a.href = base(path);
+      };
+      setHref("#goFabric", "fabric-dpp.html");
+      setHref("#goChem", "chemicals-dyes-management.dpp.html");
+      setHref("#goFin", "finishing-dpp.html");
+      setHref("#goGarment", "GarmentDPP.html");
+      setHref("#goEnergy", "energy-dpp.html");
+
+      // Auto-open demo actions
+      const demo = qs.get("demo");
+      if(demo === "cfo_shock"){
+         setTimeout(()=>{
+             document.getElementById("btnImpact").click();
+         }, 800);
+      }
+      
+      // Charts
+      if(window.Chart){
+          try {
+            var ctxDomain = document.getElementById('chartDomain');
+            if (ctxDomain) {
+              new Chart(ctxDomain, {
+                type: 'doughnut',
+                data: {
+                  labels: ['Production', 'Energy', 'Logistics'],
+                  datasets: [{ data: [40, 35, 25], backgroundColor: ['#005530','#FFC107','#02154e'] }]
+                },
+                options: { plugins: { legend: { position: 'right' } }, cutout: '70%' }
+              });
+            }
+            var ctxScope = document.getElementById('chartScope');
+            if (ctxScope) {
+              new Chart(ctxScope, {
+                type: 'bar',
+                data: {
+                  labels: ['Scope 1','Scope 2','Scope 3'],
+                  datasets: [{ label: 'tCO₂', data: [5, 10, 20], backgroundColor: ['#005530','#FFC107','#02154e'] }]
+                },
+                options: { responsive: true, scales: { y: { beginAtZero: true } } }
+              });
+            }
+          } catch(e) {}
+      }
+    })();
+    </script>
+    <!-- BOARD SLIDE PRINT TEMPLATE (Hidden Screen, Visible Print) -->
+    <div id="zeroPrintRoot" style="display:none;"></div>
+    
+    <style>
+    @media print {
+        body * { visibility: hidden; }
+        #zeroPrintRoot, #zeroPrintRoot * { visibility: visible; }
+        #zeroPrintRoot {
+            position: absolute; left: 0; top: 0; width: 100%;
+            display: block !important;
+            background: white; color: black;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            padding: 20mm;
+            box-sizing: border-box;
+        }
+        .slide-header { border-bottom: 2px solid #02154e; margin-bottom: 30px; padding-bottom: 20px; }
+        .slide-title { font-size: 24pt; font-weight: bold; color: #02154e; }
+        .slide-sub { font-size: 14pt; color: #666; margin-top: 10px; }
+        
+        .slide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+        .slide-box { border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #f9f9f9; }
+        .box-title { font-size: 12pt; font-weight: bold; color: #666; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .kpi-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 11pt; }
+        .kpi-val { font-weight: bold; color: #02154e; }
+        .kpi-val.red { color: #D51635; }
+        
+        .decision-matrix { background: #02154e; color: white; padding: 30px; border-radius: 8px; }
+        .decision-title { font-size: 16pt; font-weight: bold; margin-bottom: 15px; color: #f9ba00; }
+        .decision-text { font-size: 12pt; line-height: 1.5; }
+        
+        .footer { position: fixed; bottom: 20mm; left: 20mm; right: 20mm; font-size: 9pt; color: #999; border-top: 1px solid #eee; padding-top: 10px; text-align: center; }
+    }
+    </style>
+    
+    <script>
+    /* ZERO_BOARD_GENERATOR v1 */
+    function generateBoardSlide() {
+        // Gather Context
+        const orderId = document.getElementById("ctxOrder").textContent;
+        const buyer = document.getElementById("ctxBuyer").textContent;
+        const risk = document.getElementById("ctxRiskPill").textContent;
+        const isShock = (new URLSearchParams(location.search).get("demo") === "cfo_shock");
+        
+        // Gather Financials (from Energy Alloc or Defaults)
+        let cost = "—";
+        let co2 = "—";
+        try {
+             cost = document.getElementById("eaCost").innerText;
+             co2 = document.getElementById("eaCo2").innerText;
+        } catch(e){}
+        
+        // Scenario Logic
+        const headline = isShock ? "⚠️ MARGIN EROSION DETECTED" : "✅ ORDER ON TRACK";
+        const headlineColor = isShock ? "#D51635" : "#005530";
+        const recAction = isShock ? "Initiate Energy Clause Renegotiation immediately." : "Proceed with standard delivery schedule.";
+        const finImpact = isShock ? "-0.8% Margin Impact (Energy Volatility)" : "Stable Margin Profile";
+        
+        const html = `
+            <div class="slide-header">
+                <div class="slide-title">EXECUTIVE DECISION BRIEF</div>
+                <div class="slide-sub">Order: ${orderId} | Buyer: ${buyer}</div>
+                <div style="margin-top:20px; font-size:18pt; font-weight:bold; color:${headlineColor};">${headline}</div>
+            </div>
+            
+            <div class="slide-grid">
+                <div class="slide-box">
+                    <div class="box-title">Financial Exposure (Scope 2)</div>
+                    <div class="kpi-row"><span>Allocated Energy Cost</span><span class="kpi-val ${isShock?'red':''}">${cost}</span></div>
+                    <div class="kpi-row"><span>Allocated Carbon</span><span class="kpi-val">${co2}</span></div>
+                    <div class="kpi-row"><span>Volatility Risk</span><span class="kpi-val ${isShock?'red':''}">${isShock?'HIGH':'LOW'}</span></div>
+                    <div class="kpi-row"><span>Carbon Liability</span><span class="kpi-val">Pending CBAM</span></div>
+                </div>
+                
+                <div class="slide-box">
+                    <div class="box-title">Operational Status</div>
+                    <div class="kpi-row"><span>Delivery Stage</span><span class="kpi-val">Logistics / Distribution</span></div>
+                    <div class="kpi-row"><span>Supply Chain Risk</span><span class="kpi-val">${risk.replace('RISK: ','')}</span></div>
+                    <div class="kpi-row"><span>Data Confidence</span><span class="kpi-val">Audit-Ready (Level 4)</span></div>
+                </div>
+            </div>
+            
+            <div class="decision-matrix">
+                <div class="decision-title">STRATEGIC RECOMMENDATION</div>
+                <div class="decision-text">
+                    <strong>Action Required:</strong> ${recAction}<br><br>
+                    <strong>Financial Consequence:</strong> ${finImpact}<br><br>
+                    <strong>Governance:</strong> Allocation based on normalized facility footprint. Privacy-safe.
+                </div>
+            </div>
+            
+            <div class="footer">
+                Generated by Zero@Production OS • Decision-Grade Data • ${new Date().toLocaleDateString()}
+            </div>
+        `;
+        
+        document.getElementById("zeroPrintRoot").innerHTML = html;
+        window.print();
+    }
+    
+    // Wire button
+    document.getElementById("btnExport").onclick = generateBoardSlide;
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Allocation Logic</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <style>
+      .zero-card { background:#fff; border:1px solid rgba(2,21,78,.1); border-radius:12px; padding:32px; box-shadow:0 4px 12px rgba(0,0,0,0.03); max-width:800px; margin:0 auto; }
+      h1 { font-size:24px; font-weight:800; color:#02154e; margin-bottom:8px; }
+      h2 { font-size:18px; font-weight:700; color:#02154e; margin-top:32px; margin-bottom:12px; }
+      p { color:#444; line-height:1.6; font-size:15px; margin-bottom:16px; }
+      .formula-box { background:#f8fafc; border:1px solid #e2e8f0; padding:20px; border-radius:8px; margin:20px 0; font-family:'Courier New', monospace; font-weight:600; color:#02154e; }
+      .highlight { color:#D51635; font-weight:700; }
+      .tag { display:inline-block; background:#02154e; color:#fff; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:600; margin-bottom:20px; }
+    </style>
+  </head>
+  <body style="background:#f8fafc; padding:40px 20px;">
+    
+    <div class="zero-card">
+      <div class="tag">MASTER STANDARD v1.0</div>
+      <h1>How Emissions Become Decisions</h1>
+      <p style="color:#666; font-size:16px;">The Logic of Shared Organizational Footprint Allocation</p>
+      
+      <hr style="border:0; border-top:1px solid #eee; margin:24px 0;">
+
+      <h2>1. The Philosophy</h2>
+      <p>
+        We do NOT track which employee worked on which order.<br>
+        We DO track the total facility transport impact and allocate it fairly to production output.
+      </p>
+      <p>
+        This approach is <strong>Privacy-Safe</strong>, <strong>Audit-Defensible</strong>, and <strong>Scalable</strong>.
+      </p>
+
+      <h2>2. The Allocation Engine</h2>
+      <p>How we calculate the "Intensity Factor":</p>
+      
+      <div class="formula-box">
+        [ Facility Transport CO₂ (Monthly) ] ÷ [ Total Production Output (kg) ]
+        <br><br>
+        = <span class="highlight">Transport CO₂ Intensity Factor</span> (kgCO₂e / kg_product)
+      </div>
+
+      <p>How we apply it to an Order:</p>
+      <div class="formula-box">
+        [ Order Weight (kg) ] × [ Transport Intensity Factor ]
+        <br><br>
+        = <span class="highlight">Order Transport Footprint</span>
+      </div>
+
+      <h2>3. Example Calculation</h2>
+      <div style="background:#fff; border:1px solid #eee; padding:16px; border-radius:8px;">
+        <p><strong>Facility Data (Dec):</strong></p>
+        <ul style="margin-left:20px; margin-bottom:16px;">
+            <li>Transport CO₂: 100,000 kg</li>
+            <li>Production: 500,000 kg</li>
+            <li>Intensity: <strong>0.2 kg CO₂ / kg product</strong></li>
+        </ul>
+        <p><strong>Order #123 (1,000 kg T-Shirts):</strong></p>
+        <p style="font-size:18px; font-weight:700; color:#02154e;">
+            1,000 kg × 0.2 = 200 kg CO₂
+        </p>
+        <p style="font-size:12px; color:#666; margin-top:4px;">(Allocated Employee Transport Share)</p>
+      </div>
+
+      <h2>4. Audit Defense Statement</h2>
+      <p style="font-style:italic; color:#555; border-left:4px solid #02154e; padding-left:16px;">
+        "Zero@Production utilizes a 'Mass Allocation Method' for Scope 3 Category 7 (Employee Commuting). Instead of invasive individual tracking, we calculate the total facility transport footprint based on modal split and distance, then allocate it to production output by weight. This aligns with GHG Protocol allocation principles for shared organizational activities."
+      </p>
+
+      <div style="margin-top:40px; text-align:center;">
+        <button onclick="window.close()" style="background:#02154e; color:#fff; border:0; padding:12px 24px; border-radius:6px; cursor:pointer; font-weight:600;">Close Logic View</button>
+      </div>
+
+    </div>
+
+  </body>
+</html>

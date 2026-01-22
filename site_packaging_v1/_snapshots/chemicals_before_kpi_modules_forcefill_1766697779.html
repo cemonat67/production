@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Chemicals & Dye DPP</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      /* ZERO_EXEC_CLICKFIX_CHEM v1 */
+      .exec-lenses, .exec-grid, .exec-card{position:relative; z-index:5;}
+      .exec-card{pointer-events:auto !important; cursor:pointer;}
+      .zero-modal{z-index:9999;}
+      .exec-card.is-focus{outline:3px solid #f9ba00; box-shadow:0 0 0 6px rgba(249,186,0,.18);}
+      
+      /* ZERO: EXECUTIVE LENSES CSS */
+      .exec-grid{ 
+        display:grid; 
+        grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); 
+        gap:14px; 
+      } 
+      .exec-card{ 
+        background:#fff; 
+        border:1px solid #e0e0e0; 
+        border-radius:8px; 
+        padding:14px; 
+        cursor:pointer; 
+        pointer-events:auto; 
+      } 
+      .zero-modal{ 
+        position:fixed; 
+        inset:0; 
+        background:rgba(0,0,0,.45); 
+        display:none; 
+        z-index:9999; 
+      } 
+      .zero-modal[aria-hidden="false"]{ display:flex; } 
+      .zero-modal-box{ 
+        background:#fff; 
+        margin:auto; 
+        padding:20px; 
+        max-width:520px; 
+        width:90%; 
+        border-radius:10px; 
+      }
+      .exec-metric { font-size: 24px; font-weight: 800; color: #02154e; margin: 8px 0; }
+      .exec-sub { font-size: 12px; color: #666; }
+
+      /* ZERO: PDF REPORT PRINT STYLES */
+      @media print {
+        @page { size: A4; margin: 0; }
+        body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .app-header, .zero-color-bar, .container, .zero-modal, .btn, #chemicalsClearFilter, #chemicalsTimeframe { display: none !important; }
+        .print-only-report { display: block !important; }
+        .print-page { 
+          width: 210mm; 
+          height: 297mm; 
+          padding: 20mm; 
+          page-break-after: always; 
+          position: relative; 
+          box-sizing: border-box;
+        }
+        .print-page:last-child { page-break-after: auto; }
+        .print-header { border-bottom: 2px solid #02154e; margin-bottom: 20px; padding-bottom: 10px; }
+        .print-logo { height: 40px; }
+        .print-title { font-size: 24px; font-weight: 800; color: #02154e; }
+        .print-sub { font-size: 14px; color: #666; margin-top: 5px; }
+        .print-section { margin-top: 30px; }
+        .print-section h3 { color: #02154e; border-left: 4px solid #f9ba00; padding-left: 10px; }
+        .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .print-card { background: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #eee; }
+        .print-metric { font-size: 20px; font-weight: bold; color: #02154e; }
+        .print-label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+        .risk-high { color: #D51635; }
+        .risk-safe { color: #005530; }
+      }
+      .print-only-report { display: none; }
+    </style>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Uğurlular Tekstil <span class="title-at">Ecosystem</span> — Chemicals & Dye DPP by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+            <img src="assets/img/ulogo.svg" alt="U Logo" style="height: 80px;">
+        </div>
+    </div>
+</header>
+    <main class="container">
+      <div class="card" style="margin-bottom: 24px;">
+        <div class="row" style="justify-content: space-between; align-items: center;">
+          <div>
+            <h3>Kimyasallar & Boyalar — Toplam CO₂ ve Maliyet</h3>
+            <p class="muted">Zaman aralığına göre süreç (Process) metrikleri</p>
+          </div>
+          <div class="row" style="gap:8px; align-items:center;">
+            <!-- ZERO: FACILITY SWITCHER -->
+            <label for="chemFacilitySelect" class="muted" style="font-weight:bold; color:#02154e;">Facility:</label>
+            <select id="chemFacilitySelect" class="btn" style="background:#f9ba00; color:#02154e; font-weight:bold; border:none;">
+              <option value="ekoten">🏭 Ekoten (Izmir)</option>
+              <option value="bossa">🏭 Bossa (Adana)</option>
+              <option value="isko">🏭 ISKO (Inegol)</option>
+              <option value="kivanc">🏭 Kivanc (Adana)</option>
+            </select>
+            <button class="btn" onclick="window.print()" style="background:#02154e;color:#fff;">📄 Export Report (PDF)</button>
+            <label for="chemicalsTimeframe" class="muted">Aralık:</label>
+            <select id="chemicalsTimeframe" class="btn" style="background: rgba(255,255,255,0.1); min-width:120px;"></select>
+            <span id="chemicalsActiveFilter" class="muted" style="margin-left:16px;">Filtre: —</span>
+            <button id="chemicalsClearFilter" class="btn" style="margin-left:8px;">Filtreyi Temizle</button>
+          </div>
+        </div>
+        <div class="row" style="gap:32px; align-items:flex-start;">
+          <div class="card" style="min-width:260px;">
+            <h3 id="chemicalsTotalCo2">—</h3>
+            <p class="muted">Toplam CO₂</p>
+          </div>
+          <div class="card" style="min-width:260px;">
+            <h3 id="chemicalsTotalCost">—</h3>
+            <p class="muted">Tahmini Maliyet (K)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ZERO: EXECUTIVE LENSES HTML -->
+      <section class="exec-lenses" style="margin-bottom: 24px;"> 
+        <div style="font-size:14px;color:#02154e;font-weight:800;margin-bottom:6px;"> 
+          Executive Decision Lenses — Chemicals 
+        </div> 
+      
+        <div class="exec-grid"> 
+          <div class="exec-card" data-role="CEO"> 
+            <h4>CEO — Compliance</h4> 
+            <div class="exec-metric" style="color:#005530">Safe</div> 
+            <div class="exec-sub">Risk Score: Low</div> 
+          </div> 
+      
+          <div class="exec-card" data-role="CFO"> 
+            <h4>CFO — Cost Risk</h4> 
+            <div class="exec-metric">€240K</div> 
+            <div class="exec-sub">Annual Exposure</div> 
+          </div> 
+      
+          <div class="exec-card" data-role="CTO"> 
+            <h4>CTO — Traceability</h4> 
+            <div class="exec-metric">94%</div> 
+            <div class="exec-sub">ML-Ready: YES</div> 
+          </div> 
+      
+          <div class="exec-card" data-role="MD"> 
+            <h4>MD/COO — Ops Risk</h4> 
+            <div class="exec-metric">0.2%</div> 
+            <div class="exec-sub">Quality Deviation</div> 
+          </div> 
+        </div> 
+      </section>
+
+      <section class="card" id="trendSection" style="margin-bottom: 24px;">
+        <h3>Trend</h3>
+        <div id="chemicalsTrendSummary" class="muted skeleton skeleton-text">—</div>
+        <div id="chemicalsTrendCostSummary" class="muted skeleton skeleton-text">—</div>
+      </section>
+
+      <section class="card" style="margin-bottom: 24px;">
+        <h3>Kimyasallar/Boyalar CO₂ (Modüller)</h3>
+        <div style="height:220px;margin-top:10px;">
+          <canvas id="chemTrendCanvas" width="1100" height="220" style="width:100%;height:220px;border-radius:14px;background:#fff;border:1px solid rgba(2,21,78,.08);"></canvas>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Kimyasallar & Boyalar Modül Tablosu</h3>
+        <p class="muted">CO₂ ve maliyet (K) — zaman aralığına göre ölçekli</p>
+        <table class="table-hover" style="width:100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:8px;">Modül</th>
+              <th style="text-align:left; padding:8px;">Alan</th>
+              <th style="text-align:left; padding:8px;">CO₂</th>
+              <th style="text-align:left; padding:8px;">Maliyet</th>
+              <th style="text-align:left; padding:8px;">Durum</th>
+            </tr>
+          </thead>
+          <tbody id="chemicalsTbody"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <!-- ZERO: MODAL -->
+    <div class="zero-modal" id="chemExecModal" aria-hidden="true"> 
+      <div class="zero-modal-box"> 
+        <button class="zero-modal-close" id="chemExecClose" style="float:right;border:none;background:none;font-size:1.2rem;cursor:pointer;">✕</button> 
+        <h3 id="chemModalTitle" style="margin-top:0;color:#02154e;"></h3> 
+        <p id="chemModalSub" style="color:#666;font-size:0.9rem;margin-bottom:1rem;"></p> 
+        <div id="chemModalContent"></div> 
+      </div> 
+    </div>
+
+    <!-- ZERO: PRINT REPORT STRUCTURE (Hidden on screen) -->
+    <div class="print-only-report">
+      <!-- Page 1: Executive Summary -->
+      <div class="print-page">
+        <div class="print-header">
+          <img src="assets/img/plogo.svg" class="print-logo" alt="Zero Logo">
+          <div style="float:right; font-size:12px; color:#999;">Generated: ${new Date().toLocaleDateString()}</div>
+        </div>
+        <div class="print-title">Chemical Risk & Cost Exposure</div>
+        <div class="print-sub">Executive Report — Zero@Production Ecosystem</div>
+        
+        <div class="print-section">
+          <h3>Executive Summary</h3>
+          <p>High-level assessment of chemical inventory, compliance status, and financial exposure across all active production units.</p>
+          <div class="print-grid" style="margin-top:20px;">
+            <div class="print-card">
+              <div class="print-label">Total Chemical Spend (Q3)</div>
+              <div class="print-metric" id="printTotalSpend">€240,000</div>
+              <div style="font-size:12px; color:#005530; margin-top:5px;">▼ 5% vs previous quarter</div>
+            </div>
+            <div class="print-card">
+              <div class="print-label">Compliance Status</div>
+              <div class="print-metric risk-safe" id="printComplianceStatus">SAFE</div>
+              <div style="font-size:12px; color:#666; margin-top:5px;">ZDHC Level 3 Certified</div>
+            </div>
+            <div class="print-card">
+              <div class="print-label">Traceability Score</div>
+              <div class="print-metric" id="printTraceability">94%</div>
+              <div style="font-size:12px; color:#666; margin-top:5px;">Lot-level data completeness</div>
+            </div>
+            <div class="print-card">
+              <div class="print-label">Active Suppliers</div>
+              <div class="print-metric" id="printSuppliers">12</div>
+              <div style="font-size:12px; color:#005530; margin-top:5px;">0 Red Flag Suppliers</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="print-section">
+          <h3>Top 5 High-Risk Chemicals</h3>
+          <p style="font-size:13px; color:#666; margin-bottom:15px;">Priority mitigation targets based on Risk Score (>60).</p>
+          <table style="width:100%; font-size:12px; border-collapse:collapse;">
+            <thead>
+              <tr style="border-bottom:2px solid #02154e; text-align:left;">
+                <th style="padding:8px;">Chemical Name</th>
+                <th style="padding:8px;">Risk Score</th>
+                <th style="padding:8px;">Hazard Flags</th>
+                <th style="padding:8px;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="printRiskTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Page 2: CEO Lens -->
+      <div class="print-page">
+        <div class="print-header"><div class="print-title">CEO Lens: Compliance & Reputation</div></div>
+        <div class="print-section">
+          <h3>Compliance Heatmap</h3>
+          <p>Regulatory exposure analysis based on ZDHC, REACH, and customer RSL requirements.</p>
+          <div class="print-card" style="margin-top:20px;">
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ddd; padding:10px 0;">
+              <span>ZDHC Level 3 Certification</span>
+              <strong class="risk-safe">Active</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ddd; padding:10px 0;">
+              <span>Restricted Substances (RSL) Breaches</span>
+              <strong class="risk-safe">0 Incidents</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-bottom:1px solid #ddd; padding:10px 0;">
+              <span>Red Flag Suppliers</span>
+              <strong class="risk-safe">None</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:10px 0;">
+              <span>Audit Score (Last 12 Months)</span>
+              <strong>98/100</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 3: CFO Lens -->
+      <div class="print-page">
+        <div class="print-header"><div class="print-title">CFO Lens: Financial Exposure</div></div>
+        <div class="print-section">
+          <h3>Cost Volatility & Risk</h3>
+          <div class="print-grid">
+            <div class="print-card">
+              <div class="print-label">Risk-Adjusted Annual Exposure</div>
+              <div class="print-metric" id="printCfoExposure">€240K</div>
+            </div>
+            <div class="print-card">
+              <div class="print-label">Substitute Chemical Cost Delta</div>
+              <div class="print-metric risk-high">+12%</div>
+            </div>
+          </div>
+          <div class="print-card" style="margin-top:20px;">
+            <h4>Input Cost Volatility Analysis</h4>
+            <p style="font-size:13px; color:#666;">Market fluctuations for key dye intermediates show moderate volatility.</p>
+            <div style="margin-top:10px; height:150px; background:#eee; display:flex; align-items:center; justify-content:center; color:#999;">
+              [Cost Chart Placeholder for PDF]
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Page 4: CTO Lens -->
+      <div class="print-page">
+        <div class="print-header"><div class="print-title">CTO Lens: Data & Traceability</div></div>
+        <div class="print-section">
+          <h3>Digital Passport Readiness</h3>
+          <ul style="list-style:none; padding:0;">
+            <li style="padding:10px; background:#f8f9fa; margin-bottom:5px; display:flex; justify-content:space-between;">
+              <span>Traceability Completeness</span>
+              <strong id="printCtoTraceability">94%</strong>
+            </li>
+            <li style="padding:10px; background:#f8f9fa; margin-bottom:5px; display:flex; justify-content:space-between;">
+              <span>Missing MSDS / CAS Data</span>
+              <strong class="risk-high">2 Gaps Detected</strong>
+            </li>
+            <li style="padding:10px; background:#f8f9fa; margin-bottom:5px; display:flex; justify-content:space-between;">
+              <span>ML-Ready Dataset</span>
+              <strong class="risk-safe">YES</strong>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Page 5: MD Lens -->
+      <div class="print-page">
+        <div class="print-header"><div class="print-title">MD Lens: Operational Stability</div></div>
+        <div class="print-section">
+          <h3>Quality & Efficiency</h3>
+          <div class="print-grid">
+            <div class="print-card">
+              <div class="print-label">Quality Deviation Risk</div>
+              <div class="print-metric risk-safe">Low</div>
+            </div>
+            <div class="print-card">
+              <div class="print-label">Rework / Fire Proxy</div>
+              <div class="print-metric" id="printMdRework">0.2%</div>
+            </div>
+          </div>
+          <p style="margin-top:20px;">Operational stability index is high, with minor deviations in Recipe #402.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZERO_CHEMICALS_CORE v4: Fleet Demo Pack + Modules + Chart -->
+    <script>
+    (function(){
+      // --- DATA: FACILITY FLEET PACK (Ekoten + Benchmark) ---
+      const FLEET_DATA = {
+        "ekoten": {
+          label: "Ekoten Dyehouse (TR-IZM) — Core Demo",
+          meta: { city:"Izmir", focus:["knitting","reactive","finishing"], wwtp:true, zdhc:"level-3", notes:["anchor customer","high compliance"] },
+          kpis: { co2_t: 28.4, est_cost_eur: 240000, compliance:"SAFE", co2_trend:-4.2, cost_trend:-1.5 },
+          dataHealth: { completeness: 0.98, sds:1.0, cas:1.0, batchTrace:0.94 },
+          inventory: [
+            {name:"Reactive Black 5", cat:"Reactive Dye", flags:[], risk:35, co2:2.1, substitute:"n/a"},
+            {name:"Reactive Blue 19", cat:"Reactive Dye", flags:["AOX-potential"], risk:38, co2:2.4, substitute:"Low-salt reactive"},
+            {name:"Disperse Blue 79", cat:"Disperse Dye", flags:["skin sens."], risk:42, co2:2.8, substitute:"Eco-disperse"},
+            {name:"Sodium Sulphate", cat:"Salt", flags:["salinity"], risk:25, co2:0.4, substitute:"n/a"},
+            {name:"Soda Ash", cat:"Alkali", flags:[], risk:20, co2:0.9, substitute:"n/a"},
+            {name:"Acetic Acid", cat:"Acid", flags:["corrosive"], risk:30, co2:1.1, substitute:"Citric acid"},
+            {name:"Softener Flake", cat:"Softener", flags:[], risk:15, co2:0.8, substitute:"n/a"},
+            {name:"Enzyme Bio-Polish", cat:"Enzyme", flags:["bio"], risk:10, co2:0.3, substitute:"n/a"},
+            {name:"Sequestering Agent", cat:"Auxiliary", flags:["EDTA-free"], risk:12, co2:0.5, substitute:"n/a"},
+            {name:"Wetting Agent", cat:"Auxiliary", flags:[], risk:18, co2:0.6, substitute:"n/a"},
+            {name:"Defoamer Si-Free", cat:"Auxiliary", flags:[], risk:14, co2:0.4, substitute:"n/a"},
+            {name:"Fixing Agent LF", cat:"Auxiliary", flags:["low-formaldehyde"], risk:45, co2:1.2, substitute:"Zero-F"},
+            {name:"Levelling Agent", cat:"Auxiliary", flags:[], risk:22, co2:0.7, substitute:"n/a"},
+            {name:"Optical Brightener", cat:"OBA", flags:["aquatic-tox"], risk:48, co2:1.5, substitute:"Eco-OBA"},
+            {name:"Hydrogen Peroxide", cat:"Bleach", flags:["oxidizer"], risk:28, co2:0.8, substitute:"n/a"}
+          ]
+        },
+        "bossa": {
+          label: "Bossa (Adana) — High Volume Denim",
+          meta: { city:"Adana", focus:["denim","indigo","washing"], wwtp:true, zdhc:"active", notes:["high throughput","cost volatility sensitive"] },
+          kpis: { co2_t: 66.0, est_cost_eur: 1200000, compliance:"MONITOR", co2_trend:+2.1, cost_trend:+3.4 },
+          dataHealth: { completeness: 0.78, sds:0.84, cas:0.76, batchTrace:0.61 },
+          inventory: [
+            {name:"Indigo Granular", cat:"Vat Dye", flags:["wastewater-load"], risk:48, co2:2.8, substitute:"Foam dyeing"},
+            {name:"Sodium Hydrosulfite", cat:"Reducing Agent", flags:["sulfite"], risk:67, co2:2.4, substitute:"Lower dosage control"},
+            {name:"Potassium Permanganate", cat:"Washing Chem", flags:["oxidizer"], risk:72, co2:1.9, substitute:"Ozone finishing"},
+            {name:"Enzyme Cellulase", cat:"Enzyme", flags:["bio"], risk:18, co2:0.3, substitute:"n/a"},
+            {name:"Solvent Spot Remover", cat:"Solvent", flags:["VOC"], risk:64, co2:1.5, substitute:"Water-based"},
+            {name:"Resin Fix NF", cat:"Finishing Resin", flags:["formaldehyde"], risk:73, co2:1.2, substitute:"Formaldehyde-free"},
+            {name:"Disperse Dye Mix", cat:"Disperse Dye", flags:["carrier"], risk:52, co2:1.4, substitute:"Carrier-free"},
+            {name:"Caustic Soda", cat:"Alkali", flags:["corrosive"], risk:58, co2:1.6, substitute:"Process optimization"},
+            {name:"Softener C-88", cat:"Softener", flags:["aquatic-tox"], risk:41, co2:0.6, substitute:"ZDHC grade"},
+            {name:"Anti-backstain A-10", cat:"Auxiliary", flags:["restricted-check"], risk:49, co2:0.8, substitute:"Approved alt"}
+          ]
+        },
+        "isko": {
+          label: "ISKO — Traceability-led Denim (Benchmark)",
+          meta: { city:"Türkiye", focus:["denim","R&D"], wwtp:true, zdhc:"member-signal", notes:["traceability posture","benchmark data quality"] },
+          kpis: { co2_t: 44.0, est_cost_eur: 850000, compliance:"OK", co2_trend:-1.2, cost_trend:+0.4 },
+          dataHealth: { completeness: 0.93, sds:0.96, cas:0.94, batchTrace:0.88 },
+          inventory: [
+            {name:"Indigo Granular", cat:"Vat Dye", flags:["wastewater-load"], risk:36, co2:2.2, substitute:"Optimized recipe"},
+            {name:"Sodium Hydrosulfite", cat:"Reducing Agent", flags:["sulfite"], risk:54, co2:1.9, substitute:"Dose control"},
+            {name:"Ozone Finish Program", cat:"Process", flags:["CAPEX"], risk:22, co2:0.2, substitute:"n/a"},
+            {name:"Low-impact Softener", cat:"Softener", flags:["approved"], risk:18, co2:0.4, substitute:"n/a"},
+            {name:"Reactive Dye Set", cat:"Reactive Dye", flags:["salt-load"], risk:34, co2:1.1, substitute:"Low-salt route"},
+            {name:"Detergent ZDHC-grade", cat:"Auxiliary", flags:["conformant"], risk:20, co2:0.3, substitute:"n/a"}
+          ]
+        },
+        "kivanc": {
+          label: "Kıvanç (Adana) — Balanced Dyehouse Profile",
+          meta: { city:"Adana", focus:["woven","reactive","finishing"], wwtp:true, zdhc:"in-progress", notes:["balanced risk","placeholder until public signals verified"] },
+          kpis: { co2_t: 38.0, est_cost_eur: 420000, compliance:"OK", co2_trend:-0.8, cost_trend:+1.1 },
+          dataHealth: { completeness: 0.82, sds:0.88, cas:0.83, batchTrace:0.69 },
+          inventory: [
+            {name:"Reactive Blue 19", cat:"Reactive Dye", flags:["salt-load"], risk:41, co2:1.5, substitute:"Low-salt reactive"},
+            {name:"Caustic Soda", cat:"Alkali", flags:["corrosive"], risk:56, co2:1.3, substitute:"Optimization"},
+            {name:"Peroxide", cat:"Bleaching", flags:["oxidizer"], risk:47, co2:0.9, substitute:"Process control"},
+            {name:"Resin Fix NF", cat:"Finishing Resin", flags:["formaldehyde"], risk:69, co2:1.1, substitute:"Formaldehyde-free"},
+            {name:"Softener C-88", cat:"Softener", flags:["aquatic-tox"], risk:39, co2:0.6, substitute:"ZDHC grade"}
+          ]
+        }
+      };
+
+      // --- STATE ---
+      let currentFacility = "ekoten";
+      let currentRole = null;
+
+      // --- HELPERS ---
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => document.querySelectorAll(s);
+      const formatMoney = (n) => "€" + (n >= 1000 ? (n/1000).toFixed(0) + "K" : n);
+
+      // --- RENDER FUNCTIONS ---
+      function renderFacility(key){
+        const f = FLEET_DATA[key];
+        if(!f) return;
+
+        // 1. Update Header / KPI
+        const co2El = document.getElementById("chemicalsTotalCo2");
+        const costEl = document.getElementById("chemicalsTotalCost");
+        if(co2El) co2El.textContent = f.kpis.co2_t + "t";
+        if(costEl) costEl.textContent = "€" + (f.kpis.est_cost_eur/1000).toFixed(0) + "K";
+        
+        // 2. Update Trend (New Rich HTML) & Chart
+        const series = buildSeries(f);
+        paintTrend(series);
+        drawChart(series);
+        
+        // 3. Update Print Summary Metrics
+        const pSpend = document.getElementById("printTotalSpend");
+        const pComp = document.getElementById("printComplianceStatus");
+        const pTrace = document.getElementById("printTraceability");
+        const pSupp = document.getElementById("printSuppliers");
+        const pCfo = document.getElementById("printCfoExposure");
+        const pCto = document.getElementById("printCtoTraceability");
+        const pMd = document.getElementById("printMdRework");
+
+        if(pSpend) pSpend.textContent = "€" + (f.kpis.est_cost_eur/1000).toFixed(0) + "K";
+        if(pComp) pComp.textContent = f.kpis.compliance;
+        if(pTrace) pTrace.textContent = Math.round(f.dataHealth.completeness * 100) + "%";
+        if(pSupp) pSupp.textContent = f.meta.focus.length * 3 + 2; // Demo logic
+        if(pCfo) pCfo.textContent = "€" + (f.kpis.est_cost_eur/1000).toFixed(0) + "K";
+        if(pCto) pCto.textContent = Math.round(f.dataHealth.completeness * 100) + "%";
+        if(pMd) pMd.textContent = (Math.random() * 0.5 + 0.1).toFixed(1) + "%"; // Demo logic
+
+        // 4. Render Tables
+        renderModules(f); // Main Module Table
+        renderPdfInventory(f); // PDF Risk Table
+
+        // 5. Update Exec Cards (Metrics only)
+        updateExecCards(f);
+      }
+
+      function renderModules(f) {
+        const tbody = $("#chemicalsTbody");
+        if(!tbody) return;
+        tbody.innerHTML = "";
+
+        // Module definition logic (simulated breakdown)
+        var parts = [
+          { m:"Dyeing", area:"Production", pCO2:0.34, pCost:0.40, risk:"MODERATE" },
+          { m:"Pre-treatment", area:"Preparation", pCO2:0.14, pCost:0.12, risk:"SAFE" },
+          { m:"Finishing", area:"Finishing", pCO2:0.16, pCost:0.15, risk:"MODERATE" },
+          { m:"Effluent (ETP)", area:"Compliance", pCO2:0.12, pCost:0.10, risk:"HIGH" },
+          { m:"Lab & QC", area:"Quality", pCO2:0.08, pCost:0.08, risk:"SAFE" },
+          { m:"Auxiliaries", area:"Purchasing", pCO2:0.16, pCost:0.15, risk:"MODERATE" }
+        ];
+
+        // Facility tweaks
+        const label = f.label.toLowerCase();
+        if(label.includes("bossa")){ parts[0].risk="HIGH"; parts[3].pCost=0.14; parts[3].risk="HIGH"; }
+        if(label.includes("isko")){ parts[3].risk="MODERATE"; parts[4].pCO2=0.10; parts[4].risk="SAFE"; }
+        if(label.includes("kivanc") || label.includes("kıvanç")){ parts[1].risk="HIGH"; parts[5].pCost=0.18; }
+
+        // Calculate absolute values
+        const totalCO2 = f.kpis.co2_t;
+        const totalCostK = f.kpis.est_cost_eur / 1000;
+
+        parts.forEach(p => {
+            const rowCO2 = (totalCO2 * p.pCO2).toFixed(1);
+            const rowCost = "€" + Math.round(totalCostK * p.pCost) + "K";
+            
+            // Status Badge
+            let bg = "#e7f7ee", fg = "#0b7a2a";
+            if(p.risk==="MODERATE"){ bg="#fff4df"; fg="#8a4b00"; }
+            if(p.risk==="HIGH"){ bg="#ffe3e8"; fg="#b10f2e"; }
+            const badge = `<span style="display:inline-block;padding:4px 10px;border-radius:999px;font-weight:800;font-size:12px;background:${bg};color:${fg}">${p.risk}</span>`;
+
+            const tr = document.createElement("tr");
+            tr.style.borderBottom = "1px solid #eee";
+            tr.innerHTML = `
+              <td style="padding:12px 8px;font-weight:bold;color:#02154e;">${p.m}</td>
+              <td style="padding:12px 8px;color:#666;">${p.area}</td>
+              <td style="padding:12px 8px;">${rowCO2}t</td>
+              <td style="padding:12px 8px;">${rowCost}</td>
+              <td style="padding:12px 8px;">${badge}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+      }
+
+      function renderPdfInventory(f) {
+        // PDF Table: Top 5 Risky
+        const printBody = $("#printRiskTableBody");
+        if(!printBody) return;
+        printBody.innerHTML = "";
+        
+        const sortedRisky = [...f.inventory].sort((a,b) => b.risk - a.risk).slice(0, 5);
+        
+        sortedRisky.forEach(item => {
+          const tr = document.createElement("tr");
+          tr.style.borderBottom = "1px solid #eee";
+          tr.innerHTML = `
+            <td style="padding:8px;"><strong>${item.name}</strong></td>
+            <td style="padding:8px;color:#D51635;font-weight:bold;">${item.risk}</td>
+            <td style="padding:8px;">${item.flags.join(", ")}</td>
+            <td style="padding:8px;font-size:11px;">${item.substitute}</td>
+          `;
+          printBody.appendChild(tr);
+        });
+      }
+
+      function updateExecCards(d){
+        const cards = document.querySelectorAll(".exec-card");
+        cards.forEach(card => {
+          const role = card.getAttribute("data-role");
+          const metricEl = card.querySelector(".exec-metric");
+          if(role === "CEO"){
+            metricEl.textContent = d.kpis.compliance;
+            metricEl.className = "exec-metric " + (d.kpis.compliance === "SAFE" ? "risk-safe" : "risk-high");
+            metricEl.style.color = d.kpis.compliance === "SAFE" ? "#005530" : "#D51635";
+            card.querySelector(".exec-sub").textContent = `ZDHC: ${d.meta.zdhc}`;
+          } else if(role === "CFO"){
+            metricEl.textContent = "€" + (d.kpis.est_cost_eur/1000).toFixed(0) + "K";
+            card.querySelector(".exec-sub").textContent = `Trend: ${d.kpis.cost_trend}%`;
+          } else if(role === "CTO"){
+            metricEl.textContent = Math.round(d.dataHealth.completeness * 100) + "%";
+            card.querySelector(".exec-sub").textContent = `Traceability Score`;
+          } else if(role === "MD"){
+            metricEl.textContent = (Math.random() * 0.5 + 0.1).toFixed(1) + "%";
+            card.querySelector(".exec-sub").textContent = "Quality Deviation";
+          }
+        });
+      }
+
+      // --- CHART & TREND LOGIC ---
+      function buildSeries(f){
+        const baseCO2 = f.kpis.co2_t;
+        const baseCost = f.kpis.est_cost_eur / 1000;
+        let vol = 0.10;
+        if(f.label.includes("Bossa")) vol = 0.18;
+        if(f.label.includes("ISKO")) vol = 0.08;
+        
+        var out = [];
+        var now = new Date();
+        for(var i=11;i>=0;i--){
+          var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+          var t = (12-i);
+          var wave = Math.sin(t*0.9) * vol;
+          var drift = (t-6) * (vol*0.015);
+          var co2 = baseCO2 * (1 + wave + drift);
+          var cost = baseCost * (1 + wave*1.25 + drift*0.6);
+          out.push({ ym: d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"), co2: co2, cost: cost });
+        }
+        return out;
+      }
+
+      function pct(a,b){ if(!b) return 0; return ((a-b)/b)*100; }
+
+      function paintTrend(series){
+        const trendHost = document.getElementById("trendSection");
+        if(!trendHost) return;
+        
+        var a = series[series.length-1];
+        var b = series[series.length-2];
+        var co2MoM = pct(a.co2, b.co2);
+        var costMoM = pct(a.cost, b.cost);
+        var co2Arrow = co2MoM <= 0 ? "↓" : "↑";
+        var costArrow = costMoM <= 0 ? "↓" : "↑";
+        var good = "color:#0b7a2a";
+        var bad  = "color:#b10f2e";
+        var co2Color = co2MoM <= 0 ? good : bad;
+        var costColor = costMoM <= 0 ? good : bad;
+        
+        var html = ""+
+          "<div style=\"display:flex;gap:18px;flex-wrap:wrap;padding-top:6px\">"+
+          "  <div style=\"min-width:220px\"><div style=\"font-size:12px;color:#6b7280\">CO₂ MoM</div><div style=\"font-weight:900;font-size:16px;"+co2Color+"\">"+co2Arrow+" "+Math.abs(co2MoM).toFixed(1)+"%</div><div style=\"font-size:12px;color:#6b7280\">Last: "+a.co2.toFixed(1)+"t</div></div>"+
+          "  <div style=\"min-width:220px\"><div style=\"font-size:12px;color:#6b7280\">Cost MoM</div><div style=\"font-weight:900;font-size:16px;"+costColor+"\">"+costArrow+" "+Math.abs(costMoM).toFixed(1)+"%</div><div style=\"font-size:12px;color:#6b7280\">Last: €"+Math.round(a.cost)+"K</div></div>"+
+          "  <div style=\"min-width:240px\"><div style=\"font-size:12px;color:#6b7280\">Signal</div><div style=\"font-weight:800;font-size:14px;color:#02154e\">Volatility indexed; boardroom demo (offline)</div></div>"+
+          "</div>";
+          
+        trendHost.innerHTML = "<h3 style='margin-bottom:8px'>Trend</h3>" + html;
+      }
+
+      function drawChart(series){
+        var c = document.getElementById("chemTrendCanvas");
+        if(!c || !c.getContext) return;
+        var ctx = c.getContext("2d");
+        var cssW = c.clientWidth || c.width;
+        var cssH = c.clientHeight || c.height;
+        var dpr = window.devicePixelRatio || 1;
+        c.width = Math.round(cssW*dpr);
+        c.height = Math.round(cssH*dpr);
+        ctx.scale(dpr, dpr);
+        var W = cssW, H = cssH;
+        
+        // Config
+        var pad = {top:20, bottom:30, left:40, right:40};
+        var graphW = W - pad.left - pad.right;
+        var graphH = H - pad.top - pad.bottom;
+        
+        // Scales
+        var maxCO2 = Math.max(...series.map(d=>d.co2)) * 1.1;
+        var minCO2 = Math.min(...series.map(d=>d.co2)) * 0.9;
+        var maxCost = Math.max(...series.map(d=>d.cost)) * 1.1;
+        var minCost = Math.min(...series.map(d=>d.cost)) * 0.9;
+        
+        // Draw
+        ctx.clearRect(0,0,W,H);
+        
+        // Grid (simple)
+        ctx.strokeStyle = "#eee";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for(var i=0; i<=4; i++){
+          var y = pad.top + (graphH * i / 4);
+          ctx.moveTo(pad.left, y);
+          ctx.lineTo(W - pad.right, y);
+        }
+        ctx.stroke();
+        
+        // X Axis Labels
+        ctx.fillStyle = "#999";
+        ctx.font = "10px sans-serif";
+        ctx.textAlign = "center";
+        var step = Math.ceil(series.length/6);
+        series.forEach((d,i)=>{
+          if(i % step === 0){
+            var x = pad.left + (i/(series.length-1))*graphW;
+            ctx.fillText(d.ym.split("-")[1], x, H - 10);
+          }
+        });
+
+        // CO2 Line (Left Axis) - Green #0b7a2a
+        function getX(i){ return pad.left + (i/(series.length-1))*graphW; }
+        function getY_CO2(v){ return pad.top + graphH - ((v-minCO2)/(maxCO2-minCO2))*graphH; }
+        function getY_Cost(v){ return pad.top + graphH - ((v-minCost)/(maxCost-minCost))*graphH; }
+        
+        ctx.strokeStyle = "#0b7a2a";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        series.forEach((d,i)=>{
+          var x = getX(i);
+          var y = getY_CO2(d.co2);
+          if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+        
+        // Cost Line (Right Axis) - Blue #02154e
+        ctx.strokeStyle = "#02154e";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        series.forEach((d,i)=>{
+          var x = getX(i);
+          var y = getY_Cost(d.cost);
+          if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+        
+        // Legend / Title overlay
+        ctx.fillStyle = "#0b7a2a";
+        ctx.textAlign = "left";
+        ctx.fillText("CO₂ (t)", pad.left, pad.top - 8);
+        ctx.fillStyle = "#02154e";
+        ctx.textAlign = "right";
+        ctx.fillText("Cost (€)", W-pad.right, pad.top - 8);
+      }
+
+      function buildExecLensHTML(role, f) {
+        const roleMap = {
+          "CEO": { title: "CEO Lens: Compliance & Reputation", sub: "Brand Protection & Regulatory Risk" },
+          "CFO": { title: "CFO Lens: Financial Exposure", sub: "Cost Volatility & Liability" },
+          "CTO": { title: "CTO Lens: Data Intelligence", sub: "Digital Passport Readiness" },
+          "MD": { title: "MD/COO Lens: Operational Excellence", sub: "Production Efficiency" }
+        };
+        
+        const info = roleMap[role] || { title: role, sub: "Executive View" };
+        let content = "";
+
+        // Dynamic Content Generation Logic
+        if (role === "CEO") {
+            const riskyCount = f.inventory.filter(i => i.risk > 60).length;
+            const complianceColor = (f.kpis.compliance === "SAFE" || f.kpis.compliance === "OK") ? "#005530" : (f.kpis.compliance === "MONITOR" || f.kpis.compliance === "WARN" ? "#f9ba00" : "#D51635");
+            
+            content = `
+              <div style="padding:15px;background:#eef2ff;border-left:4px solid #4f46e5;margin-bottom:15px;font-size:14px;">
+                <strong>Compliance Status:</strong> <span style="color:${complianceColor};font-weight:bold;">${f.kpis.compliance}</span><br>
+                ${f.meta.notes.some(n=>n.includes("compliance")) ? "Aligned with international standards." : "Requires attention to specific chemical groups."}
+              </div>
+              <ul style="padding:0;list-style:none;font-size:14px;">
+                <li style="padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;">
+                    <span>ZDHC Alignment</span><b>${f.meta.zdhc.toUpperCase()}</b>
+                </li>
+                <li style="padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;">
+                    <span>High Risk Chemicals</span><b style="color:${riskyCount > 0 ? '#D51635' : '#005530'}">${riskyCount} Items</b>
+                </li>
+                <li style="padding:8px 0;display:flex;justify-content:space-between;">
+                    <span>Market Access</span><b>${f.meta.focus.includes("denim") ? "EU/US Denim compliant" : "General Export"}</b>
+                </li>
+              </ul>`;
+        } else if (role === "CFO") {
+            const shadowPrice = 180; // Euro per ton
+            const shadowCost = Math.round(f.kpis.co2_t * shadowPrice);
+            
+            content = `
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;">
+                <div style="background:#f8f9fa;padding:12px;text-align:center;border-radius:6px;">
+                  <div style="font-size:11px;color:#666;text-transform:uppercase;">Annual Exposure</div>
+                  <div style="font-size:20px;font-weight:bold;color:#02154e;">${formatMoney(f.kpis.est_cost_eur)}</div>
+                </div>
+                <div style="background:#fff1f2;padding:12px;text-align:center;border-radius:6px;">
+                  <div style="font-size:11px;color:#666;text-transform:uppercase;">Shadow Carbon Cost</div>
+                  <div style="font-size:20px;font-weight:bold;color:#D51635;">€${shadowCost}</div>
+                </div>
+              </div>
+              <p style="font-size:13px;color:#444;">
+                <strong>Scenario Analysis:</strong> 
+                ${f.meta.notes.some(n=>n.includes("cost volatility")) ? 
+                  "High sensitivity to raw material price fluctuations. Recommendation: Hedge key intermediates." : 
+                  "Stable input costs. Main risk factor is regulatory taxation on non-green chemistry."}
+              </p>`;
+        } else if (role === "CTO") {
+            const score = Math.round(f.dataHealth.completeness * 100);
+            content = `
+              <div style="padding:15px;background:#f0fdf4;border-left:4px solid #005530;margin-bottom:15px;font-size:14px;">
+                <strong>ML-Ready Score: ${score}/100</strong><br>
+                ${score > 90 ? "Dataset is ready for predictive AI models." : "Data gaps prevent full AI deployment."}
+              </div>
+              <ul style="padding:0;list-style:none;font-size:14px;">
+                <li style="padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span>SDS Digitization</span><b>${Math.round(f.dataHealth.sds * 100)}%</b></li>
+                <li style="padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;"><span>CAS Number Index</span><b>${Math.round(f.dataHealth.cas * 100)}%</b></li>
+                <li style="padding:8px 0;display:flex;justify-content:space-between;"><span>Batch Traceability</span><b>${Math.round(f.dataHealth.batchTrace * 100)}%</b></li>
+              </ul>`;
+        } else if (role === "MD") {
+            content = `
+              <div style="padding:15px;background:#fffbeb;border-left:4px solid #f59e0b;margin-bottom:15px;font-size:14px;">
+                <strong>Operational Stability</strong><br>
+                Focus: ${f.meta.focus.join(", ").toUpperCase()}
+              </div>
+              <p style="font-size:13px;color:#444;">
+                Site ${f.meta.city} is operating within normal parameters. 
+                ${f.inventory.some(i => i.risk > 60) ? "Critical attention required for high-risk inventory items to prevent production halts." : "No immediate operational threats detected."}
+              </p>`;
+        }
+
+        return { title: info.title, sub: info.sub, html: content };
+      }
+
+      function openModal(role) {
+        const f = FLEET_DATA[currentFacility];
+        if (!f) return;
+        
+        const lens = buildExecLensHTML(role, f);
+        $("#chemModalTitle").textContent = lens.title;
+        $("#chemModalSub").textContent = lens.sub;
+        $("#chemModalContent").innerHTML = lens.html;
+        
+        const modal = $("#chemExecModal");
+        modal.setAttribute("aria-hidden", "false");
+        
+        // Close handler
+        modal.onclick = (e) => {
+          if(e.target === modal) modal.setAttribute("aria-hidden", "true");
+        };
+      }
+
+      // --- EVENTS ---
+      document.addEventListener("DOMContentLoaded", () => {
+        // 1. Facility Selector
+        const sel = $("#chemFacilitySelect");
+        
+        if(sel) {
+          sel.addEventListener("change", (e) => {
+            currentFacility = e.target.value;
+            renderFacility(currentFacility);
+          });
+        }
+
+        // 2. URL Params
+        const params = new URLSearchParams(window.location.search);
+        const facParam = params.get("facility");
+        const roleParam = params.get("role");
+
+        if (facParam && FLEET_DATA[facParam.toLowerCase()]) {
+          currentFacility = facParam.toLowerCase();
+          if(sel) sel.value = currentFacility;
+          renderFacility(currentFacility);
+        } else {
+          renderFacility("ekoten");
+        }
+
+        if (roleParam) {
+          setTimeout(() => {
+            const role = roleParam.toUpperCase();
+            const card = document.querySelector(`.exec-card[data-role="${role}"]`);
+            if(card) {
+              card.scrollIntoView({ behavior: "smooth", block: "center" });
+              card.classList.add("is-focus");
+              openModal(role);
+            }
+          }, 600);
+        }
+
+        // 3. Exec Card Clicks
+        $$(".exec-card").forEach(card => {
+          card.addEventListener("click", () => {
+            const role = card.getAttribute("data-role");
+            openModal(role);
+          });
+          // Touch fix
+          card.addEventListener("touchend", (e) => {
+            e.preventDefault(); // Prevent ghost clicks
+            const role = card.getAttribute("data-role");
+            openModal(role);
+          }, {passive: false});
+        });
+
+        // 4. Modal Close
+        $("#chemExecClose").addEventListener("click", () => {
+          $("#chemExecModal").setAttribute("aria-hidden", "true");
+        });
+        
+        // 5. Window Resize (Chart redraw)
+        window.addEventListener("resize", () => {
+            if(currentFacility){
+                const f = FLEET_DATA[currentFacility];
+                const s = buildSeries(f);
+                drawChart(s);
+            }
+        });
+      });
+
+    })();
+    </script>
+  </body>
+</html>

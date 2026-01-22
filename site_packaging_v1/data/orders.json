@@ -1,0 +1,47 @@
+[ 
+   { 
+     "order_id": "PO-UGR-10492", 
+     "buyer": "MANGO", 
+     "facility": "UGURLULAR", 
+     "style": "ZW-POLO-001", 
+     "sku": "ZW-POLO-001-BLK-M", 
+     "qty": 18000, 
+     "order_weight_kg": 4500,
+     "month": "2025-10",
+     "ship_date": "2026-01-18", 
+     "stage": "GARMENT", 
+     "co2_per_unit_kg": 5.8, 
+     "co2_total_kg": 104400, 
+     "risk": "monitor" 
+   }, 
+   { 
+     "order_id": "PO-EKT-22031", 
+     "buyer": "HAFELE", 
+     "facility": "EKOTEN", 
+     "style": "HF-WORKWEAR-014", 
+     "sku": "HF-WORKWEAR-014-NVY-L", 
+     "qty": 12000, 
+     "order_weight_kg": 3600,
+     "month": "2025-11",
+     "ship_date": "2026-02-02", 
+     "stage": "FINISHING", 
+     "co2_per_unit_kg": 6.4, 
+     "co2_total_kg": 76800, 
+     "risk": "action" 
+   }, 
+   { 
+     "order_id": "PO-BOS-77109", 
+     "buyer": "INTERNAL SAMPLE", 
+     "facility": "BOSSA", 
+     "style": "LAB-SAMPLE-09", 
+     "sku": "LAB-SAMPLE-09-GRY-OS", 
+     "qty": 900, 
+     "order_weight_kg": 200,
+     "month": "2025-12",
+     "ship_date": "2026-01-08", 
+     "stage": "DYE", 
+     "co2_per_unit_kg": 7.2, 
+     "co2_total_kg": 6480, 
+     "risk": "ok" 
+   } 
+ ]

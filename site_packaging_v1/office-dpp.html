@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — Office DPP</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      /* ZERO_OFFICE_OS v1 */
+      :root {
+        --zero-navy: #02154e;
+        --zero-orange: #f9ba00;
+        --zero-green: #005530;
+        --zero-red: #D51635;
+        --zero-gray: #f8fafc;
+      }
+      body { background: var(--zero-gray); }
+      
+      /* CONTEXT BAR */
+      .context-bar {
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #64748b;
+      }
+      .context-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        color: var(--zero-navy);
+        font-weight: 600;
+      }
+
+      /* KPI ROW */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .kpi-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        position: relative;
+      }
+      .kpi-label { font-size: 0.75rem; text-transform: uppercase; color: #64748b; margin-bottom: 8px; letter-spacing: 0.5px; }
+      .kpi-value { font-size: 2rem; font-weight: 700; color: var(--zero-navy); }
+      .kpi-sub { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+      .status-ok { color: var(--zero-green); }
+      .status-monitor { color: var(--zero-orange); }
+      .status-action { color: var(--zero-red); }
+
+      /* ACTION BAR */
+      .action-bar {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .action-btn {
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        color: var(--zero-navy);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+      .action-btn:hover { background: #f8fafc; border-color: var(--zero-navy); }
+      .btn-primary { background: var(--zero-navy); color: #fff; border: none; }
+      .btn-primary:hover { background: #032070; }
+      .btn-risk { border-color: var(--zero-red); color: var(--zero-red); }
+      .btn-risk:hover { background: #fff5f5; }
+
+      /* EVIDENCE & SIGNALS */
+      .signal-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+      .signal-card {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        padding: 20px;
+      }
+      .signal-title { font-weight: 700; color: var(--zero-navy); margin-bottom: 12px; font-size: 1rem; }
+      
+      /* FOOTER */
+      .governance-footer {
+        text-align: center;
+        padding: 24px;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        border-top: 1px solid #e2e8f0;
+        margin-top: 40px;
+      }
+
+      /* TOAST */
+      #zeroToast {
+        position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+        background: #333; color: #fff; padding: 12px 24px; border-radius: 30px;
+        z-index: 99999; opacity: 0; transition: opacity 0.3s; font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2); pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <div id="zeroToast"></div>
+    
+    <header class="app-header">
+        <div class="header-content">
+            <div style="display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 60px; margin-right: 15px;">
+                <div class="title">Zero <span class="title-at">Ecosystem</span> — Office DPP</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEXT BAR -->
+    <div class="context-bar">
+      <div style="display:flex; gap:12px;">
+        <span class="context-tag">🏢 Organization: UGURLULAR HQ</span>
+        <span class="context-tag">👤 Role: <span id="userRole">Executive</span></span>
+        <span class="context-tag">📅 Q4 2025</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <span style="font-size:0.8rem; color:#94a3b8;">Scope Declaration: Administrative Scope 2+3</span>
+        <div style="width:8px; height:8px; background:var(--zero-green); border-radius:50%;"></div>
+      </div>
+    </div>
+
+    <main class="container" style="padding-top: 24px;">
+      
+      <!-- EXECUTIVE KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total Office CO₂ (t)</div>
+          <div class="kpi-value">42.8</div>
+          <div class="kpi-sub">Scope 2 + Travel</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Estimated Cost (€)</div>
+          <div class="kpi-value" id="kpiCost">€18,500</div>
+          <div class="kpi-sub">Energy + Business Travel</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Risk Status</div>
+          <div class="kpi-value status-ok" id="kpiRisk">OK</div>
+          <div class="kpi-sub">Governance Baseline</div>
+        </div>
+      </div>
+
+      <!-- DECISION LAYER -->
+      <div class="action-bar">
+        <div style="font-weight:700; color:var(--zero-navy); margin-right:12px;">Governance:</div>
+        <button class="action-btn" onclick="showToast('Policy update email drafted for HR.')">
+          <span>✉️</span> Notify / Policy Email
+        </button>
+        <button class="action-btn btn-primary" onclick="showToast('Financial impact breakdown generated.')">
+          <span>💶</span> € Impact
+        </button>
+        <button class="action-btn" onclick="window.print()">
+          <span>📄</span> Board Export
+        </button>
+        <div style="flex-grow:1;"></div>
+        <button class="action-btn btn-risk" onclick="showToast('Governance risk flagged to Internal Audit.')">
+          <span>🚩</span> Flag Governance Risk
+        </button>
+      </div>
+
+      <!-- EVIDENCE & SIGNALS -->
+      <div class="signal-grid">
+        
+        <!-- Signal 1: Intensity -->
+        <div class="signal-card">
+          <div class="signal-title">Energy Intensity per FTE</div>
+          <canvas id="chartIntensity" height="120"></canvas>
+          <div style="font-size:0.85rem; color:#64748b; margin-top:12px;">
+            Benchmarked against industry avg. Measures discipline, not just consumption.
+          </div>
+        </div>
+
+        <!-- Signal 2: Travel Policy -->
+        <div class="signal-card">
+          <div class="signal-title">Travel Policy Exposure</div>
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+             <div style="font-size:2rem; font-weight:700; color:var(--zero-navy);" id="travelComp">94%</div>
+             <div style="font-size:0.9rem; color:#64748b;">Policy Compliance</div>
+          </div>
+          <div style="background:#f1f5f9; height:8px; border-radius:4px; overflow:hidden;">
+             <div style="width:94%; background:var(--zero-green); height:100%;" id="travelBar"></div>
+          </div>
+          <div style="font-size:0.85rem; color:#64748b; margin-top:12px;">
+            <span id="travelText">High adherence to "Rail-First" policy for domestic routes.</span>
+          </div>
+        </div>
+
+        <!-- Signal 3: Contract Rigidity -->
+        <div class="signal-card">
+          <div class="signal-title">Lease & Energy Rigidity</div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
+             <span style="font-size:0.9rem; color:#475569;">Energy Contract</span>
+             <span style="font-weight:600; color:var(--zero-navy);">Fixed (2026)</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">
+             <span style="font-size:0.9rem; color:#475569;">Green Lease</span>
+             <span style="font-weight:600; color:var(--zero-orange);">Partial</span>
+          </div>
+          <div style="display:flex; justify-content:space-between;">
+             <span style="font-size:0.9rem; color:#475569;">Sub-metering</span>
+             <span style="font-weight:600; color:var(--zero-red);">No</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="governance-footer">
+        Office footprint allocated at organizational level.<br>
+        Privacy-safe. Policy-driven. Audit-ready.
+      </div>
+
+    </main>
+
+    <!-- BOARD SLIDE PRINT TEMPLATE -->
+    <div id="officePrintRoot" style="display:none;"></div>
+    
+    <style>
+    @media print {
+        body * { visibility: hidden; }
+        #officePrintRoot, #officePrintRoot * { visibility: visible; }
+        #officePrintRoot {
+            position: absolute; left: 0; top: 0; width: 100%;
+            display: block !important;
+            background: white; color: black;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            padding: 20mm;
+            box-sizing: border-box;
+        }
+        .board-header { border-bottom: 2px solid #02154e; margin-bottom: 30px; padding-bottom: 20px; }
+        .board-title { font-size: 24pt; font-weight: bold; color: #02154e; }
+        .board-sub { font-size: 14pt; color: #666; margin-top: 10px; }
+        .board-list { font-size: 14pt; line-height: 1.8; color: #333; margin-bottom: 40px; }
+        .board-item { margin-bottom: 12px; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .board-val { font-weight: bold; color: #02154e; }
+        .board-actions { background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 6px solid #f9ba00; }
+        .action-title { font-weight: bold; font-size: 12pt; text-transform: uppercase; color: #666; margin-bottom: 10px; }
+        .footer { position: fixed; bottom: 20mm; left: 0; right: 0; text-align: center; font-size: 9pt; color: #999; border-top: 1px solid #eee; padding-top: 10px; }
+    }
+    </style>
+
+    <script>
+      /* ZERO_OFFICE_LOGIC v1 */
+      
+      // Toast Helper
+      function showToast(msg){
+          let t = document.getElementById("zeroToast");
+          t.textContent = msg;
+          t.style.opacity = "1";
+          setTimeout(()=>t.style.opacity="0", 3000);
+      }
+      
+      // BOARD GENERATOR
+      function generateBoardSlide(isShock) {
+          const role = document.getElementById('userRole').textContent;
+          const cost = document.getElementById('kpiCost').textContent;
+          const compliance = isShock ? "68%" : "94%";
+          const exceptions = isShock ? "14" : "2";
+          const risk = isShock ? "ACTION (Governance Failure)" : "OK (Baseline)";
+          const riskColor = isShock ? "#D51635" : "#005530";
+          
+          const html = `
+            <div class="board-header">
+                <div class="board-title">OFFICE DPP — ORGANIZATIONAL CARBON DISCIPLINE</div>
+                <div class="board-sub">Organization: UGURLULAR HQ | Role: ${role} | Q4 2025</div>
+            </div>
+            
+            <div class="board-list">
+                <div class="board-item"><span>Total Office Impact</span> <span class="board-val">42.8t CO₂ / ${cost}</span></div>
+                <div class="board-item"><span>Cost per FTE</span> <span class="board-val">€92.50 / mo</span></div>
+                <div class="board-item"><span>Energy Intensity</span> <span class="board-val">112 kWh / FTE</span></div>
+                <div class="board-item"><span>Travel Policy Compliance</span> <span class="board-val" style="color:${isShock?'#D51635':''};">${compliance} (${exceptions} exceptions)</span></div>
+                <div class="board-item"><span>Lease Rigidity Score</span> <span class="board-val">High (Fixed 2026)</span></div>
+                <div class="board-item"><span>Governance Risk Status</span> <span class="board-val" style="color:${riskColor};">${risk}</span></div>
+            </div>
+            
+            <div class="board-actions">
+                <div class="action-title">90-DAY GOVERNANCE ACTIONS</div>
+                <ul style="margin:0; padding-left:20px;">
+                    <li>Rail-first enforcement + approval gate implementation</li>
+                    <li>Off-peak contract / renegotiation check (CFO review)</li>
+                    <li>Governance cadence: Monthly discipline review</li>
+                </ul>
+            </div>
+            
+            <div class="footer">
+                Allocated at organizational level. Privacy-safe. Policy-driven. Audit-ready.<br>
+                Generated by Zero@Production OS
+            </div>
+          `;
+          
+          document.getElementById('officePrintRoot').innerHTML = html;
+          window.print();
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        const role = params.get('role');
+        const demo = params.get('demo');
+
+        if(role) {
+          document.getElementById('userRole').textContent = role.toUpperCase();
+        }
+
+        // Charts
+        const ctxInt = document.getElementById('chartIntensity');
+        if(ctxInt) {
+          new Chart(ctxInt, {
+            type: 'bar',
+            data: {
+              labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+              datasets: [{
+                label: 'kWh / FTE',
+                data: [120, 115, 118, 112],
+                backgroundColor: '#02154e'
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true } }
+            }
+          });
+        }
+
+        // DEMO SHOCK LOGIC
+        if(demo === 'office_governance_shock') {
+           // 1. Cost Surge
+           document.getElementById('kpiCost').textContent = "€22,200";
+           document.getElementById('kpiCost').style.color = "#D51635";
+           
+           // 2. Risk Flip
+           const r = document.getElementById('kpiRisk');
+           r.textContent = "ACTION";
+           r.className = "kpi-value status-action";
+           
+           // 3. Travel Non-Compliance
+           document.getElementById('travelComp').textContent = "68%";
+           document.getElementById('travelComp').style.color = "#D51635";
+           document.getElementById('travelBar').style.width = "68%";
+           document.getElementById('travelBar').style.background = "#D51635";
+           document.getElementById('travelText').textContent = "⚠️ Critical failure in travel approval workflow. Unauthorized air travel detected.";
+           
+           // 4. Auto Toast & Board Suggestion
+           setTimeout(()=>{
+               showToast("Governance Shock Detected: Board Export suggested.");
+               // Auto-wire print button to shock state
+               document.querySelector('.action-btn[onclick="window.print()"]').onclick = () => generateBoardSlide(true);
+           }, 800);
+        } else {
+            // Normal print
+            document.querySelector('.action-btn[onclick="window.print()"]').onclick = () => generateBoardSlide(false);
+        }
+      });
+    </script>
+</body>
+</html>

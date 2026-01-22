@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zero@Production — IT DPP</title>
+    <link rel="stylesheet" href="assets/css/theme.css" />
+    <link rel="stylesheet" href="assets/css/zae-theme.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script defer src="assets/js/main.min.js"></script>
+    <style>
+      /* ZERO_IT_OS v1 */
+      :root {
+        --zero-navy: #02154e;
+        --zero-orange: #f9ba00;
+        --zero-green: #005530;
+        --zero-red: #D51635;
+        --zero-gray: #f8fafc;
+      }
+      body { background: var(--zero-gray); }
+      
+      /* CONTEXT BAR */
+      .context-bar {
+        background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: #64748b;
+      }
+      .context-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        background: #f1f5f9;
+        border-radius: 4px;
+        color: var(--zero-navy);
+        font-weight: 600;
+      }
+
+      /* KPI ROW */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .kpi-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        position: relative;
+      }
+      .kpi-label { font-size: 0.75rem; text-transform: uppercase; color: #64748b; margin-bottom: 8px; letter-spacing: 0.5px; }
+      .kpi-value { font-size: 1.8rem; font-weight: 700; color: var(--zero-navy); }
+      .kpi-sub { font-size: 0.8rem; color: #64748b; margin-top: 4px; }
+      .status-ok { color: var(--zero-green); }
+      .status-monitor { color: var(--zero-orange); }
+      .status-action { color: var(--zero-red); }
+
+      /* ACTION BAR */
+      .action-bar {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 24px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+      .action-btn {
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        color: var(--zero-navy);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+      }
+      .action-btn:hover { background: #f8fafc; border-color: var(--zero-navy); }
+      .btn-primary { background: var(--zero-navy); color: #fff; border: none; }
+      .btn-primary:hover { background: #032070; }
+      .btn-risk { border-color: var(--zero-red); color: var(--zero-red); }
+      .btn-risk:hover { background: #fff5f5; }
+
+      /* ANALYTICS (SO WHAT) */
+      .chart-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        margin-bottom: 24px;
+      }
+      .chart-card {
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        padding: 20px;
+      }
+      .chart-title { font-weight: 700; color: var(--zero-navy); margin-bottom: 16px; font-size: 0.95rem; }
+      
+      /* FOOTER */
+      .governance-footer {
+        text-align: center;
+        padding: 24px;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        border-top: 1px solid #e2e8f0;
+        margin-top: 40px;
+      }
+
+      /* TOAST */
+      #zeroToast {
+        position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+        background: #333; color: #fff; padding: 12px 24px; border-radius: 30px;
+        z-index: 99999; opacity: 0; transition: opacity 0.3s; font-weight: 600;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2); pointer-events: none;
+      }
+      
+      /* IMPACT MODAL */
+      .modal-overlay {
+        position: fixed; inset: 0; background: rgba(2,21,78,0.6); backdrop-filter: blur(2px);
+        display: none; align-items: center; justify-content: center; z-index: 9999;
+      }
+      .modal-box {
+        background: #fff; width: 600px; max-width: 90%; border-radius: 8px; overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2); animation: slideUp 0.3s ease;
+      }
+      @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+      .modal-header { background: var(--zero-navy); color: #fff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+      .modal-body { padding: 24px; }
+    </style>
+  </head>
+  <body>
+    <div class="zero-color-bar"></div>
+    <div id="zeroToast"></div>
+    
+    <header class="app-header">
+        <div class="header-content">
+            <div style="display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 60px; margin-right: 15px;">
+                <div class="title">Zero <span class="title-at">Ecosystem</span> — IT DPP</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEXT BAR -->
+    <div class="context-bar">
+      <div style="display:flex; gap:12px;">
+        <span class="context-tag">🏭 Facility: UGURLULAR HQ</span>
+        <span class="context-tag">👤 Role: <span id="userRole">Executive</span></span>
+        <span class="context-tag">📅 Q4 2025</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <span style="font-size:0.8rem; color:#94a3b8;">Digital Scope 2+3</span>
+        <div style="width:8px; height:8px; background:var(--zero-navy); border-radius:50%;"></div>
+      </div>
+    </div>
+
+    <main class="container" style="padding-top: 24px;">
+      
+      <!-- EXECUTIVE KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Total IT CO₂e (t)</div>
+          <div class="kpi-value">12.4</div>
+          <div class="kpi-sub">Cloud Supply Chain</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Estimated IT Cost</div>
+          <div class="kpi-value" id="kpiCost">€8,400</div>
+          <div class="kpi-sub">Cloud + SaaS</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">AI/Compute Share</div>
+          <div class="kpi-value" id="kpiAi">18%</div>
+          <div class="kpi-sub">Workload Intensity</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Risk Status</div>
+          <div class="kpi-value status-ok" id="kpiRisk">OK</div>
+          <div class="kpi-sub">Governance Baseline</div>
+        </div>
+      </div>
+
+      <!-- DECISION LAYER -->
+      <div class="action-bar">
+        <div style="font-weight:700; color:var(--zero-navy); margin-right:12px;">Governance:</div>
+        <button class="action-btn" onclick="showToast('Policy update email drafted for IT.')">
+          <span>✉️</span> Notify IT / Policy
+        </button>
+        <button class="action-btn btn-primary" onclick="openImpactModal()">
+          <span>💶</span> € Impact (Cloud + AI)
+        </button>
+        <button class="action-btn" onclick="window.print()">
+          <span>📄</span> Board Export
+        </button>
+        <div style="flex-grow:1;"></div>
+        <button class="action-btn btn-risk" onclick="showToast('Governance risk flagged to CTO.')">
+          <span>🚩</span> Flag Governance Risk
+        </button>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div class="chart-grid">
+        
+        <!-- Chart 1: Cloud vs On-Prem -->
+        <div class="chart-card">
+          <div class="chart-title">Cloud vs On-Prem Cost & CO₂</div>
+          <canvas id="chartCloud" height="100"></canvas>
+        </div>
+
+        <!-- Chart 2: Vendor Concentration -->
+        <div class="chart-card">
+          <div class="chart-title">Vendor Concentration Risk</div>
+          <div style="margin-bottom:16px;">
+             <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:8px;">
+               <span>AWS (Ireland)</span>
+               <span style="font-weight:700;">64%</span>
+             </div>
+             <div style="width:100%; background:#f1f5f9; height:6px; border-radius:3px;">
+               <div style="width:64%; background:var(--zero-navy); height:100%; border-radius:3px;"></div>
+             </div>
+          </div>
+          <div style="margin-bottom:16px;">
+             <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:8px;">
+               <span>Azure (Germany)</span>
+               <span style="font-weight:700;">22%</span>
+             </div>
+             <div style="width:100%; background:#f1f5f9; height:6px; border-radius:3px;">
+               <div style="width:22%; background:var(--zero-orange); height:100%; border-radius:3px;"></div>
+             </div>
+          </div>
+          <div style="font-size:0.8rem; color:#64748b; margin-top:20px;">
+             High dependency on single region provider.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="governance-footer">
+        Digital footprint allocated from cloud billing + energy intensity factors.<br>
+        Privacy-safe. Audit-ready.
+      </div>
+
+    </main>
+
+    <!-- IMPACT MODAL -->
+    <div class="modal-overlay" id="impactModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h3 style="margin:0;">Cloud & AI Cost Impact</h3>
+          <button onclick="closeImpactModal()" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div style="display:flex; justify-content:space-between; margin-bottom:24px;">
+             <div>
+               <div style="font-size:0.8rem; color:#64748b;">CURRENT MONTHLY COST</div>
+               <div style="font-size:2rem; font-weight:800; color:var(--zero-navy);" id="modalCost">€8,400</div>
+             </div>
+             <div style="text-align:right;">
+               <div style="font-size:0.8rem; color:#64748b;">AI COST SHARE</div>
+               <div style="font-size:2rem; font-weight:800; color:var(--zero-orange);" id="modalShare">18%</div>
+             </div>
+          </div>
+          
+          <div id="shockPanel" style="display:none; background:#fff7ed; border-left:4px solid var(--zero-red); padding:16px; margin-bottom:24px;">
+             <h4 style="margin:0 0 8px 0; color:var(--zero-red);">⚠️ AI Cost Shock Detected</h4>
+             <p style="font-size:0.9rem; color:#9a3412; margin:0 0 12px 0;">
+                Uncontrolled inference scaling has spiked costs by +22%.
+             </p>
+             <div style="display:grid; gap:8px;">
+                <button class="action-btn" style="justify-content:center; font-size:0.85rem;">Move inference to off-peak</button>
+                <button class="action-btn" style="justify-content:center; font-size:0.85rem;">Enforce Model Compression</button>
+             </div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:12px;">
+            <button class="action-btn" onclick="closeImpactModal()">Dismiss</button>
+            <button class="action-btn btn-primary">Download Governance Report</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ZERO_IT_LOGIC v1 */
+      
+      // Toast Helper
+      function showToast(msg){
+          let t = document.getElementById("zeroToast");
+          t.textContent = msg;
+          t.style.opacity = "1";
+          setTimeout(()=>t.style.opacity="0", 3000);
+      }
+      
+      function openImpactModal() { document.getElementById('impactModal').style.display = 'flex'; }
+      function closeImpactModal() { document.getElementById('impactModal').style.display = 'none'; }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const params = new URLSearchParams(window.location.search);
+        const role = params.get('role');
+        const demo = params.get('demo');
+
+        if(role) {
+          document.getElementById('userRole').textContent = role.toUpperCase();
+        }
+
+        // Chart
+        const ctx = document.getElementById('chartCloud');
+        if(ctx) {
+          new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['Compute', 'Storage', 'Network', 'SaaS'],
+              datasets: [
+                { label: 'Cost (€)', data: [4200, 1800, 800, 1600], backgroundColor: '#02154e', yAxisID: 'y' },
+                { label: 'CO₂ (kg)', data: [800, 200, 50, 50], backgroundColor: '#005530', yAxisID: 'y1' }
+              ]
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: { type: 'linear', display: true, position: 'left' },
+                y1: { type: 'linear', display: true, position: 'right', grid: {drawOnChartArea: false} }
+              }
+            }
+          });
+        }
+
+        // DEMO SHOCK LOGIC
+        if(demo === 'ai_cost_shock') {
+           // 1. Spikes
+           document.getElementById('kpiCost').textContent = "€10,250";
+           document.getElementById('kpiCost').style.color = "#D51635";
+           
+           document.getElementById('kpiAi').textContent = "42%";
+           document.getElementById('kpiAi').style.color = "#D51635";
+           
+           // 2. Risk Flip
+           const r = document.getElementById('kpiRisk');
+           r.textContent = "ACTION";
+           r.className = "kpi-value status-action";
+           r.nextElementSibling.textContent = "AI Budget Overrun";
+           
+           // 3. Modal Updates
+           document.getElementById('modalCost').textContent = "€10,250";
+           document.getElementById('modalShare').textContent = "42%";
+           document.getElementById('shockPanel').style.display = "block";
+           
+           // 4. Auto Open
+           setTimeout(()=>{
+               showToast("Governance Shock: AI Cost Spike Detected.");
+               openImpactModal();
+           }, 800);
+        }
+      });
+    </script>
+  </body>
+</html>

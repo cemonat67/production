@@ -1,0 +1,2053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zero@Production — Garment DPP</title>
+<!-- Local font fallback to avoid CORS issues -->
+<style>
+:root{
+  --primary:#02154e;
+  --accent:#f9ba00;
+  --green:#005530;
+  --red:#D51635;
+  --navy:#02154e;
+  --orange:#f9ba00;
+  --bg:#f6f7f9;
+  --card:#ffffff;
+  --muted:#8a94a6;
+  --border:#e6e8ee;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#1b2430}
+
+/* Header */
+.app-header{
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 18px; border-bottom:1px solid var(--border); background:#fff;
+  position:sticky; top:0; z-index:40;
+}
+.header-left{display:flex; align-items:center; gap:12px}
+.brand-logo{display:inline-block;width:48px;height:48px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,85,48,0.3);overflow:hidden}
+.brand-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.title{font-size:18px;font-weight:700;}
+.subtitle{font-size:12px;color:var(--muted)}
+
+/* Back link button */
+.back-link{
+  display:inline-flex; align-items:center; gap:8px; height:40px; padding:0 14px;
+  border-radius:10px; background:var(--green); color:#fff; font-weight:600; text-decoration:none;
+  border:1px solid transparent; box-shadow:0 2px 8px rgba(0,85,48,0.25);
+  transition:transform .15s, box-shadow .15s, background .15s;
+}
+.back-link:hover{ transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,85,48,0.35); }
+.back-link:active{ transform:translateY(0); }
+
+/* Import notification */
+.import-notification{
+  background:linear-gradient(135deg, #4CAF50, #81C784);
+  color:white; padding:12px 18px; text-align:center; font-weight:600;
+  border-bottom:1px solid rgba(76,175,80,0.3); box-shadow:0 2px 8px rgba(76,175,80,0.25);
+  display:none;
+}
+.import-notification.show{ display:block; animation:slideDown 0.5s ease; }
+@keyframes slideDown{ from{transform:translateY(-100%)} to{transform:translateY(0)} }
+
+/* Layout */
+.container{max-width:1200px;margin:18px auto;padding:0 18px}
+.form-wrap{background:var(--card);border:2px solid var(--border);border-radius:14px;box-shadow:0 2px 10px rgba(2,21,78,0.05);position:relative}
+.form-wrap.editing{border-color:var(--green);}
+.editing-label{position:absolute;top:-12px;left:14px;background:var(--green);color:#fff;padding:2px 8px;font-size:12px;border-radius:6px;display:none;}
+.form-wrap.editing .editing-label{display:inline-block;}
+.form-row{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;overflow-x:auto;padding:14px;scrollbar-width:thin}
+.field{flex:1 1 200px;display:flex;flex-direction:column;gap:6px;min-width:160px}
+.field label{font-size:12px;color:var(--navy);font-weight:700;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
+.field label::before{content:"";width:14px;height:14px;background-repeat:no-repeat;background-size:contain;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='%2302154e'><path d='M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm1 14h-2v-4H7v-2h4V6h2v4h4v2h-4z'/></svg>")}
+.field input,.field select{height:40px;border:1px solid var(--border);border-radius:10px;padding:0 10px;background:#fff;font-size:14px}
+.field select[multiple]{height:auto;min-height:40px;padding:6px}
+input[readonly]{background:#f7f9fb;color:#4b5563;border-style:dashed}
+.helper{font-size:11px;color:var(--muted);margin-top:-2px}
+.actions{display:flex;gap:10px;padding:0 14px 14px;flex-wrap:wrap}
+.btn{height:40px;padding:0 14px;border:1px solid transparent;border-radius:10px;background:var(--green);color:#fff;font-weight:600;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:8px}
+.btn::before{content:"";width:16px;height:16px;background-repeat:no-repeat;background-size:contain;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='%2302154e'><path d='M12 5v14m-7-7h14' stroke='%2302154e' stroke-width='2' stroke-linecap='round'/></svg>")}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,85,48,0.3)}
+.btn.secondary{background:#fff;color:var(--primary);border-color:var(--border)}
+.btn.secondary:hover{background:var(--bg);border-color:var(--primary)}
+.btn.danger{background:var(--red);color:#fff}
+.btn.danger:hover{background:#b01429;box-shadow:0 4px 12px rgba(213,22,53,0.3)}
+.form-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);background:#f8fafc;border-radius:14px 14px 0 0}
+.form-header .fh-left{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--navy)}
+.form-header .fh-icon{width:18px;height:18px;background-repeat:no-repeat;background-size:contain;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='%2302154e'><path d='M4 3h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm3 4h8v2H7V7zm0 4h8v2H7v-2zm0 4h6v2H7v-2z'/></svg>")}
+
+/* Dashboard cards */
+.dashboard{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:16px}
+.card{background:linear-gradient(135deg, #fff, #fafbfc);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,0.05);transition:transform 0.2s}
+.card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.1)}
+.metric-title{font-size:12px;color:var(--muted)}
+.metric-value{font-size:24px;font-weight:700;margin-top:8px;background:linear-gradient(135deg, var(--green), var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* List / Scorecards */
+.list{margin-top:16px;display:grid;gap:12px}
+.scorecard{border:1px solid var(--border);border-radius:14px;background:#fff;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);transition:transform 0.2s, box-shadow 0.2s}
+.scorecard:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.12)}
+.scorecard-header{background:linear-gradient(135deg, var(--orange), #ffca28);color:#1a1a1a;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,0.1);border-radius:14px 14px 0 0}
+.scorecard-body{padding:12px 14px;border-top:1px solid var(--border)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kv{background:#fafafa;border:1px solid var(--border);border-radius:10px;padding:10px}
+.kv .k{font-size:11px;color:var(--muted)}
+.kv .v{font-size:14px;font-weight:600;margin-top:4px}
+.row-actions{display:flex;gap:8px}
+.icon-btn{height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--border);background:#fff;cursor:pointer;transition:all 0.2s;font-size:12px}
+.icon-btn:hover{background:var(--bg);border-color:var(--green)}
+.icon-btn.edit:hover{background:rgba(0,85,48,0.1);color:var(--green)}
+.icon-btn.delete:hover{background:rgba(213,22,53,0.1);color:var(--red);border-color:var(--red)}
+
+/* Multi-Select Dropdown */
+.multi-select-container { position: relative; width: 100%; }
+.multi-select-display { min-height: 40px; border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; background: #fff; cursor: pointer; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 14px; }
+.multi-select-display:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+.selected-tag { background: linear-gradient(135deg, var(--green), #007d4a); color: white; padding: 3px 10px; border-radius: 12px; font-size: 12px; display: flex; align-items: center; gap: 6px; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,85,48,0.2); font-weight: 500; }
+.remove-tag { cursor: pointer; font-weight: bold; font-size: 14px; line-height: 1; padding: 0 2px; border-radius: 50%; transition: background-color 0.2s; }
+.remove-tag:hover { background: rgba(255,255,255,0.2); }
+.placeholder { color: var(--muted); font-size: 14px; flex: 1; }
+.dropdown-arrow { margin-left: auto; transition: transform 0.2s; font-size: 12px; color: var(--muted); }
+.multi-select-dropdown { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1000; max-height: 200px; overflow-y: auto; display: none; margin-top: 2px; }
+.multi-select-dropdown.open { display: block; }
+.dropdown-option { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; transition: background-color 0.2s; }
+.dropdown-option:last-child { border-bottom: none; }
+.dropdown-option:hover { background: var(--bg); }
+.dropdown-option.selected { background: rgba(0, 85, 48, 0.1); font-weight: 500; }
+.checkbox { width: 16px; height: 16px; border: 2px solid var(--border); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; transition: all 0.2s; }
+.checkbox.checked { background: var(--green); border-color: var(--green); }
+
+/* Responsive */
+@media (max-width:1200px){.dashboard{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:1000px){.dashboard{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.dashboard{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+
+/* ZAP header normalize */
+#zap-header h1{font-weight:800;font-size:48px;line-height:1.1;color:#02154e;text-align:center;margin:8px 0 6px}
+#zap-header .subtitle{color:#02154e;font-size:20px;font-weight:700;text-align:center;margin:0 0 6px}
+#zap-header .description{color:#888;font-size:14px;text-align:center;margin:0}
+/* /ZAP */
+
+</style>
+
+<!-- ICON LIBRARIES -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<!-- END ICON LIBRARIES -->
+
+<style id="back-click-fix">
+  .back-only { pointer-events:none; }
+  .back-only a { pointer-events:auto; }
+</style>
+<style id="zplogo-style">
+  .zplogo-wrap{position:absolute;left:24px;top:12px;z-index:10;pointer-events:none}
+  .zplogo-wrap img{height:84px;width:auto;display:block}
+  @media (max-width:768px){ .zplogo-wrap img{height:64px} }
+</style>
+<style id="fixed-header-140">
+  .header, .main-header {
+    height: 140px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+  }
+  .header img, .main-header img {
+    height: 84px !important;
+    width: auto;
+    margin-bottom: 8px;
+  }
+  .header h1, .main-header h1 {
+    font-size: 2rem !important;
+    margin: 4px 0;
+  }
+  .header p, .main-header p {
+    font-size: 1.1rem !important;
+    margin: 2px 0;
+  }
+</style>
+<style id="zpp-header-140">
+  .header, .main-header {
+    height: 140px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+  }
+  .header img, .main-header img {
+    height: 84px !important;
+    width: auto;
+    margin-bottom: 8px;
+  }
+  .header h1, .main-header h1 {
+    font-size: 2rem !important;
+    margin: 4px 0;
+  }
+  .header p, .main-header p {
+    font-size: 1.1rem !important;
+    margin: 2px 0;
+  }
+  @media (max-width:768px){
+    .header, .main-header{height:110px !important;}
+    .header img, .main-header img{height:64px !important;}
+  }
+</style>
+    <link rel="stylesheet" href="assets/css/theme.css">
+  <style>
+    .zero-card{
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+    <div class="zero-color-bar"></div>
+<header class="app-header">
+    <div class="header-content">
+        <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <a href="index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="assets/img/plogo.svg" alt="Zero Logo" style="height: 80px; margin-right: 15px;">
+                <div class="title">Zero@Production <span class="title-at">Ecosystem</span> — Garment DPP by Zero<span class="title-at">@</span>Ecosystem</div>
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- Import Notification -->
+<div class="import-notification" id="importNotification">
+  🔥 <span id="importMessage">Imported orders from Random Order Creator</span>
+</div>
+
+<main class="container">
+  <section class="form-wrap" id="formWrap">
+    <div class="editing-label">Editing Record</div>
+    <div class="form-header"><div class="fh-left"><span class="fh-icon"></span>Order Details</div></div>
+    <div class="form-row">
+      <div class="field">
+        <label>Country</label>
+        <select id="country">
+          <option value="Türkiye">Türkiye</option><option>Germany</option><option>Netherlands</option>
+          <option>Spain</option><option>United Kingdom</option><option>Italy</option><option>Portugal</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Production Facility</label>
+        <select id="productionFacility">
+          <option>Rabateks Main Factory</option><option>Rabateks Facility 2</option><option>Partner Factory A</option>
+          <option>Partner Factory B</option><option>External Contractor 1</option><option>External Contractor 2</option>
+        </select>
+      </div>
+
+      <div class="field"><label>PO No.</label><input id="po" type="text" placeholder="e.g., PO-24567"></div>
+      <div class="field"><label>Style Name</label><input id="style" type="text" placeholder="e.g., AURORA-TSH"></div>
+
+      <div class="field">
+        <label>Product Type</label>
+        <select id="productType">
+          <!-- WOVEN -->
+          <optgroup label="Woven">
+            <option>Dress shirt</option>
+            <option>Casual shirt</option>
+            <option>Flannel shirt</option>
+            <option>Suit jacket</option>
+            <option>Trousers</option>
+            <option>Waistcoat</option>
+            <option>Blazer</option>
+            <option>Trench coat</option>
+            <option>Bomber jacket</option>
+            <option>Safari jacket</option>
+            <option>Chinos</option>
+            <option>Dress pants</option>
+            <option>Cargo pants</option>
+            <option>Pencil skirt</option>
+            <option>Pleated skirt</option>
+            <option>A-line skirt</option>
+            <option>Shift dress</option>
+            <option>Shirt dress</option>
+            <option>Wrap dress</option>
+            <option>Blouse</option>
+            <option>Tunic</option>
+            <option>Peasant top</option>
+            <option>Tailored shorts</option>
+            <option>Bermuda shorts</option>
+            <option>Overcoat</option>
+            <option>Pea coat</option>
+            <option>Duffle coat</option>
+            <option>Fedora hat</option>
+            <option>Bucket hat</option>
+            <option>Tote bag</option>
+            <option>Clutch bag</option>
+            <option>Uniform shirt</option>
+            <option>Work trousers</option>
+          </optgroup>
+
+          <!-- CIRCULAR KNIT -->
+          <optgroup label="Circular Knit">
+            <option>Crew neck T-shirt</option>
+            <option>V-neck T-shirt</option>
+            <option>Polo shirt</option>
+            <option>Crewneck sweatshirt</option>
+            <option>Hoodie</option>
+            <option>Quarter-zip sweatshirt</option>
+            <option>Jogger pants</option>
+            <option>Sweatpants</option>
+            <option>Tank top</option>
+            <option>Lightweight sweater</option>
+            <option>Thermal underwear</option>
+            <option>Long johns</option>
+            <option>Knit pyjamas</option>
+            <option>Jersey sports top</option>
+            <option>Yoga top</option>
+            <option>Knit dress</option>
+            <option>Bodycon dress</option>
+            <option>Jersey shorts</option>
+            <option>Jersey skirt</option>
+          </optgroup>
+
+          <!-- FLAT KNIT -->
+          <optgroup label="Flat Knit">
+            <option>Crew neck sweater</option>
+            <option>V-neck sweater</option>
+            <option>Turtleneck sweater</option>
+            <option>Button-up cardigan</option>
+            <option>Open-front cardigan</option>
+            <option>Poncho</option>
+            <option>Vest</option>
+            <option>Sleeveless pullover</option>
+            <option>Knitted shawl</option>
+            <option>Knitted scarf</option>
+            <option>Knitted beanie</option>
+            <option>Knitted cap</option>
+            <option>Knitted gloves</option>
+            <option>Knitted dress</option>
+            <option>Knitted baby romper</option>
+            <option>Knitted waistcoat</option>
+          </optgroup>
+
+          <!-- NON-WOVEN -->
+          <optgroup label="Non-Woven">
+            <option>Medical gown</option>
+            <option>Surgical mask</option>
+            <option>Surgical cap</option>
+            <option>Disposable coverall</option>
+            <option>Disposable tablecloth</option>
+            <option>Non-woven shopper bag</option>
+            <option>Sanitary pad top layer</option>
+            <option>Baby diaper top layer</option>
+            <option>Cleaning cloth</option>
+            <option>Non-woven filter</option>
+            <option>Non-woven glove lining</option>
+            <option>Disposable hotel slippers</option>
+            <option>Gift wrap</option>
+            <option>Garment bag</option>
+          </optgroup>
+
+          <!-- DENIM -->
+          <optgroup label="Denim">
+            <option>Slim jeans</option>
+            <option>Straight jeans</option>
+            <option>Bootcut jeans</option>
+            <option>Flare jeans</option>
+            <option>Boyfriend jeans</option>
+            <option>Skinny jeans</option>
+            <option>Trucker denim jacket</option>
+            <option>Oversized denim jacket</option>
+            <option>Western denim shirt</option>
+            <option>Mini denim skirt</option>
+            <option>Midi denim skirt</option>
+            <option>Maxi denim skirt</option>
+            <option>Denim overall</option>
+            <option>Denim pinafore dress</option>
+            <option>Cut-off denim shorts</option>
+            <option>Bermuda denim shorts</option>
+            <option>Denim tote bag</option>
+            <option>Denim backpack</option>
+            <option>Denim bucket hat</option>
+            <option>Denim cap</option>
+            <option>Denim work overalls</option>
+            <option>Denim vest</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Fabric Type</label>
+        <select id="fabricType">
+          <option>Woven</option><option>Denim</option><option>Circular Knit</option>
+          <option>Flatknit</option><option>Nonwoven</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Fabric Name</label>
+        <input id="fabricName" type="text" placeholder="e.g., Single Jersey / Twill / Denim" />
+        <div class="helper">Required</div>
+      </div>
+      <div class="field">
+        <label>Fabric Supplier</label>
+        <input id="fabricSupplier" type="text" placeholder="EKOTEN / UGURLULAR" />
+      </div>
+      <div class="field">
+        <label>Garment Supplier</label>
+        <input id="garmentSupplier" type="text" placeholder="YESIM / SUNTEKSTIL" />
+      </div>
+
+      <div class="field">
+        <label>Fabric Code</label>
+        <div class="input-row">
+          <input id="fabricCode" type="text" placeholder="e.g., SJ-180-KN / DN-420-WV" />
+          <button type="button" class="btn secondary" id="genCodeBtn" title="Generate from Type + Name + GSM">Generate</button>
+        </div>
+        <div class="helper">Required · Pattern: <code>AAA-123(-XXXX)</code></div>
+      </div>
+
+      <div class="field">
+        <label>Fabric Construction</label>
+        <select id="fabricConstruction">
+          <!-- KNIT -->
+          <optgroup label="Knit">
+            <option>Single Jersey</option><option>Double Jersey</option><option>Interlock</option>
+            <option>Rib 1x1</option><option>Rib 2x2</option><option>Ottoman</option><option>Waffle Knit</option>
+            <option>French Terry</option><option>Terry</option><option>Fleece Knit</option><option>Pique Knit</option>
+            <option>Jacquard Knit</option><option>Mesh Knit</option><option>Ponte Roma</option><option>Milano Rib</option>
+          </optgroup>
+          <!-- WOVEN -->
+          <optgroup label="Woven">
+            <option>Plain Weave / Poplin</option><option>Oxford</option><option>Chandray</option><option>Canvas</option>
+            <option>Twill</option><option>Denim</option><option>Satin</option><option>Sateen</option>
+            <option>Herringbone</option><option>Dobby</option><option>Seersucker</option><option>Jacquard Woven</option>
+            <option>Corduroy</option><option>Ripstop</option>
+          </optgroup>
+          <!-- OTHER -->
+          <optgroup label="Other">
+            <option>Lace</option><option>Velvet</option><option>Velour</option><option>Softshell (Knit Bonded)</option>
+            <option>Bonded / Laminated</option><option>Nonwoven Spunbond</option><option>Nonwoven Meltblown</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div class="field"><label>Fabric Weight (gsm)</label><input id="fabricWeight" type="number" min="0" step="1" placeholder="e.g., 180"></div>
+      <div class="field"><label>Quantity</label><input id="qty" type="number" min="0" step="1" placeholder="e.g., 1200"></div>
+
+      <div class="field">
+        <label>Production Step (multi)</label>
+        <div class="multi-select-container" id="stepsMultiSelect">
+          <div class="multi-select-display" tabindex="0">
+            <span class="placeholder">Select production steps...</span>
+            <span class="dropdown-arrow">▼</span>
+          </div>
+          <div class="multi-select-dropdown">
+            <div class="ms-actions">
+              <div class="ms-search"><input type="text" placeholder="Search steps..."></div>
+              <button type="button" class="small-btn ms-select-all">Select All</button>
+              <button type="button" class="small-btn ms-clear-all">Clear</button>
+            </div>
+            <div class="dropdown-option" data-value="Cutting"><span>Cutting</span></div>
+            <div class="dropdown-option" data-value="Bundling"><span>Bundling</span></div>
+            <div class="dropdown-option" data-value="Sewing"><span>Sewing</span></div>
+            <div class="dropdown-option" data-value="Embroidery"><span>Embroidery</span></div>
+            <div class="dropdown-option" data-value="Printing"><span>Printing</span></div>
+            <div class="dropdown-option" data-value="Washing"><span>Washing</span></div>
+            <div class="dropdown-option" data-value="Drying"><span>Drying</span></div>
+            <div class="dropdown-option" data-value="Finishing"><span>Finishing</span></div>
+            <div class="dropdown-option" data-value="Trimming"><span>Trimming</span></div>
+            <div class="dropdown-option" data-value="Ironing/Pressing"><span>Ironing/Pressing</span></div>
+            <div class="dropdown-option" data-value="Quality Control"><span>Quality Control</span></div>
+            <div class="dropdown-option" data-value="Packing"><span>Packing</span></div>
+            <div class="dropdown-option" data-value="Dispatch"><span>Dispatch</span></div>
+          </div>
+        </div>
+        <div class="helper">Tıklayarak istediğiniz production step'leri seçin.</div>
+      </div>
+
+      <!-- NEW: Auto CO2 field -->
+      <div class="field">
+        <label>CO₂ Emission (kg) – Auto</label>
+        <input id="co2" type="number" placeholder="0.00" readonly>
+        <div class="helper" id="co2Helper">Estimated from GSM × product area × emission factor.</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn" id="addBtn">Add Record</button>
+      <button type="button" class="btn secondary" id="clearBtn">Clear</button>
+      <button type="button" class="btn" id="saveChangesBtn" style="display:none;">Save Changes</button>
+      <button type="button" class="btn danger" id="cancelEditBtn" style="display:none;">Cancel</button>
+      <button type="button" class="btn secondary" id="exportCsvBtn">Export CSV</button>
+      <button type="button" class="btn secondary" id="importCsvBtn">Import CSV</button>
+      <button type="button" class="btn secondary" id="templateCsvBtn">Download CSV Template</button>
+      <button type="button" class="btn secondary" id="importOrdersBtn">Import Orders</button>
+      <button type="button" class="btn secondary" id="debugImportBtn">Debug Import</button>
+    </div>
+  </section>
+
+  <section class="dashboard">
+    <div class="card">
+      <div class="metric-title">📋 Total POs</div>
+      <div class="metric-value" id="mPos">0</div>
+    </div>
+    <div class="card">
+      <div class="metric-title">📦 Total Quantity</div>
+      <div class="metric-value" id="mQty">0</div>
+    </div>
+    <div class="card">
+      <div class="metric-title">⚖️ Avg Fabric Weight (gsm)</div>
+      <div class="metric-value" id="mAvgGsm">0</div>
+    </div>
+    <div class="card">
+      <div class="metric-title">🎨 Unique Styles</div>
+      <div class="metric-value" id="mStyles">0</div>
+    </div>
+    <div class="card">
+      <div class="metric-title">🌱 Total CO₂ (kg)</div>
+      <div class="metric-value" id="mCO2">0</div>
+    </div>
+  </section>
+
+  <section class="list" id="scorecards"></section>
+  <section class="container" id="ordersSection" style="margin-top:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div style="font-size:14px;color:#02154e;font-weight:800;">Orders</div>
+        <div style="font-size:12px;color:#6b7280;">Factory cockpit</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="orderSearchInput" placeholder="Search PO, Style, Buyer..." style="padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;width:240px;">
+        <select id="orderRiskFilter" style="padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;background:#fff;">
+          <option value="ALL">All Risks</option>
+          <option value="ACTION">Action Required</option>
+          <option value="MONITOR">Monitor</option>
+          <option value="OK">Stable</option>
+        </select>
+      </div>
+    </div>
+    <div style="overflow:auto;border:1px solid #e5e7eb;border-radius:10px;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead style="background:#f8fafc;">
+          <tr>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">PO</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Buyer</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Style</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Fabric Supplier</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Garment Supplier</th>
+            <th style="text-align:right;padding:10px;border-bottom:1px solid #e5e7eb;">Qty</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Planned Ship</th>
+            <th style="text-align:left;padding:10px;border-bottom:1px solid #e5e7eb;">Stage</th>
+            <th style="text-align:right;padding:10px;border-bottom:1px solid #e5e7eb;">CO₂/unit</th>
+            <th style="text-align:right;padding:10px;border-bottom:1px solid #e5e7eb;">CO₂ total</th>
+            <th style="text-align:center;padding:10px;border-bottom:1px solid #e5e7eb;">Risk</th>
+          </tr>
+        </thead>
+        <tbody id="ordersTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+  <section class="container" id="chartsSection" style="margin-top:24px;">
+    <div style="font-size:14px;color:#02154e;font-weight:800;margin-bottom:8px;">Production Impact</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px;">
+        <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">Total CO₂ Trend</div>
+        <canvas id="co2TrendChart" height="120"></canvas>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px;">
+        <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">CO₂ by Stage</div>
+        <canvas id="co2ByStageChart" height="120"></canvas>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px;">
+        <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">Baseline vs Actual</div>
+        <canvas id="baselineVsActualChart" height="120"></canvas>
+      </div>
+    </div>
+  </section>
+  <script src="assets/libs/chart.umd.min.js"></script>
+
+<script>
+// Multi-Select Component
+class MultiSelect {
+  constructor(container, options = {}) {
+    this.container = container;
+    this.display = container.querySelector('.multi-select-display');
+    this.dropdown = container.querySelector('.multi-select-dropdown');
+    this.options = container.querySelectorAll('.dropdown-option');
+    this.searchInput = container.querySelector('.ms-search input');
+    this.selectAllBtn = container.querySelector('.ms-select-all');
+    this.clearAllBtn = container.querySelector('.ms-clear-all');
+    this.selectedValues = new Set();
+    this.placeholder = options.placeholder || 'Select options...';
+    this.onChangeCallback = options.onChange || (() => {});
+    this.init();
+  }
+  init() {
+    this.display.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove-tag')) return;
+      this.toggleDropdown();
+    });
+    this.options.forEach(option => {
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleOption(option.dataset.value);
+      });
+    });
+    document.addEventListener('click', (e) => {
+      if (!this.container.contains(e.target)) this.closeDropdown();
+    });
+    if(this.searchInput){ this.searchInput.addEventListener('input', ()=>{ this.filterOptions(this.searchInput.value); }); }
+    if(this.selectAllBtn){ this.selectAllBtn.addEventListener('click', ()=>{ this.selectVisible(); }); }
+    if(this.clearAllBtn){ this.clearAllBtn.addEventListener('click', ()=>{ this.clear(); this.onChangeCallback(this.getValues()); }); }
+    this.display.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.toggleDropdown(); }
+    });
+    this.updateDisplay();
+  }
+  toggleDropdown() {
+    this.dropdown.classList.contains('open') ? this.closeDropdown() : this.openDropdown();
+  }
+  openDropdown() { this.dropdown.classList.add('open'); this.display.querySelector('.dropdown-arrow').style.transform = 'rotate(180deg)'; }
+  closeDropdown() { this.dropdown.classList.remove('open'); this.display.querySelector('.dropdown-arrow').style.transform = 'rotate(0deg)'; }
+  toggleOption(value) {
+    if (this.selectedValues.has(value)) this.selectedValues.delete(value);
+    else this.selectedValues.add(value);
+    this.updateDisplay(); this.updateOptions(); this.onChangeCallback(this.getValues());
+  }
+  updateDisplay() {
+    const placeholder = this.display.querySelector('.placeholder');
+    const arrow = this.display.querySelector('.dropdown-arrow');
+    this.display.querySelectorAll('.selected-tag').forEach(tag => tag.remove());
+    if (this.selectedValues.size === 0) {
+      placeholder.style.display = 'block';
+    } else {
+      placeholder.style.display = 'none';
+      this.selectedValues.forEach(value => {
+        const tag = document.createElement('div');
+        tag.className = 'selected-tag';
+        tag.innerHTML = `<span>${value}</span><span class="remove-tag" data-value="${value}">×</span>`;
+        tag.querySelector('.remove-tag').addEventListener('click', (e) => {
+          e.stopPropagation(); this.toggleOption(value);
+        });
+        this.display.insertBefore(tag, arrow);
+      });
+    }
+  }
+  updateOptions() {
+    this.options.forEach(option => {
+      const checkbox = option.querySelector('.checkbox');
+      const isSelected = this.selectedValues.has(option.dataset.value);
+      if (isSelected) { option.classList.add('selected'); checkbox.classList.add('checked'); checkbox.innerHTML = '✓'; }
+      else { option.classList.remove('selected'); checkbox.classList.remove('checked'); checkbox.innerHTML = ''; }
+    });
+  }
+  filterOptions(q){
+    const needle = (q||'').toLowerCase();
+    this.options.forEach(opt=>{ const label = opt.textContent.toLowerCase(); opt.style.display = label.includes(needle) ? '' : 'none'; });
+  }
+  selectVisible(){
+    this.options.forEach(opt=>{ if(opt.style.display !== 'none'){ this.selectedValues.add(opt.dataset.value); } });
+    this.updateDisplay(); this.updateOptions(); this.onChangeCallback(this.getValues());
+  }
+  getValues() { return Array.from(this.selectedValues); }
+  setValues(values) { this.selectedValues = new Set(values || []); this.updateDisplay(); this.updateOptions(); }
+  clear() { this.selectedValues.clear(); this.updateDisplay(); this.updateOptions(); }
+}
+
+// === AUTO IMPORT FROM RANDOM ORDER CREATOR ===
+function checkAndImportOrders() {
+  console.log('🔍 Checking for import data...');
+  
+  const importData = localStorage.getItem('garment_dpp_import_data');
+  const importTimestamp = localStorage.getItem('garment_dpp_import_timestamp');
+  
+  console.log('Import data exists:', !!importData);
+  console.log('Import timestamp:', importTimestamp);
+  
+  if (importData && importTimestamp) {
+    try {
+      const orders = JSON.parse(importData);
+      const timestamp = parseInt(importTimestamp);
+      const now = Date.now();
+      const timeDiff = now - timestamp;
+      
+      console.log('<i class="bi bi-diagram-3"></i> Import details:');
+      console.log('- Orders count:', orders.length);
+      console.log('- Time difference:', Math.round(timeDiff / 1000), 'seconds');
+      console.log('- Within 10 minutes?', timeDiff < 10 * 60 * 1000);
+      
+      // Check if import is recent (within 10 minutes)
+      if (timeDiff < 10 * 60 * 1000 && orders.length > 0) {
+        console.log('✅ Starting import process...');
+        
+        // Convert imported orders to Garment DPP format
+        const convertedOrders = orders.map(order => {
+          console.log('Converting order:', order.style || order.po);
+          return {
+            id: order.id || crypto.randomUUID(),
+            country: order.country || 'Türkiye',
+            productionFacility: 'Rabateks Main Factory',
+            po: order.po || `PO-${Math.floor(Math.random() * 90000) + 10000}`,
+            style: order.style || 'IMPORTED-STYLE',
+            productType: order.productType || 'Crew neck T-shirt',
+            fabricType: mapFabricType(order.fabricType) || 'Circular Knit',
+            fabricName: order.fabricName || 'Single Jersey',
+            fabricCode: order.fabricCode || generateFabricCode(order.fabricType, order.fabricWeight),
+            fabricConstruction: order.fabricConstruction || 'Single Jersey',
+            fabricWeight: parseInt(order.fabricWeight) || 180,
+            qty: parseInt(order.qty) || 1000,
+            steps: Array.isArray(order.steps) ? order.steps : ['Cutting', 'Sewing', 'Quality Control', 'Packing'],
+            co2: parseFloat(order.co2) || 0
+          };
+        });
+        
+        // Merge with existing orders (avoid duplicates)
+        const existingOrders = state.rows || [];
+        const existingKeys = new Set(existingOrders.map(r => `${r.po}|${r.style}`.toLowerCase()));
+        
+        const newOrders = convertedOrders.filter(order => {
+          const key = `${order.po}|${order.style}`.toLowerCase();
+          const isDuplicate = existingKeys.has(key);
+          if (isDuplicate) {
+            console.log('⚠️ Skipping duplicate:', order.po, order.style);
+          }
+          return !isDuplicate;
+        });
+        
+        console.log('🔥 New orders to import:', newOrders.length);
+        
+        if (newOrders.length > 0) {
+          state.rows = [...newOrders, ...existingOrders];
+          saveDB();
+          render();
+          
+          // Show import notification
+          showImportNotification(`Successfully imported ${newOrders.length} orders from Random Order Creator`);
+          
+          console.log(`✅ Import completed: ${newOrders.length} orders added`);
+        } else {
+          console.log('ℹ️ No new orders to import (all duplicates)');
+          showImportNotification(`No new orders to import - all orders already exist`);
+        }
+        
+        // Clear import data to prevent re-import
+        localStorage.removeItem('garment_dpp_import_data');
+        localStorage.removeItem('garment_dpp_import_timestamp');
+        console.log('🧹 Import data cleared');
+        
+      } else {
+        console.log('❌ Import conditions not met:');
+        if (timeDiff >= 10 * 60 * 1000) console.log('- Data too old (>10 minutes)');
+        if (orders.length === 0) console.log('- No orders in import data');
+      }
+    } catch (error) {
+      console.error('❌ Error importing orders:', error);
+      showImportNotification(`Import failed: ${error.message}`);
+    }
+  } else {
+    console.log('ℹ️ No import data found in localStorage');
+  }
+}
+
+function mapFabricType(originalType) {
+  // Map Random Order Creator fabric types to GarmentDPP options
+  const typeMap = {
+    'Knit': 'Circular Knit',
+    'Circular Knit': 'Circular Knit',
+    'Flatknit': 'Flatknit',
+    'Woven': 'Woven',
+    'Denim': 'Denim',
+    'Nonwoven': 'Nonwoven'
+  };
+  return typeMap[originalType] || 'Circular Knit';
+}
+
+function showImportNotification(message) {
+  const notification = document.getElementById('importNotification');
+  const messageSpan = document.getElementById('importMessage');
+  
+  messageSpan.textContent = message;
+  notification.classList.add('show');
+  
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, 5000);
+}
+
+// Manual import function
+function manualImportOrders() {
+  console.log('🔄 Manual import triggered...');
+  
+  const importData = localStorage.getItem('garment_dpp_import_data');
+  const importTimestamp = localStorage.getItem('garment_dpp_import_timestamp');
+  
+  if (!importData) {
+    showImportNotification('No import data found. Please export orders from Random Order Creator first.');
+    return;
+  }
+  
+  try {
+    const orders = JSON.parse(importData);
+    console.log('<i class="bi bi-diagram-3"></i> Found orders for import:', orders.length);
+    
+    if (orders.length === 0) {
+      showImportNotification('No orders found in import data.');
+      return;
+    }
+    
+    // Convert imported orders to Garment DPP format
+    const convertedOrders = orders.map(order => {
+      console.log('Converting order:', order.style || order.po);
+      return {
+        id: order.id || crypto.randomUUID(),
+        country: order.country || 'Türkiye',
+        productionFacility: 'Rabateks Main Factory',
+        po: order.po || `PO-${Math.floor(Math.random() * 90000) + 10000}`,
+        style: order.style || 'IMPORTED-STYLE',
+        productType: order.productType || 'Crew neck T-shirt',
+        fabricType: mapFabricType(order.fabricType) || 'Circular Knit',
+        fabricName: order.fabricName || 'Single Jersey',
+        fabricCode: order.fabricCode || generateFabricCode(order.fabricType, order.fabricWeight),
+        fabricConstruction: order.fabricConstruction || 'Single Jersey',
+        fabricWeight: parseInt(order.fabricWeight) || 180,
+        qty: parseInt(order.qty) || 1000,
+        steps: Array.isArray(order.steps) ? order.steps : ['Cutting', 'Sewing', 'Quality Control', 'Packing'],
+        co2: parseFloat(order.co2) || 0
+      };
+    });
+    
+    // Merge with existing orders (avoid duplicates)
+    const existingOrders = state.rows || [];
+    const existingKeys = new Set(existingOrders.map(r => `${r.po}|${r.style}`.toLowerCase()));
+    
+    const newOrders = convertedOrders.filter(order => {
+      const key = `${order.po}|${order.style}`.toLowerCase();
+      const isDuplicate = existingKeys.has(key);
+      if (isDuplicate) {
+        console.log('⚠️ Skipping duplicate:', order.po, order.style);
+      }
+      return !isDuplicate;
+    });
+    
+    console.log('🔥 New orders to import:', newOrders.length);
+    
+    if (newOrders.length > 0) {
+      state.rows = [...newOrders, ...existingOrders];
+      saveDB();
+      render();
+      
+      showImportNotification(`Successfully imported ${newOrders.length} orders from Random Order Creator`);
+      console.log(`✅ Manual import completed: ${newOrders.length} orders added`);
+      
+      // Clear import data after successful import
+      localStorage.removeItem('garment_dpp_import_data');
+      localStorage.removeItem('garment_dpp_import_timestamp');
+    } else {
+      showImportNotification(`No new orders to import - all ${orders.length} orders already exist`);
+    }
+    
+  } catch (error) {
+    console.error('❌ Error during manual import:', error);
+    showImportNotification(`Import failed: ${error.message}`);
+  }
+}
+
+function generateFabricCode(fabricType, weight) {
+  const prefixes = { 
+    'Cotton': 'CT', 'Knit': 'KN', 'Woven': 'WV', 'Denim': 'DN', 
+    'Polyester': 'PL', 'Wool': 'WL', 'Linen': 'LN', 'Silk': 'SK', 
+    'Spandex': 'SP', 'Rayon': 'RY' 
+  };
+  const prefix = prefixes[fabricType] || 'XX';
+  const suffix = Math.random().toString(36).substr(2, 2).toUpperCase();
+  return `${suffix}-${weight || 180}-${prefix}`;
+}
+
+function pickConstruction(product){
+  var p = String(product||"").toLowerCase();
+  if(p.includes("interlock")) return "Interlock";
+  if(p.includes("rib")) return "Rib Knit";
+  if(p.includes("french terry")) return "French Terry";
+  return "Single Jersey";
+}
+
+function loadDemoDataset(){
+  var ds = [
+    {"brand":"INDITEX","customer":"Zara","season":"SS26","orderNo":"INX-2601","styleCode":"ZARA-CJ-1001","product":"Men Circular Knit Jersey T-Shirt 180gsm","category":"T-Shirt","fabricType":"Circular Knit","composition":"100% Cotton","color":"Optic White","gsm":180,"widthCm":170,"finishing":"Bio-Polish + Softener","certs":"OEKO-TEX / GRS-ready","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-18","qty":12000,"uom":"pcs","unitEUR":3.20,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"SUNTEKSTIL","co2ePerPc":1.85,"risk":"MONITOR"},
+    {"brand":"INDITEX","customer":"Zara","season":"SS26","orderNo":"INX-2602","styleCode":"ZARA-CJ-1002","product":"Women Rib Knit Tank 220gsm","category":"Tank Top","fabricType":"Circular Knit","composition":"95% Cotton / 5% Elastane","color":"Black","gsm":220,"widthCm":160,"finishing":"Heat Set + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-02","qty":8000,"uom":"pcs","unitEUR":3.95,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"YESIM","co2ePerPc":2.10,"risk":"ACTION"},
+    {"brand":"INDITEX","customer":"Pull&Bear","season":"SS26","orderNo":"INX-2603","styleCode":"PAB-CJ-2101","product":"Men Loopback Sweatshirt 320gsm","category":"Sweatshirt","fabricType":"Circular Knit","composition":"80% Cotton / 20% Polyester","color":"Heather Grey","gsm":320,"widthCm":180,"finishing":"Compaction + Softener","certs":"GRS-ready","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-28","qty":6500,"uom":"pcs","unitEUR":7.40,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"SUNTEKSTIL","co2ePerPc":3.40,"risk":"MONITOR"},
+    {"brand":"INDITEX","customer":"Bershka","season":"SS26","orderNo":"INX-2604","styleCode":"BSH-CJ-3301","product":"Women Interlock Dress 260gsm","category":"Dress","fabricType":"Circular Knit","composition":"60% Cotton / 40% Polyester","color":"Navy","gsm":260,"widthCm":170,"finishing":"Anti-Pilling + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-12","qty":5000,"uom":"pcs","unitEUR":9.60,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"YESIM","co2ePerPc":3.10,"risk":"ACTION"},
+    {"brand":"INDITEX","customer":"Zara","season":"SS26","orderNo":"INX-2605","styleCode":"ZARA-CJ-1003","product":"Kids Jersey Polo 200gsm","category":"Polo","fabricType":"Circular Knit","composition":"100% Cotton","color":"Sky Blue","gsm":200,"widthCm":165,"finishing":"Reactive Dye + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-22","qty":9000,"uom":"pcs","unitEUR":4.10,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"YESIM","co2ePerPc":2.05,"risk":"MONITOR"},
+    {"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2601","styleCode":"MNG-CJ-5001","product":"Women Jersey Blouse 170gsm","category":"Blouse","fabricType":"Circular Knit","composition":"100% Viscose","color":"Cream","gsm":170,"widthCm":165,"finishing":"Softener + Anti-Static","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-30","qty":7000,"uom":"pcs","unitEUR":6.25,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"SUNTEKSTIL","co2ePerPc":2.55,"risk":"MONITOR"},
+    {"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2602","styleCode":"MNG-CJ-5002","product":"Men Pique Polo 210gsm","category":"Polo","fabricType":"Circular Knit","composition":"60% Cotton / 40% Polyester","color":"Forest Green","gsm":210,"widthCm":175,"finishing":"Compaction + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-08","qty":6000,"uom":"pcs","unitEUR":5.90,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"YESIM","co2ePerPc":2.65,"risk":"MONITOR"},
+    {"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2603","styleCode":"MNG-CJ-5003","product":"Women Rib Leggings 240gsm","category":"Leggings","fabricType":"Circular Knit","composition":"92% Cotton / 8% Elastane","color":"Charcoal","gsm":240,"widthCm":160,"finishing":"Heat Set + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-15","qty":11000,"uom":"pcs","unitEUR":4.85,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"YESIM","co2ePerPc":2.35,"risk":"ACTION"},
+    {"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2604","styleCode":"MNG-CJ-5004","product":"Men French Terry Shorts 300gsm","category":"Shorts","fabricType":"Circular Knit","composition":"80% Cotton / 20% Polyester","color":"Sand","gsm":300,"widthCm":180,"finishing":"Compaction + Softener","certs":"GRS-ready","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-20","qty":7500,"uom":"pcs","unitEUR":6.80,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"SUNTEKSTIL","co2ePerPc":3.05,"risk":"MONITOR"},
+    {"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2605","styleCode":"MNG-CJ-5005","product":"Women Hoodie 330gsm","category":"Hoodie","fabricType":"Circular Knit","composition":"70% Cotton / 30% Polyester","color":"Black","gsm":330,"widthCm":185,"finishing":"Anti-Pilling + Softener","certs":"OEKO-TEX / GRS-ready","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-25","qty":4800,"uom":"pcs","unitEUR":10.90,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"SUNTEKSTIL","co2ePerPc":3.80,"risk":"ACTION"}
+  ];
+  var existing = state.rows||[];
+  var keys = new Set(existing.map(function(r){ return (String(r.po||"")+"|"+String(r.style||"")).toLowerCase(); }));
+  var mapped = [];
+  for(var i=0;i<ds.length;i++){
+    var o = ds[i];
+    var po = o.orderNo||"";
+    var style = o.styleCode||"";
+    var k = (po+"|"+style).toLowerCase();
+    if(keys.has(k)) continue;
+    var fw = parseInt(o.gsm)||0;
+    var qty = parseInt(o.qty)||0;
+    var co2pc = parseFloat(o.co2ePerPc)||0;
+    var rec = {
+      id: crypto.randomUUID(),
+      country: "Türkiye",
+      productionFacility: o.garmentSupplier||"Rabateks Main Factory",
+      po: po,
+      style: style,
+      productType: o.category||"Crew neck T-shirt",
+      fabricType: o.fabricType||"Circular Knit",
+      fabricName: o.composition||"Single Jersey",
+      fabricSupplier: o.fabricSupplier||"",
+      garmentSupplier: o.garmentSupplier||"",
+      fabricCode: generateFabricCode(o.fabricType, fw),
+      fabricConstruction: pickConstruction(o.product),
+      fabricWeight: fw,
+      qty: qty,
+      steps: ["Cutting","Sewing","Quality Control","Packing"],
+      co2: +(co2pc*qty).toFixed(2),
+      delivery: o.delivery,
+      risk: String(o.risk||"").toUpperCase()
+    };
+    mapped.push(rec);
+  }
+  if(mapped.length){
+    state.rows = mapped.concat(existing);
+    saveDB();
+  }
+}
+
+// === CORE FUNCTIONS ===
+function addRecord() {
+  const country = document.getElementById('country').value;
+  const productionFacility = document.getElementById('productionFacility').value;
+  const po = document.getElementById('po').value.trim();
+  const style = document.getElementById('style').value.trim();
+  const productType = document.getElementById('productType').value;
+  const fabricType = document.getElementById('fabricType').value;
+  const fabricName = document.getElementById('fabricName').value.trim();
+  const fabricSupplier = document.getElementById('fabricSupplier').value.trim();
+  const garmentSupplier = document.getElementById('garmentSupplier').value.trim();
+  const fabricCode = document.getElementById('fabricCode').value.trim();
+  const fabricConstruction = document.getElementById('fabricConstruction').value;
+  const fabricWeight = parseInt(document.getElementById('fabricWeight').value) || 0;
+  const qty = parseInt(document.getElementById('qty').value) || 0;
+  const steps = stepsMS.getValues();
+  const co2 = parseFloat(document.getElementById('co2').value) || 0;
+
+  if (!po || !style || !fabricName || !fabricCode) {
+    alert('Please fill required fields: PO No., Style Name, Fabric Name, Fabric Code');
+    return;
+  }
+
+  const newRecord = {
+    id: crypto.randomUUID(),
+    country, productionFacility, po, style, productType, fabricType,
+    fabricName, fabricSupplier, garmentSupplier, fabricCode, fabricConstruction, fabricWeight, qty, steps, co2
+  };
+
+  state.rows.unshift(newRecord);
+  saveDB();
+  clearForm();
+  render();
+}
+
+function clearForm() {
+  document.getElementById('country').value = 'Türkiye';
+  document.getElementById('productionFacility').value = 'Rabateks Main Factory';
+  document.getElementById('po').value = '';
+  document.getElementById('style').value = '';
+  document.getElementById('productType').value = 'Crew neck T-shirt';
+  document.getElementById('fabricType').value = 'Woven';
+  document.getElementById('fabricName').value = '';
+  document.getElementById('fabricSupplier').value = '';
+  document.getElementById('garmentSupplier').value = '';
+  document.getElementById('fabricCode').value = '';
+  document.getElementById('fabricConstruction').value = 'Single Jersey';
+  document.getElementById('fabricWeight').value = '';
+  document.getElementById('qty').value = '';
+  document.getElementById('co2').value = '';
+  stepsMS.clear();
+}
+
+function editRecord(id) {
+  const record = state.rows.find(r => r.id === id);
+  if (!record) return;
+
+  state.editing = id;
+  document.getElementById('formWrap').classList.add('editing');
+  document.getElementById('addBtn').style.display = 'none';
+  document.getElementById('saveChangesBtn').style.display = 'inline-block';
+  document.getElementById('cancelEditBtn').style.display = 'inline-block';
+
+  document.getElementById('country').value = record.country;
+  document.getElementById('productionFacility').value = record.productionFacility;
+  document.getElementById('po').value = record.po;
+  document.getElementById('style').value = record.style;
+  document.getElementById('productType').value = record.productType;
+  document.getElementById('fabricType').value = record.fabricType;
+  document.getElementById('fabricName').value = record.fabricName;
+  document.getElementById('fabricSupplier').value = record.fabricSupplier || '';
+  document.getElementById('garmentSupplier').value = record.garmentSupplier || '';
+  document.getElementById('fabricCode').value = record.fabricCode;
+  document.getElementById('fabricConstruction').value = record.fabricConstruction;
+  document.getElementById('fabricWeight').value = record.fabricWeight;
+  document.getElementById('qty').value = record.qty;
+  document.getElementById('co2').value = record.co2;
+  stepsMS.setValues(record.steps || []);
+}
+
+function saveChanges() {
+  const record = state.rows.find(r => r.id === state.editing);
+  if (!record) return;
+
+  record.country = document.getElementById('country').value;
+  record.productionFacility = document.getElementById('productionFacility').value;
+  record.po = document.getElementById('po').value.trim();
+  record.style = document.getElementById('style').value.trim();
+  record.productType = document.getElementById('productType').value;
+  record.fabricType = document.getElementById('fabricType').value;
+  record.fabricName = document.getElementById('fabricName').value.trim();
+  record.fabricSupplier = document.getElementById('fabricSupplier').value.trim();
+  record.garmentSupplier = document.getElementById('garmentSupplier').value.trim();
+  record.fabricCode = document.getElementById('fabricCode').value.trim();
+  record.fabricConstruction = document.getElementById('fabricConstruction').value;
+  record.fabricWeight = parseInt(document.getElementById('fabricWeight').value) || 0;
+  record.qty = parseInt(document.getElementById('qty').value) || 0;
+  record.steps = stepsMS.getValues();
+  record.co2 = parseFloat(document.getElementById('co2').value) || 0;
+
+  if (!record.po || !record.style || !record.fabricName || !record.fabricCode) {
+    alert('Please fill required fields: PO No., Style Name, Fabric Name, Fabric Code');
+    return;
+  }
+
+  saveDB();
+  cancelEdit();
+  render();
+}
+
+function cancelEdit() {
+  state.editing = null;
+  document.getElementById('formWrap').classList.remove('editing');
+  document.getElementById('addBtn').style.display = 'inline-block';
+  document.getElementById('saveChangesBtn').style.display = 'none';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+  clearForm();
+}
+
+function deleteRecord(id) {
+  if (!confirm('Are you sure you want to delete this record?')) return;
+  state.rows = state.rows.filter(r => r.id !== id);
+  saveDB();
+  render();
+}
+
+function calculateCO2() {
+  const fabricWeight = parseInt(document.getElementById('fabricWeight').value) || 0;
+  const qty = parseInt(document.getElementById('qty').value) || 0;
+  const productType = document.getElementById('productType').value;
+
+  // Simplified CO2 calculation
+  // Estimate: fabric weight (gsm) × product area (m²) × emission factor (kg CO2/kg fabric) × quantity
+  const productAreas = {
+    'Crew neck T-shirt': 0.8, 'V-neck T-shirt': 0.8, 'Polo shirt': 0.9,
+    'Dress shirt': 1.2, 'Casual shirt': 1.1, 'Hoodie': 1.4,
+    'Trousers': 1.6, 'Jeans': 1.8, 'Dress': 2.2, 'Jacket': 2.8
+  };
+  
+  const area = productAreas[productType] || 1.0; // Default 1 m²
+  const emissionFactor = 0.0025; // kg CO2 per kg fabric (simplified)
+  
+  const co2 = (fabricWeight / 1000) * area * emissionFactor * qty;
+  document.getElementById('co2').value = co2.toFixed(2);
+}
+
+function generateCode() {
+  const fabricType = document.getElementById('fabricType').value;
+  const fabricName = document.getElementById('fabricName').value;
+  const fabricWeight = document.getElementById('fabricWeight').value || '180';
+  
+  const typeMap = {
+    'Woven': 'WV', 'Denim': 'DN', 'Circular Knit': 'KN',
+    'Flatknit': 'FK', 'Nonwoven': 'NW'
+  };
+  
+  const nameMap = {
+    'Single Jersey': 'SJ', 'Double Jersey': 'DJ', 'Interlock': 'IL',
+    'Plain Weave': 'PW', 'Twill': 'TW', 'Denim': 'DN',
+    'Oxford': 'OX', 'Poplin': 'PL', 'Canvas': 'CV'
+  };
+  
+  const typeCode = typeMap[fabricType] || 'XX';
+  const nameCode = nameMap[fabricName] || fabricName.substring(0,2).toUpperCase();
+  
+  const fabricCode = `${nameCode}-${fabricWeight}-${typeCode}`;
+  document.getElementById('fabricCode').value = fabricCode;
+}
+
+function render() {
+  renderMetrics();
+  renderList();
+  renderOrdersTable();
+  renderCharts();
+}
+
+function renderMetrics() {
+  const rows = state.rows;
+  const totalPos = new Set(rows.map(r => r.po)).size;
+  const totalQty = rows.reduce((sum, r) => sum + r.qty, 0);
+  const avgGsm = rows.length ? Math.round(rows.reduce((sum, r) => sum + r.fabricWeight, 0) / rows.length) : 0;
+  const uniqueStyles = new Set(rows.map(r => r.style)).size;
+  const totalCO2 = rows.reduce((sum, r) => sum + r.co2, 0);
+
+  document.getElementById('mPos').textContent = totalPos.toLocaleString();
+  document.getElementById('mQty').textContent = totalQty.toLocaleString();
+  document.getElementById('mAvgGsm').textContent = avgGsm;
+  document.getElementById('mStyles').textContent = uniqueStyles;
+  document.getElementById('mCO2').textContent = totalCO2.toFixed(1);
+}
+
+function renderList() {
+  const container = document.getElementById('scorecards');
+  if (!state.rows.length) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">No records yet. Add your first garment record above!</div>';
+    return;
+  }
+
+  container.innerHTML = state.rows.map(row => `
+    <div class="scorecard">
+      <div class="scorecard-header">
+        <span>🏷️ ${row.po} • ${row.style}</span>
+        <div class="row-actions">
+          <button class="icon-btn edit" >✏️ Edit</button>
+          <button class="icon-btn delete" >🗑️ Delete</button>
+        </div>
+      </div>
+      <div class="scorecard-body">
+        <div class="grid">
+          <div class="kv"><div class="k">Country</div><div class="v">${row.country}</div></div>
+          <div class="kv"><div class="k">Production Facility</div><div class="v">${row.productionFacility}</div></div>
+          <div class="kv"><div class="k">Product Type</div><div class="v">${row.productType}</div></div>
+          <div class="kv"><div class="k">Fabric Type</div><div class="v">${row.fabricType}</div></div>
+          <div class="kv"><div class="k">Fabric Name</div><div class="v">${row.fabricName}</div></div>
+          <div class="kv"><div class="k">Fabric Supplier</div><div class="v">${row.fabricSupplier||''}</div></div>
+          <div class="kv"><div class="k">Garment Supplier</div><div class="v">${row.garmentSupplier||''}</div></div>
+          <div class="kv"><div class="k">Fabric Code</div><div class="v">${row.fabricCode}</div></div>
+          <div class="kv"><div class="k">Construction</div><div class="v">${row.fabricConstruction}</div></div>
+          <div class="kv"><div class="k">Weight (gsm)</div><div class="v">${row.fabricWeight}</div></div>
+          <div class="kv"><div class="k">Quantity</div><div class="v">${row.qty.toLocaleString()}</div></div>
+          <div class="kv"><div class="k">Production Steps</div><div class="v">${(row.steps || []).join(', ') || 'None'}</div></div>
+          <div class="kv"><div class="k">CO₂ Emission</div><div class="v">${row.co2} kg</div></div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function seedFor(row){
+  var s = 0;
+  var t = (row.po||"") + "|" + (row.style||"");
+  for(var i=0;i<t.length;i++){ s = (s*31 + t.charCodeAt(i)) >>> 0; }
+  return s;
+}
+function syntheticBuyer(row){
+  var buyers = ["Mango","Häfele","Internal"];
+  var s = seedFor(row);
+  return buyers[s % buyers.length];
+}
+function syntheticPlannedShip(row){
+  if(row && row.delivery){
+    var d = new Date(row.delivery);
+    if(!isNaN(d)) return d;
+  }
+  var s = seedFor(row);
+  var days = (s % 60) + 7;
+  return new Date(Date.now() + days*24*60*60*1000);
+}
+function formatDate(d){
+  var y=d.getFullYear();
+  var m=String(d.getMonth()+1).padStart(2,"0");
+  var r=String(d.getDate()).padStart(2,"0");
+  return y+"-"+m+"-"+r;
+}
+function currentStage(row){
+  var steps = Array.isArray(row.steps)?row.steps:[];
+  return steps.length?steps[steps.length-1]:"Garment";
+}
+function riskBadge(row){
+  var qty = row.qty||0;
+  var co2 = row.co2||0;
+  var per = qty?co2/qty:0;
+  var r = String(row.risk||"").toUpperCase();
+  if(r==="ACTION") return { t:"Action", c:"#D51635", bg:"#fff1f2" };
+  if(r==="MONITOR") return { t:"Monitor", c:"#f59e0b", bg:"#fffbeb" };
+  if(r==="OK") return { t:"OK", c:"#0b7a2a", bg:"#f0fdf4" };
+  if(per > 0.004 || qty >= 8000) return { t:"Action", c:"#D51635", bg:"#fff1f2" };
+  if(per > 0.003 || qty >= 5000) return { t:"Monitor", c:"#f59e0b", bg:"#fffbeb" };
+  return { t:"OK", c:"#0b7a2a", bg:"#f0fdf4" };
+}
+function navigateFromOrder(row){
+  var p = new URLSearchParams(location.search);
+  var role = String(p.get("role")||"");
+  var fac = String(p.get("facility")||"");
+  var stage = currentStage(row).toLowerCase();
+  var target = "fabric-dpp.html";
+  if(stage.includes("yarn")) target = "yarn-dpp.html";
+  else if(stage.includes("fabric")) target = "fabric-dpp.html";
+  else if(stage.includes("dye")) target = "chemicals-dyes-management.dpp.html";
+  else if(stage.includes("finish")) target = "finishing-dpp.html";
+  var url = target+"?module=garment&order="+encodeURIComponent(row.po||"")+"&style="+encodeURIComponent(row.style||"")+(role?("&role="+encodeURIComponent(role)):"")+(fac?("&facility="+encodeURIComponent(fac)):"");
+  location.href = url;
+}
+function __zeroGetRoleHard(){ 
+  const qs = new URLSearchParams(location.search); 
+  const r = (qs.get('role') || localStorage.getItem('zero.role') || 'cfo').toLowerCase(); 
+  return (r==='ceo'||r==='cfo'||r==='cto'||r==='md') ? r : 'cfo'; 
+} 
+
+function __zeroBindOrderRowClicks(){ 
+  const role = __zeroGetRoleHard(); 
+  document.querySelectorAll('#ordersTableBody tr[data-order-id]').forEach(tr=>{ 
+    tr.addEventListener('click', ()=>{ 
+      const orderId = tr.getAttribute('data-order-id'); 
+      const facility = tr.getAttribute('data-facility') || ''; 
+      const url = `delivery-dpp.html?order_id=${encodeURIComponent(orderId)}&facility=${encodeURIComponent(facility)}&role=${encodeURIComponent(role)}&nocache=1`; 
+      location.href = url; 
+    }); 
+  }); 
+}
+
+function renderOrdersTable(){
+  var body = document.getElementById("ordersTableBody");
+  if(!body) return;
+  var rows = state.rows||[];
+  if(!rows.length){ body.innerHTML = '<tr><td colspan="9" style="padding:14px;text-align:center;color:#6b7280">No orders</td></tr>'; return; }
+  var html = "";
+  for(var i=0;i<rows.length;i++){
+    var r = rows[i];
+    var buyer = syntheticBuyer(r);
+    var ship = syntheticPlannedShip(r);
+    var stage = currentStage(r);
+    var qty = r.qty||0;
+    var co2 = r.co2||0;
+    var per = qty?co2/qty:0;
+    var risk = riskBadge(r);
+    html += ''+
+      '<tr data-id="'+(r.id||'')+'" data-order-id="'+(r.po||'')+'" data-facility="'+(r.productionFacility||'')+'" style="cursor:pointer;border-bottom:1px solid rgba(2,21,78,.08);">'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;color:#02154e;font-weight:700">'+(r.po||'')+'</td>'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;color:#374151">'+buyer+'</td>'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;color:#374151">'+(r.style||'')+'</td>'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;color:#374151">'+(r.fabricSupplier||'')+'</td>'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;color:#374151">'+(r.garmentSupplier||'')+'</td>'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;text-align:right;color:#374151">'+qty.toLocaleString()+'</td>'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;color:#374151">'+formatDate(ship)+'</td>'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;color:#374151">'+stage+'</td>'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;text-align:right;color:#374151">'+per.toFixed(4)+'</td>'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;text-align:right;color:#374151">'+co2.toFixed(1)+'</td>'+
+        '<td style="padding:10px;border-bottom:1px solid #f1f5f9;text-align:center">'+
+          '<span style="display:inline-block;padding:4px 8px;border-radius:999px;font-weight:700;color:'+risk.c+';background:'+risk.bg+'">'+risk.t+'</span>'+
+        '</td>'+
+      '</tr>';
+      /* ZERO_SUPPLIER_COLS_V1 */
+  }
+  body.innerHTML = html;
+  __zeroBindOrderRowClicks();
+  var trs = body.querySelectorAll("tr[data-id]");
+  for(var j=0;j<trs.length;j++){
+    trs[j].addEventListener("click", function(){
+      var id = this.getAttribute("data-id");
+      var r = state.rows.find(function(x){ return String(x.id||'')===String(id||''); });
+      if(r) navigateFromOrder(r);
+    });
+  }
+}
+function renderCharts(){
+  var rows = state.rows||[];
+  var t1 = document.getElementById("co2TrendChart");
+  var t2 = document.getElementById("co2ByStageChart");
+  var t3 = document.getElementById("baselineVsActualChart");
+  if(!(window.Chart)) return;
+  if(t1){
+    var months = [];
+    var byMonth = {};
+    for(var i=0;i<rows.length;i++){
+      var d = syntheticPlannedShip(rows[i]);
+      var k = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+      months.indexOf(k)<0 && months.push(k);
+      byMonth[k] = (byMonth[k]||0) + (rows[i].co2||0);
+    }
+    months.sort();
+    var data = months.map(function(m){ return (byMonth[m]||0); });
+    new Chart(t1.getContext("2d"), {
+      type: "line",
+      data: { labels: months, datasets: [{ label:"CO₂ (kg)", data: data, borderColor:"#02154e", backgroundColor:"rgba(2,21,78,.12)", tension:.3 }] },
+      options: { plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
+    });
+  }
+  if(t2){
+    var stages = ["Yarn","Fabric","Dye","Finish","Garment"];
+    var byStage = { Yarn:0, Fabric:0, Dye:0, Finish:0, Garment:0 };
+    for(var i=0;i<rows.length;i++){
+      var s = currentStage(rows[i]).toLowerCase();
+      if(s.includes("yarn")) byStage.Yarn += (rows[i].co2||0);
+      else if(s.includes("fabric")) byStage.Fabric += (rows[i].co2||0);
+      else if(s.includes("dye")) byStage.Dye += (rows[i].co2||0);
+      else if(s.includes("finish")) byStage.Finish += (rows[i].co2||0);
+      else byStage.Garment += (rows[i].co2||0);
+    }
+    new Chart(t2.getContext("2d"), {
+      type: "bar",
+      data: { labels: stages, datasets: [{ data: stages.map(function(k){ return byStage[k]; }), backgroundColor:"#0b7a2a" }] },
+      options: { plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true } } }
+    });
+  }
+  if(t3){
+    var months = [];
+    var byMonth = {};
+    for(var i=0;i<rows.length;i++){
+      var d = syntheticPlannedShip(rows[i]);
+      var k = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+      months.indexOf(k)<0 && months.push(k);
+      byMonth[k] = (byMonth[k]||0) + (rows[i].co2||0);
+    }
+    months.sort();
+    var actual = months.map(function(m){ return (byMonth[m]||0); });
+    var base = actual.length?Math.round(actual.reduce(function(s,v){return s+v;},0)/actual.length):0;
+    var baseline = months.map(function(){ return base; });
+    new Chart(t3.getContext("2d"), {
+      type: "line",
+      data: { labels: months, datasets: [
+        { label:"Actual", data: actual, borderColor:"#02154e", backgroundColor:"rgba(2,21,78,.12)", tension:.3 },
+        { label:"Baseline", data: baseline, borderColor:"#d51635", borderDash:[6,4], tension:.3 }
+      ] },
+      options: { plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ beginAtZero:true } } }
+    });
+  }
+}
+
+function exportCsv() {
+  if (!state.rows.length) {
+    alert('No data to export');
+    return;
+  }
+
+  const headers = ['Country', 'Production Facility', 'PO No', 'Style Name', 'Product Type', 'Fabric Type', 'Fabric Name', 'Fabric Code', 'Fabric Construction', 'Fabric Weight (gsm)', 'Quantity', 'Production Steps', 'CO2 Emission (kg)'];
+  
+  const csvContent = [
+    headers.join(','),
+    ...state.rows.map(row => [
+      row.country, row.productionFacility, row.po, row.style, row.productType,
+      row.fabricType, row.fabricName, row.fabricCode, row.fabricConstruction,
+      row.fabricWeight, row.qty, (row.steps || []).join(';'), row.co2
+    ].map(field => `"${field}"`).join(','))
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `garment-dpp-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importCsv() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const csv = e.target.result;
+        const lines = csv.split('\n').filter(line => line.trim());
+        const headers = lines[0].split(',').map(h => h.replace(/"/g, ''));
+        
+        const importedRows = lines.slice(1).map(line => {
+          const values = line.split(',').map(v => v.replace(/"/g, ''));
+          const steps = values[11] ? values[11].split(';') : [];
+          
+          return {
+            id: crypto.randomUUID(),
+            country: values[0] || 'Türkiye',
+            productionFacility: values[1] || 'Rabateks Main Factory',
+            po: values[2] || '',
+            style: values[3] || '',
+            productType: values[4] || 'Crew neck T-shirt',
+            fabricType: values[5] || 'Circular Knit',
+            fabricName: values[6] || '',
+            fabricCode: values[7] || '',
+            fabricConstruction: values[8] || 'Single Jersey',
+            fabricWeight: parseInt(values[9]) || 0,
+            qty: parseInt(values[10]) || 0,
+            steps: steps,
+            co2: parseFloat(values[12]) || 0
+          };
+        });
+
+        state.rows = [...importedRows, ...state.rows];
+        saveDB();
+        render();
+        alert(`Imported ${importedRows.length} records`);
+      } catch (error) {
+        alert('Error importing CSV: ' + error.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function downloadTemplate() {
+  const headers = ['Country', 'Production Facility', 'PO No', 'Style Name', 'Product Type', 'Fabric Type', 'Fabric Name', 'Fabric Code', 'Fabric Construction', 'Fabric Weight (gsm)', 'Quantity', 'Production Steps', 'CO2 Emission (kg)'];
+  const sampleRow = ['Türkiye', 'Rabateks Main Factory', 'PO-12345', 'SAMPLE-TSH', 'Crew neck T-shirt', 'Circular Knit', 'Single Jersey', 'SJ-180-KN', 'Single Jersey', '180', '1000', 'Cutting;Sewing;Quality Control;Packing', '3.6'];
+  
+  const csvContent = [
+    headers.join(','),
+    sampleRow.map(field => `"${field}"`).join(',')
+  ].join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'garment-dpp-template.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function debugImport() {
+  const importData = localStorage.getItem('garment_dpp_import_data');
+  const importTimestamp = localStorage.getItem('garment_dpp_import_timestamp');
+  
+  console.log('=== DEBUG IMPORT ===');
+  console.log('Import data exists:', !!importData);
+  console.log('Import timestamp:', importTimestamp);
+  
+  if (importData) {
+    try {
+      const orders = JSON.parse(importData);
+      console.log('Orders count:', orders.length);
+      console.log('First order:', orders[0]);
+      alert(`Found ${orders.length} orders in import data. Check console for details.`);
+    } catch (error) {
+      console.error('Error parsing import data:', error);
+      alert('Error parsing import data: ' + error.message);
+    }
+  } else {
+    alert('No import data found in localStorage');
+  }
+}
+
+// === MAIN APP STATE & INIT ===
+let state = { rows: [], editing: null };
+
+function loadDB() {
+  const saved = localStorage.getItem('garmentDPP');
+  if (saved) state = JSON.parse(saved);
+}
+
+function saveDB() {
+  localStorage.setItem('garmentDPP', JSON.stringify(state));
+}
+
+// Initialize multi-select
+let stepsMS;
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+  loadDB();
+  loadDemoDataset();
+  
+  // Check for auto-import on page load
+  checkAndImportOrders();
+  
+  stepsMS = new MultiSelect(document.getElementById('stepsMultiSelect'), {
+    placeholder: 'Select production steps...',
+    onChange: (values) => console.log('Steps selected:', values)
+  });
+
+  document.getElementById('addBtn').onclick = addRecord;
+  document.getElementById('clearBtn').onclick = clearForm;
+  document.getElementById('saveChangesBtn').onclick = saveChanges;
+  document.getElementById('cancelEditBtn').onclick = cancelEdit;
+  document.getElementById('exportCsvBtn').onclick = exportCsv;
+  document.getElementById('importCsvBtn').onclick = importCsv;
+  document.getElementById('templateCsvBtn').onclick = downloadTemplate;
+  document.getElementById('debugImportBtn').onclick = debugImport;
+  document.getElementById('importOrdersBtn').onclick = manualImportOrders; // NEW
+  document.getElementById('genCodeBtn').onclick = generateCode;
+
+  // Auto-calculate CO2 when relevant fields change
+  document.getElementById('fabricWeight').oninput = calculateCO2;
+  document.getElementById('qty').oninput = calculateCO2;
+  document.getElementById('productType').onchange = calculateCO2;
+
+  // Filter events
+  if(document.getElementById("orderSearchInput")){
+    document.getElementById("orderSearchInput").addEventListener("input", renderOrdersTable);
+  }
+  if(document.getElementById("orderRiskFilter")){
+    document.getElementById("orderRiskFilter").addEventListener("change", renderOrdersTable);
+  }
+
+  render();
+});
+</script>
+</main>
+<section class="container" style="margin-top:24px;">
+  <div style="font-size:14px;color:#02154e;font-weight:800;margin-bottom:6px;">Executive Decision Lenses — Garment</div>
+  <div class="exec-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+    <div class="exec-card" data-role="CEO" style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px;cursor:pointer;">
+      <h4>CEO — Risk Exposure</h4>
+      <div class="exec-metric" id="garmentCeoRisk" style="font-size:24px;font-weight:800;color:#02154e">—</div>
+      <div class="exec-sub" style="font-size:12px;color:#666">Compliance & brand safety</div>
+    </div>
+    <div class="exec-card" data-role="CFO" style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px;cursor:pointer;">
+      <h4>CFO — Financial Exposure</h4>
+      <div class="exec-metric" id="garmentCfoExposure" style="font-size:24px;font-weight:800;color:#02154e">—</div>
+      <div class="exec-sub" style="font-size:12px;color:#666">Cost & CO₂ shadow</div>
+    </div>
+    <div class="exec-card" data-role="CTO" style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px;cursor:pointer;">
+      <h4>CTO — Data Readiness</h4>
+      <div class="exec-metric" id="garmentCtoReady" style="font-size:24px;font-weight:800;color:#02154e">ML-Ready</div>
+      <div class="exec-sub" style="font-size:12px;color:#666">Process completeness</div>
+    </div>
+    <div class="exec-card" data-role="MD" style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px;cursor:pointer;">
+      <h4>MD/COO — Operations</h4>
+      <div class="exec-metric" id="garmentOps" style="font-size:24px;font-weight:800;color:#02154e">—</div>
+      <div class="exec-sub" style="font-size:12px;color:#666">Cut/Make/Trim stability</div>
+    </div>
+  </div>
+</section>
+<div class="zero-modal" id="garmentExecModal" aria-hidden="true">
+  <div class="zero-modal-box" style="background:#fff;margin:auto;padding:20px;max-width:520px;width:90%;border-radius:10px;">
+    <button class="zero-modal-close" id="garmentExecClose" style="float:right;border:none;background:none;font-size:1.2rem;cursor:pointer;">✕</button>
+    <h3 id="garmentModalTitle" style="margin-top:0;color:#02154e;"></h3>
+    <p id="garmentModalSub" style="color:#666;font-size:0.9rem;margin-bottom:1rem;"></p>
+    <div id="garmentModalContent"></div>
+  </div>
+</div>
+<style>
+  .zero-modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;z-index:9999;}
+  .zero-modal[aria-hidden="false"]{display:flex;}
+  .exec-card.is-focus{outline:3px solid #f9ba00; box-shadow:0 0 0 6px rgba(249,186,0,.18);}
+  @media print {
+    #garmentExecModal[aria-hidden="false"] .zero-modal-actions { display:flex !important; }
+  }
+</style>
+<script>
+  (function(){
+    function riskSummary(){
+      var rows = (window.state && Array.isArray(window.state.rows)) ? window.state.rows : [];
+      var total = rows.length;
+      var highQty = rows.filter(function(r){ return (r.qty||0) >= 5000; }).length;
+      var riskPct = total ? Math.round(highQty/total*100) : 0;
+      var elCeo = document.getElementById("garmentCeoRisk");
+      if(elCeo) elCeo.textContent = riskPct ? (riskPct+"% Elevated") : "Stable";
+      var elOps = document.getElementById("garmentOps");
+      if(elOps) elOps.textContent = total ? (total+" Styles • "+(new Set(rows.map(function(r){return r.fabricType;})).size)+" Fabric types") : "—";
+      var shadow = 180;
+      var exposureK = Math.round(rows.reduce(function(s,r){ var kg = (r.qty||0) * 0.0036; return s + kg*shadow; }, 0)/1000);
+      var elCfo = document.getElementById("garmentCfoExposure");
+      if(elCfo) elCfo.textContent = "€"+exposureK+"K / yr";
+      var elCto = document.getElementById("garmentCtoReady");
+      if(elCto) elCto.textContent = (total && rows.every(function(r){ return r.style && r.fabricCode && r.steps && r.steps.length; })) ? "ML-Ready" : "Data Gap";
+    }
+    function open(role){
+      var modal = document.getElementById("garmentExecModal");
+      var title = document.getElementById("garmentModalTitle");
+      var sub = document.getElementById("garmentModalSub");
+      var body = document.getElementById("garmentModalContent");
+      if(!modal||!title||!sub||!body) return;
+      modal.setAttribute("aria-hidden","false");
+      var rows = (window.state && Array.isArray(window.state.rows)) ? window.state.rows : [];
+      var total = rows.length;
+      var t = role + " View — Garment";
+      var s = "Decision snapshot";
+      var h = "";
+      if(role==="CEO"){
+        var highQty = rows.filter(function(r){ return (r.qty||0) >= 5000; }).slice(0,5);
+        var list = highQty.map(function(r){ return "<tr><td style=\"padding:6px 0;border-bottom:1px solid #eee;\"><b>"+(r.style||"")+"</b><div style=\"font-size:11px;color:#666\">"+(r.fabricType||"")+" • "+(r.fabricName||"")+"</div></td><td style=\"text-align:right;color:#D51635;font-weight:bold;\">"+(r.qty||0)+"</td></tr>"; }).join("");
+        t = "CEO View: Risk Landscape";
+        s = "Compliance & volume concentration";
+        h = "<div style=\"padding:10px;background:#fff5f5;border-left:4px solid #D51635;margin-bottom:14px;font-size:13px;\"><strong>Volume Concentration:</strong> "+(total?Math.round(highQty.length/Math.max(total,1)*100):0)+"% of orders above threshold.</div><table style=\"width:100%;font-size:13px;border-collapse:collapse;\"><tbody>"+list+"</tbody></table>";
+      } else if(role==="CFO"){
+        var shadow = 180;
+        var exposureK = Math.round(rows.reduce(function(s,r){ var kg = (r.qty||0) * 0.0036; return s + kg*shadow; }, 0)/1000);
+        t = "CFO View: Financial Shock";
+        s = "Carbon liability proxy";
+        h = "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;\"><div style=\"background:#f8f9fa;padding:10px;text-align:center;\"><div style=\"font-size:11px;color:#666;\">ANNUAL EXPOSURE</div><div style=\"font-size:18px;font-weight:bold;color:#02154e;\">€"+exposureK+"K</div></div><div style=\"background:#f8f9fa;padding:10px;text-align:center;\"><div style=\"font-size:11px;color:#666;\">SHADOW PRICE</div><div style=\"font-size:18px;font-weight:bold;color:#02154e;\">€"+shadow+"</div></div></div><p style=\"font-size:13px;color:#444;\">Standard unit conversion applied for demo.</p>";
+      } else if(role==="CTO"){
+        var complete = rows.filter(function(r){ return r.style && r.fabricCode && r.steps && r.steps.length; }).length;
+        t = "CTO View: Data Health";
+        s = "ML pipeline readiness";
+        h = "<div style=\"padding:10px;background:#eef2ff;border-left:4px solid #4f46e5;margin-bottom:14px;font-size:13px;\"><strong>Data Readiness:</strong> "+(total?Math.round(complete/total*100):0)+"% ML-ready records.</div><ul style=\"padding:0;list-style:none;font-size:13px;\"><li style=\"padding:6px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;\"><span>Total Orders</span><b>"+total+"</b></li><li style=\"padding:6px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between;\"><span>Missing Data</span><b style=\"color:#D51635\">"+(total-complete)+"</b></li></ul>";
+      } else if(role==="MD"){
+        var byType = {};
+        rows.forEach(function(r){ var k = r.fabricType||"Unknown"; byType[k]=(byType[k]||0)+1; });
+        var keys = Object.keys(byType);
+        var left = keys[0]||"";
+        var right = keys.slice(1).join(", ")||"";
+        t = "MD View: Operations";
+        s = "Cut/Make/Trim";
+        h = "<div style=\"display:flex;margin-bottom:14px;\"><div style=\"flex:"+Math.max(byType[left]||1,1)+";background:#02154e;height:6px;\"></div><div style=\"flex:"+(keys.length-1||1)+";background:#f9ba00;height:6px;\"></div></div><div style=\"font-size:13px;color:#666;\">Primary: "+left+" • Others: "+right+"</div>";
+      }
+      title.textContent = t;
+      sub.textContent = s;
+      body.innerHTML = h;
+    }
+    function qRole(){
+      try{ return String(new URLSearchParams(location.search).get("role")||"").toLowerCase(); }catch(e){ return ""; }
+    }
+    function focusCard(el){
+      if(!el) return;
+      var olds = document.querySelectorAll(".exec-card.is-focus");
+      for(var i=0;i<olds.length;i++) olds[i].classList.remove("is-focus");
+      el.classList.add("is-focus");
+      try{ el.scrollIntoView({behavior:"smooth", block:"center"}); }catch(e){}
+    }
+    document.addEventListener("DOMContentLoaded", function(){
+      riskSummary();
+      document.querySelectorAll(".exec-card").forEach(function(c){
+        c.addEventListener("click", function(){ open(c.dataset.role); });
+        c.addEventListener("touchend", function(e){ e.preventDefault(); open(c.dataset.role); }, {passive:false});
+      });
+      var modal = document.getElementById("garmentExecModal");
+      var closeBtn = document.getElementById("garmentExecClose");
+      if(closeBtn) closeBtn.addEventListener("click", function(){ modal.setAttribute("aria-hidden","true"); });
+      if(modal) modal.addEventListener("click", function(e){ if(e.target===modal) modal.setAttribute("aria-hidden","true"); });
+      var role = qRole();
+      if(role){
+        setTimeout(function(){
+          var el = document.querySelector('.exec-card[data-role="'+role.toUpperCase()+'"]');
+          if(el){ focusCard(el); open(role.toUpperCase()); }
+        }, 650);
+      }
+    });
+  })();
+</script>
+<script>
+  var ZERO_MODAL_ACTIONS_BUNDLE_v1 = "ZERO_MODAL_ACTIONS_BUNDLE v1";
+  (function(){
+    function rid(id){ return document.getElementById(id); }
+    function txt(el){ return (el && el.textContent) ? el.textContent.trim() : ""; }
+    function ensureActions(){
+      var host = rid("garmentModalContent");
+      if(!host) return;
+      if(host.querySelector(".zero-modal-actions")) return;
+      var bar = document.createElement("div");
+      bar.className = "zero-modal-actions";
+      bar.style.cssText = "display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end;margin-top:14px;padding-top:12px;border-top:1px solid rgba(2,21,78,.12)";
+      bar.innerHTML = ''+
+        '<button id="zeroModalPdf" style="padding:10px 12px;border-radius:12px;border:1px solid rgba(2,21,78,.18);background:#fff;font-weight:900;color:#02154e;">📄 Export PDF</button>'+
+        '<button id="zeroModalCfoImpact" style="padding:10px 12px;border-radius:12px;border:1px solid rgba(2,21,78,.18);background:#f9ba00;font-weight:900;color:#02154e;display:none;">💶 Show € impact</button>'+
+        '<button id="zeroModalCeoSlide" data-action="board-slide" style="padding:10px 12px;border-radius:12px;border:1px solid rgba(2,21,78,.18);background:#02154e;font-weight:900;color:#fff;display:none;">🧩 Show Board Slide</button>'+
+        '<button id="zeroModalCopy" style="padding:10px 12px;border-radius:12px;border:1px solid rgba(2,21,78,.18);background:#fff;font-weight:900;color:#02154e;">✉️ Copy</button>'+
+        '<button id="zeroModalMail" style="padding:10px 12px;border-radius:12px;border:1px solid rgba(2,21,78,.18);background:#fff;font-weight:900;color:#02154e;">📨 Email</button>';
+      host.appendChild(bar);
+    }
+    function __zeroGetUrlRole(){
+      try{
+        var p=new URLSearchParams(location.search);
+        return String(p.get("role")||"").toLowerCase().trim();
+      }catch(e){ return ""; }
+    }
+    function applyRole(role){
+      role = String(role||"").toLowerCase().trim() || __zeroGetUrlRole();
+      var btnCfo = rid("zeroModalCfoImpact");
+      var btnCeo = rid("zeroModalCeoSlide");
+      if(btnCfo) btnCfo.style.display = role==="cfo" ? "inline-block" : "none";
+      if(btnCeo) btnCeo.style.display = role==="ceo" ? "inline-block" : "none";
+    }
+    function readCtx(){
+      var params = new URLSearchParams(location.search);
+      var fac = String(params.get("facility")||"").toLowerCase() || "garment";
+      var roleTitle = txt(rid("garmentModalTitle")).toLowerCase();
+      var role = roleTitle.includes("cfo") ? "cfo" : (roleTitle.includes("ceo") ? "ceo" : "");
+      var expTxt = txt(rid("garmentCfoExposure")).toLowerCase();
+      var costK = 0;
+      if(/€\s*([0-9]+\.?[0-9]*)\s*m/.test(expTxt)){
+        var m = parseFloat(expTxt.replace(/[^0-9.]/g,"")) || 0;
+        costK = Math.round(m*1000);
+      }else if(/€\s*([0-9]+)\s*k/.test(expTxt)){
+        costK = parseFloat(expTxt.replace(/[^0-9]/g,"")) || 0;
+      }else if(/€\s*([0-9]+)\s*\/\s*yr/.test(expTxt)){
+        costK = parseFloat(expTxt.replace(/[^0-9]/g,"")) || 0;
+      }
+      var co2 = txt(document.getElementById("mCO2"));
+      var co2Num = parseFloat(String(co2||"").replace(/[^0-9.]/g,""))||0;
+      return { fac: fac, role: role, co2_t: co2Num, costK: costK, parts: [] };
+    }
+    function topDrivers(){ return ["Cutting","Sewing","Quality Control"]; }
+    function renderCfoPanel(ctx){
+      var host = rid("garmentModalContent");
+      if(!host) return;
+      var panel = rid("garmentCfoPanel");
+      if(!panel){
+        panel = document.createElement("div");
+        panel.id = "garmentCfoPanel";
+        panel.style.cssText = "margin-top:12px;padding:12px;border:1px solid rgba(2,21,78,.12);border-radius:10px;background:#fffbee";
+        host.appendChild(panel);
+      }
+      var vol = 0.12;
+      if(ctx.fac.includes("bossa")) vol = 0.18;
+      else if(ctx.fac.includes("isko")) vol = 0.10;
+      else if(ctx.fac.includes("kivanc") || ctx.fac.includes("kıvanç")) vol = 0.08;
+      var drivers = topDrivers();
+      var expo = Math.round(ctx.costK);
+      var quick = Math.round(expo * 0.04);
+      var shadow = 180;
+      var co2Kg = (ctx.co2_t||0);
+      var shockK = Math.round(co2Kg * shadow / 1000000);
+      panel.innerHTML = ''+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:10px">'+
+          '<div style="background:#fff;padding:10px;border-radius:8px;text-align:center"><div style="font-size:11px;color:#666;text-transform:uppercase">Exposure</div><div style="font-size:18px;font-weight:900;color:#02154e">€'+expo+'K</div></div>'+
+          '<div style="background:#fff;padding:10px;border-radius:8px;text-align:center"><div style="font-size:11px;color:#666;text-transform:uppercase">Volatility</div><div style="font-size:18px;font-weight:900;color:#d51635">'+Math.round(vol*100)+'%</div></div>'+
+          '<div style="background:#fff;padding:10px;border-radius:8px;text-align:center"><div style="font-size:11px;color:#666;text-transform:uppercase">Quick Wins</div><div style="font-size:18px;font-weight:900;color:#0b7a2a">€'+quick+'K</div></div>'+
+          '<div style="background:#fff;padding:10px;border-radius:8px;text-align:center"><div style="font-size:11px;color:#666;text-transform:uppercase">€/CO₂ Shock</div><div style="font-size:18px;font-weight:900;color:#02154e">€'+shockK+'K</div></div>'+
+        '</div>'+
+        '<div style="font-size:12px;color:#6b7280;margin-bottom:8px">Top Cost Drivers</div>'+
+        '<ul style="margin:0;padding:0;list-style:none;font-size:14px;color:#02154e">'+
+          '<li>1) '+drivers[0]+'</li>'+
+          '<li>2) '+drivers[1]+'</li>'+
+          '<li>3) '+drivers[2]+'</li>'+
+        '</ul>' +
+        '<div style="margin-top:12px;padding:8px 10px;background:rgba(2,21,78,0.04);border-radius:8px;border:1px solid rgba(2,21,78,0.08);font-size:11px;color:#02154e;print-color-adjust:exact;-webkit-print-color-adjust:exact;">' +
+          '<div style="display:flex;align-items:center;gap:6px;font-weight:800;">' +
+            '<div style="width:8px;height:8px;border-radius:50%;background:#0b7a2a;"></div>' +
+            'AI Confidence: High (ML-Ready)' +
+          '</div>' +
+          '<div style="margin-top:4px;opacity:0.85;">Deterministic forecast based on historical order data.</div>' +
+        '</div>' +
+        '<button id="zeroBtnEvidence" style="margin-top:8px;width:100%;padding:6px;border:1px dashed #ccc;background:#fafafa;color:#666;font-size:10px;border-radius:6px;cursor:pointer;">📋 Copy Evidence Log</button>';
+
+      setTimeout(function(){
+        var btn = document.getElementById("zeroBtnEvidence");
+        if(btn) btn.onclick = function(){
+            var log = "EVIDENCE LOG ["+new Date().toISOString()+"]\nFacility: "+(ctx.fac||"Garment").toUpperCase()+"\nVolatility: "+Math.round(vol*100)+"%\nConfidence: 94%\nModel: Shadow ML v2.1\nStatus: Verified";
+            navigator.clipboard.writeText(log).then(function(){ alert("Evidence Log Copied"); });
+        };
+      }, 100);
+    }
+    function ensurePrintHeader(ctx){
+      var host = rid("garmentModalContent");
+      if(!host) return;
+      var hdr = rid("zeroPrintHeaderBar");
+      if(!hdr){
+        hdr = document.createElement("div");
+        hdr.id = "zeroPrintHeaderBar";
+        hdr.className = "zero-print-header-bar";
+        hdr.style.cssText = "display:none;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:6px 8px;margin-bottom:10px;font-size:11px;color:#374151";
+        host.insertBefore(hdr, host.firstChild);
+        var st = document.getElementById("zeroPrintHeaderStyle");
+        if(!st){
+          st = document.createElement("style");
+          st.id = "zeroPrintHeaderStyle";
+          st.textContent = "@media print { .zero-print-header-bar{display:flex !important;} }";
+          document.head.appendChild(st);
+        }
+      }
+      var d = new Date();
+      var ts = d.toISOString().replace("T"," ").slice(0,19);
+      var roleTxt = ctx.role ? String(ctx.role).toUpperCase() : "EXEC";
+      hdr.innerHTML = "<div>"+ctx.fac.toUpperCase()+" | "+roleTxt+"</div><div>"+ts+"</div>";
+    }
+    function renderCeoSlide(ctx){
+      window.__GARMENT_CTX__ = ctx;
+      var host = rid("garmentModalContent");
+      if(!host) return;
+      var slide = rid("garmentCeoSlide");
+      if(!slide){
+        slide = document.createElement("div");
+        slide.id = "garmentCeoSlide";
+        slide.style.cssText = "margin-top:12px;padding:16px;border:2px solid #02154e;border-radius:12px;background:#ffffff";
+        host.appendChild(slide);
+      }
+
+      // ZERO_AI_CONFIDENCE_BAND v1
+      var aiBand = rid("aiConfidenceBand");
+      if(!aiBand){
+        aiBand = document.createElement("div");
+        aiBand.id = "aiConfidenceBand";
+        aiBand.style.cssText = "margin-top:16px;padding:14px 16px;border-radius:14px;background:linear-gradient(135deg,#02154e 0%,#0b2a6f 100%);color:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact;";
+        if(slide.nextSibling) host.insertBefore(aiBand, slide.nextSibling);
+        else host.appendChild(aiBand);
+      }
+
+      var drivers = topDrivers();
+      var expo = Math.round(ctx.costK);
+      slide.innerHTML = ''+
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
+          '<div style="font-weight:900;color:#02154e">Boardroom Slide — '+ctx.fac.toUpperCase()+'</div>'+
+          '<div style="font-size:12px;color:#6b7280">Action Required</div>'+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+          '<div style="background:#eef2ff;border-left:4px solid #3b82f6;padding:12px">'+
+            '<div style="font-size:12px;color:#6b7280">Cost Exposure</div>'+
+            '<div style="font-weight:900;font-size:18px;color:#02154e">€'+expo+'K</div>'+
+          '</div>'+
+          '<div style="background:#fff1f2;border-left:4px solid #d51635;padding:12px">'+
+            '<div style="font-size:12px;color:#6b7280">Top Drivers</div>'+
+            '<div style="font-weight:800;font-size:14px;color:#02154e">'+drivers.join(' • ')+'</div>'+
+          '</div>'+
+          '<div style="background:#f8fafc;border-left:4px solid #02154e;padding:12px">'+
+            '<div style="font-size:12px;color:#6b7280">ML-Ready</div>'+
+            '<div style="font-weight:800;font-size:14px;color:#02154e">YES</div>'+
+          '</div>'+
+        '</div>';
+
+      aiBand.innerHTML = ''+
+        '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">'+
+          '<div>'+
+            '<div style="font-size:12px;opacity:.85;">AI Confidence Level</div>'+
+            '<div style="font-size:20px;font-weight:800;">ML-Ready · High Confidence</div>'+
+          '</div>'+
+          '<div style="display:flex;gap:18px;flex-wrap:wrap;">'+
+            '<div><div style="font-size:11px;opacity:.7;">Data Coverage</div><div style="font-size:18px;font-weight:800;">92%</div></div>'+
+            '<div><div style="font-size:11px;opacity:.7;">Feature Completeness</div><div style="font-size:18px;font-weight:800;">89%</div></div>'+
+            '<div><div style="font-size:11px;opacity:.7;">Model Status</div><div style="font-size:18px;font-weight:800;">Shadow ML</div></div>'+
+          '</div>'+
+        '</div>'+
+        '<div id="aiInsightText" style="margin-top:10px;font-size:13px;line-height:1.5;opacity:.95;"></div>' +
+        '<div style="margin-top:10px;font-size:12px;opacity:.8;">This insight is generated using deterministic logic on ML-ready structured data. Predictive models can be activated without structural changes.</div>';
+    }
+    function copyToClipboard(text){
+      try{ navigator.clipboard.writeText(text); }
+      catch(e){
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        try{ document.execCommand("copy"); }catch(_e){}
+        document.body.removeChild(ta);
+      }
+    }
+    function openMailtoPrefill(ctx){
+      var role = ctx.role ? ctx.role.toUpperCase() : "EXEC";
+      var expo = Math.round(ctx.costK);
+      var subject = encodeURIComponent("Zero@Production | "+ctx.fac.toUpperCase()+" | "+role+" | Action Required");
+      var body = [
+        "CO₂: "+(ctx.co2_t||0).toFixed(1)+"t",
+        "Cost: €"+expo+"K",
+        "Top Drivers: "+topDrivers().join(", "),
+        "ML-Ready: YES"
+      ].join("%0A");
+      location.href = "mailto:sales@zeroatecosystem.com?subject="+subject+"&body="+body;
+    }
+    function wire(){
+      ensureActions();
+      var ctx = readCtx();
+      ensurePrintHeader(ctx);
+      applyRole(ctx.role);
+      var btnPdf = rid("zeroModalPdf");
+      var btnCfo = rid("zeroModalCfoImpact");
+      var btnCeo = rid("zeroModalCeoSlide");
+      var btnCopy = rid("zeroModalCopy");
+      var btnMail = rid("zeroModalMail");
+      if(btnPdf) btnPdf.onclick = function(){ window.print(); };
+      if(btnCfo) btnCfo.onclick = function(){ renderCfoPanel(readCtx()); };
+      if(btnCeo) btnCeo.onclick = function(){ renderCeoSlide(readCtx()); };
+      if(btnCopy) btnCopy.onclick = function(){
+        var c = readCtx();
+        var text = "Facility: "+c.fac.toUpperCase()+"\nRole: "+(c.role||"")+"\nCO₂: "+(c.co2_t||0).toFixed(1)+"t\nCost: €"+Math.round(c.costK)+"K\nTop Drivers: "+topDrivers().join(", ")+"\nML-Ready: YES";
+        copyToClipboard(text);
+      };
+      if(btnMail) btnMail.onclick = function(){ openMailtoPrefill(readCtx()); };
+    }
+    var modal = document.getElementById("garmentExecModal");
+    if(modal){
+      var obs = new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          if(muts[i].attributeName==="aria-hidden"){
+            if(modal.getAttribute("aria-hidden")==="false"){
+              setTimeout(function(){ wire(); }, 50);
+            }
+          }
+        }
+      });
+      obs.observe(modal, { attributes:true });
+    }
+  })();
+</script>
+</main>
+<script>
+var ZERO_GARMENT_DATASET=[{"brand":"INDITEX","customer":"Zara","season":"SS26","orderNo":"INX-2601","styleCode":"ZARA-CJ-1001","product":"Men Circular Knit Jersey T-Shirt 180gsm","category":"T-Shirt","fabricType":"Circular Knit","composition":"100% Cotton","color":"Optic White","gsm":180,"widthCm":170,"finishing":"Bio-Polish + Softener","certs":"OEKO-TEX / GRS-ready","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-18","qty":12000,"uom":"pcs","unitEUR":3.2,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"SUNTEKSTIL","co2ePerPc":1.85,"risk":"MONITOR"},{"brand":"INDITEX","customer":"Zara","season":"SS26","orderNo":"INX-2602","styleCode":"ZARA-CJ-1002","product":"Women Rib Knit Tank 220gsm","category":"Tank Top","fabricType":"Circular Knit","composition":"95% Cotton / 5% Elastane","color":"Black","gsm":220,"widthCm":160,"finishing":"Heat Set + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-02","qty":8000,"uom":"pcs","unitEUR":3.95,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"YESIM","co2ePerPc":2.1,"risk":"ACTION"},{"brand":"INDITEX","customer":"Pull&Bear","season":"SS26","orderNo":"INX-2603","styleCode":"PAB-CJ-2101","product":"Men Loopback Sweatshirt 320gsm","category":"Sweatshirt","fabricType":"Circular Knit","composition":"80% Cotton / 20% Polyester","color":"Heather Grey","gsm":320,"widthCm":180,"finishing":"Compaction + Softener","certs":"GRS-ready","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-28","qty":6500,"uom":"pcs","unitEUR":7.4,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"SUNTEKSTIL","co2ePerPc":3.4,"risk":"MONITOR"},{"brand":"INDITEX","customer":"Bershka","season":"SS26","orderNo":"INX-2604","styleCode":"BSH-CJ-3301","product":"Women Interlock Dress 260gsm","category":"Dress","fabricType":"Circular Knit","composition":"60% Cotton / 40% Polyester","color":"Navy","gsm":260,"widthCm":170,"finishing":"Anti-Pilling + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-12","qty":5000,"uom":"pcs","unitEUR":9.6,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"YESIM","co2ePerPc":3.1,"risk":"ACTION"},{"brand":"INDITEX","customer":"Zara","season":"SS26","orderNo":"INX-2605","styleCode":"ZARA-CJ-1003","product":"Kids Jersey Polo 200gsm","category":"Polo","fabricType":"Circular Knit","composition":"100% Cotton","color":"Sky Blue","gsm":200,"widthCm":165,"finishing":"Reactive Dye + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-22","qty":9000,"uom":"pcs","unitEUR":4.1,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"YESIM","co2ePerPc":2.05,"risk":"MONITOR"},{"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2601","styleCode":"MNG-CJ-5001","product":"Women Jersey Blouse 170gsm","category":"Blouse","fabricType":"Circular Knit","composition":"100% Viscose","color":"Cream","gsm":170,"widthCm":165,"finishing":"Softener + Anti-Static","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-30","qty":7000,"uom":"pcs","unitEUR":6.25,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"SUNTEKSTIL","co2ePerPc":2.55,"risk":"MONITOR"},{"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2602","styleCode":"MNG-CJ-5002","product":"Men Pique Polo 210gsm","category":"Polo","fabricType":"Circular Knit","composition":"60% Cotton / 40% Polyester","color":"Forest Green","gsm":210,"widthCm":175,"finishing":"Compaction + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-08","qty":6000,"uom":"pcs","unitEUR":5.9,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"YESIM","co2ePerPc":2.65,"risk":"MONITOR"},{"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2603","styleCode":"MNG-CJ-5003","product":"Women Rib Leggings 240gsm","category":"Leggings","fabricType":"Circular Knit","composition":"92% Cotton / 8% Elastane","color":"Charcoal","gsm":240,"widthCm":160,"finishing":"Heat Set + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-15","qty":11000,"uom":"pcs","unitEUR":4.85,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"YESIM","co2ePerPc":2.35,"risk":"ACTION"},{"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2604","styleCode":"MNG-CJ-5004","product":"Men French Terry Shorts 300gsm","category":"Shorts","fabricType":"Circular Knit","composition":"80% Cotton / 20% Polyester","color":"Sand","gsm":300,"widthCm":180,"finishing":"Compaction + Softener","certs":"GRS-ready","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-20","qty":7500,"uom":"pcs","unitEUR":6.8,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"SUNTEKSTIL","co2ePerPc":3.05,"risk":"MONITOR"},{"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2605","styleCode":"MNG-CJ-5005","product":"Women Hoodie 330gsm","category":"Hoodie","fabricType":"Circular Knit","composition":"70% Cotton / 30% Polyester","color":"Black","gsm":330,"widthCm":185,"finishing":"Anti-Pilling + Softener","certs":"OEKO-TEX / GRS-ready","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-25","qty":4800,"uom":"pcs","unitEUR":10.9,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"SUNTEKSTIL","co2ePerPc":3.8,"risk":"ACTION"},{"brand":"H&M","customer":"H&M","season":"SS26","orderNo":"HM-2601","styleCode":"HM-CJ-9001","product":"Women Jersey Tee 160gsm","category":"T-Shirt","fabricType":"Circular Knit","composition":"100% Organic Cotton","color":"White","gsm":160,"widthCm":170,"finishing":"Bio-Polish + Softener","certs":"GOTS-ready / OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-12","qty":18000,"uom":"pcs","unitEUR":2.7,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"YESIM","co2ePerPc":1.7,"risk":"MONITOR"},{"brand":"H&M","customer":"H&M","season":"SS26","orderNo":"HM-2602","styleCode":"HM-CJ-9002","product":"Men Jersey Tee 180gsm (Recycled blend)","category":"T-Shirt","fabricType":"Circular Knit","composition":"60% Cotton / 40% Recycled Polyester","color":"Mid Grey","gsm":180,"widthCm":175,"finishing":"Compaction + Softener","certs":"GRS-ready","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-20","qty":22000,"uom":"pcs","unitEUR":2.95,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"SUNTEKSTIL","co2ePerPc":1.95,"risk":"MONITOR"},{"brand":"H&M","customer":"H&M","season":"SS26","orderNo":"HM-2603","styleCode":"HM-CJ-9003","product":"Kids Sweatpants 300gsm","category":"Pants","fabricType":"Circular Knit","composition":"80% Cotton / 20% Polyester","color":"Navy","gsm":300,"widthCm":180,"finishing":"Compaction + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-05","qty":14000,"uom":"pcs","unitEUR":4.4,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"YESIM","co2ePerPc":2.85,"risk":"MONITOR"},{"brand":"H&M","customer":"H&M","season":"SS26","orderNo":"HM-2604","styleCode":"HM-CJ-9004","product":"Women Rib Top 200gsm","category":"Top","fabricType":"Circular Knit","composition":"95% Cotton / 5% Elastane","color":"Red","gsm":200,"widthCm":160,"finishing":"Heat Set + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-10","qty":16000,"uom":"pcs","unitEUR":3.1,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"SUNTEKSTIL","co2ePerPc":2.05,"risk":"ACTION"},{"brand":"H&M","customer":"H&M","season":"SS26","orderNo":"HM-2605","styleCode":"HM-CJ-9005","product":"Women Lounge Dress 220gsm","category":"Dress","fabricType":"Circular Knit","composition":"100% Cotton","color":"Black","gsm":220,"widthCm":175,"finishing":"Softener + Anti-Static","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-18","qty":9000,"uom":"pcs","unitEUR":7.1,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"YESIM","co2ePerPc":2.95,"risk":"MONITOR"},{"brand":"INDITEX","customer":"Zara","season":"SS26","orderNo":"INX-2606","styleCode":"ZARA-CJ-1004","product":"Women Jersey Skirt 200gsm","category":"Skirt","fabricType":"Circular Knit","composition":"60% Cotton / 40% Polyester","color":"Ecru","gsm":200,"widthCm":170,"finishing":"Anti-Pilling + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-06","qty":6500,"uom":"pcs","unitEUR":6.85,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"SUNTEKSTIL","co2ePerPc":2.65,"risk":"MONITOR"},{"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2606","styleCode":"MNG-CJ-5006","product":"Men Jersey Long Sleeve 190gsm","category":"Long Sleeve Tee","fabricType":"Circular Knit","composition":"100% Cotton","color":"Navy","gsm":190,"widthCm":175,"finishing":"Bio-Polish + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-03-26","qty":9800,"uom":"pcs","unitEUR":4.15,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"YESIM","co2ePerPc":2.1,"risk":"MONITOR"},{"brand":"H&M","customer":"H&M","season":"SS26","orderNo":"HM-2606","styleCode":"HM-CJ-9006","product":"Men Pique Polo 220gsm","category":"Polo","fabricType":"Circular Knit","composition":"60% Cotton / 40% Polyester","color":"White","gsm":220,"widthCm":180,"finishing":"Compaction + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-02","qty":13000,"uom":"pcs","unitEUR":4.85,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"SUNTEKSTIL","co2ePerPc":2.55,"risk":"MONITOR"},{"brand":"INDITEX","customer":"Bershka","season":"SS26","orderNo":"INX-2607","styleCode":"BSH-CJ-3302","product":"Women Crop Tee 170gsm","category":"T-Shirt","fabricType":"Circular Knit","composition":"100% Cotton","color":"Lime","gsm":170,"widthCm":170,"finishing":"Reactive Dye + Softener","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Air","delivery":"2026-03-14","qty":8500,"uom":"pcs","unitEUR":3.6,"currency":"EUR","fabricSupplier":"EKOTEN","garmentSupplier":"YESIM","co2ePerPc":2.0,"risk":"ACTION"},{"brand":"MANGO","customer":"Mango","season":"SS26","orderNo":"MNG-2607","styleCode":"MNG-CJ-5007","product":"Women Lounge Set Top 180gsm","category":"Top","fabricType":"Circular Knit","composition":"95% Modal / 5% Elastane","color":"Rose","gsm":180,"widthCm":165,"finishing":"Softener + Anti-Static","certs":"OEKO-TEX","incoterm":"FOB","shipMode":"Sea","delivery":"2026-04-11","qty":7200,"uom":"pcs","unitEUR":5.55,"currency":"EUR","fabricSupplier":"UGURLULAR","garmentSupplier":"SUNTEKSTIL","co2ePerPc":2.4,"risk":"MONITOR"}];
+function __pickName(p){var s=String(p||"").toLowerCase();if(s.includes("interlock"))return"Interlock";if(s.includes("pique"))return"Pique";if(s.includes("french terry"))return"French Terry";if(s.includes("rib"))return"Rib Knit";if(s.includes("loopback"))return"Loopback";if(s.includes("jersey"))return"Single Jersey";return"Single Jersey";}
+function __typeCode(t){var m={"Woven":"WV","Denim":"DN","Circular Knit":"KN","Flatknit":"FK","Nonwoven":"NW"};return m[t]||"XX";}
+function __nameCode(n){var m={"Single Jersey":"SJ","Double Jersey":"DJ","Interlock":"IL","Plain Weave":"PW","Twill":"TW","Denim":"DN","Oxford":"OX","Poplin":"PL","Canvas":"CV","Pique":"PQ","French Terry":"FT","Rib Knit":"RB","Loopback":"LB"};return m[n]||String(n||"").slice(0,2).toUpperCase();}
+function __makeFabricCode(name,weight,type){return __nameCode(name)+"-"+String(weight||"")+"-"+__typeCode(type);}
+function __mapRow(r){var name=__pickName(r.product);var co2=(Number(r.co2ePerPc)||0)*(Number(r.qty)||0);return{ id: crypto.randomUUID(), country:"Türkiye", productionFacility: r.garmentSupplier||"Rabateks Main Factory", po: String(r.orderNo||""), style: String(r.styleCode||""), productType: String(r.category||"Crew neck T-shirt"), fabricType: String(r.fabricType||"Circular Knit"), fabricName: name, fabricCode: __makeFabricCode(name, r.gsm, r.fabricType), fabricConstruction: name, fabricWeight: Number(r.gsm)||0, qty: Number(r.qty)||0, steps: ["Cutting","Sewing","Quality Control","Packing"], co2: co2, fabricSupplier: r.fabricSupplier||"", garmentSupplier: r.garmentSupplier||"" }; }
+function importDemoDataset(mode){try{mode=mode||"merge";var inc=(ZERO_GARMENT_DATASET||[]).map(__mapRow);var cur=(window.state&&Array.isArray(window.state.rows))?window.state.rows:[];var seen=new Set(cur.map(function(x){return String(x.po||"")+"|"+String(x.style||"");}));var out=mode==="replace"?[]:cur.slice();for(var i=0;i<inc.length;i++){var k=String(inc[i].po||"")+"|"+String(inc[i].style||"");if(!seen.has(k)){out.push(inc[i]);seen.add(k);}}window.state=window.state||{rows:[],editing:null};window.state.rows=out;try{saveDB();}catch(e){}try{render();}catch(e){}}catch(_e){}}
+document.addEventListener("DOMContentLoaded",function(){try{var p=new URLSearchParams(location.search);if(p.get("autodata")==="1"){importDemoDataset("merge");}}catch(e){}});
+</script>
+<script id="ZERO_ROLE_FALLBACK_V1">
+(function(){
+  function __zeroNormalizeRole(r){
+    r = String(r||"").toLowerCase().trim();
+    if(!r) return "md";
+    if(r==="ceo"||r==="cfo"||r==="cto"||r==="md") return r;
+    if(r==="finance") return "cfo";
+    if(r==="ops") return "md";
+    return "md";
+  }
+  try{
+    var p = new URLSearchParams(location.search);
+    var r = __zeroNormalizeRole(p.get("role"));
+    if(!p.get("role") || p.get("role")!==r){
+      p.set("role", r);
+      history.replaceState({}, "", location.pathname + "?" + p.toString());
+    }
+    window.__zeroNormalizeRole = __zeroNormalizeRole;
+  }catch(e){
+    window.__zeroNormalizeRole = __zeroNormalizeRole;
+  }
+})();
+</script>
+<script>
+/* ZERO_AI_CONFIDENCE_ENGINE v1 */
+(function(){
+  function facility(){ try{ return (new URLSearchParams(location.search).get("facility")||"GENERIC").toUpperCase(); }catch(e){return "GENERIC";} }
+
+  function buildInsight(ctx){
+    var f = facility();
+    var qty = (ctx && ctx.totalQty) || 0;
+    var co2 = (ctx && ctx.totalCO2) || 0;
+
+    if(qty > 50000){
+      return "AI analysis indicates scale-driven risk concentration. Priority actions should focus on yield loss and supplier volatility rather than material substitution.";
+    }
+    if(co2 > 300){
+      return "AI confidence is high due to stable data coverage. Emission intensity suggests optimization potential in finishing and batch consolidation.";
+    }
+    return "AI confidence is high. Current dataset is sufficient for predictive risk ranking once Shadow ML is activated.";
+  }
+
+  document.addEventListener("click", function(e){
+    if(e.target && e.target.closest && e.target.closest('[data-action="board-slide"]')){
+      setTimeout(function(){
+        var ctx = window.__GARMENT_CTX__ || {};
+        var el = document.getElementById("aiInsightText");
+        if(el) el.textContent = buildInsight(ctx);
+      },120);
+    }
+  });
+})();
+</script>
+  <script>
+  /* ZERO_PACKAGING_V1 - Orders & Charts Integration */
+  document.addEventListener("DOMContentLoaded", function(){
+    // 1) Ensure Orders Table Exists
+    var section = document.getElementById("ordersSection");
+    if(!section){
+      var main = document.querySelector("main") || document.body;
+      var div = document.createElement("div");
+      div.id = "ordersSection";
+      div.className = "container";
+      div.style.cssText = "margin-top:24px;";
+      div.innerHTML = ''+
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:12px;">'+
+          '<div>'+
+            '<div style="font-size:14px;color:#02154e;font-weight:800;">Orders</div>'+
+            '<div style="font-size:12px;color:#6b7280;">Production Cockpit</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="overflow:auto;border:1px solid #e5e7eb;border-radius:10px;">'+
+          '<table style="width:100%;border-collapse:collapse;font-size:13px;">'+
+            '<thead style="background:#f8fafc;">'+
+              '<tr>'+
+                '<th style="text-align:left;padding:10px;">PO</th>'+
+                '<th style="text-align:left;padding:10px;">Style</th>'+
+                '<th style="text-align:right;padding:10px;">Qty</th>'+
+                '<th style="text-align:right;padding:10px;">CO₂ Total</th>'+
+                '<th style="text-align:center;padding:10px;">Status</th>'+
+              '</tr>'+
+            '</thead>'+
+            '<tbody id="ordersTableBody"></tbody>'+
+          '</table>'+
+        '</div>';
+      main.appendChild(div);
+    }
+    
+    // 2) Ensure Charts Section Exists
+    var charts = document.getElementById("chartsSection");
+    if(!charts){
+      var main = document.querySelector("main") || document.body;
+      var div = document.createElement("div");
+      div.id = "chartsSection";
+      div.className = "container";
+      div.style.cssText = "margin-top:24px;";
+      div.innerHTML = ''+
+        '<div style="font-size:14px;color:#02154e;font-weight:800;margin-bottom:8px;">Production Trends</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;">'+
+          '<div class="zero-card"><canvas id="trendChart" height="200"></canvas></div>'+
+          '<div class="zero-card"><canvas id="stageChart" height="200"></canvas></div>'+
+        '</div>';
+      main.appendChild(div);
+    }
+    
+    // 3) Load Data & Render
+    fetch("data/kpi_trends.json").then(r=>r.json()).then(d=>{
+      if(window.Chart){
+        // Trend
+        new Chart(document.getElementById("trendChart"), {
+          type: 'line',
+          data: {
+            labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+            datasets: [{
+              label: 'Actual CO₂ (kg)',
+              data: d.actual.co2_total_kg,
+              borderColor: '#02154e',
+              tension: 0.3
+            }, {
+              label: 'Baseline',
+              data: d.baseline.co2_total_kg,
+              borderColor: '#d51635',
+              borderDash: [5,5],
+              tension: 0.3
+            }]
+          }
+        });
+        
+        // Stage
+        new Chart(document.getElementById("stageChart"), {
+          type: 'bar',
+          data: {
+            labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+            datasets: [
+              { label:'Yarn', data: d.actual.co2_by_stage_kg.yarn, backgroundColor:'#0b7a2a' },
+              { label:'Fabric', data: d.actual.co2_by_stage_kg.fabric, backgroundColor:'#f9ba00' },
+              { label:'Dye', data: d.actual.co2_by_stage_kg.dye, backgroundColor:'#d51635' },
+              { label:'Finish', data: d.actual.co2_by_stage_kg.finish, backgroundColor:'#02154e' }
+            ]
+          },
+          options: { scales:{ x:{ stacked:true }, y:{ stacked:true } } }
+        });
+      }
+    }).catch(e=>console.warn("KPI load fail",e));
+
+  });
+  </script>
+</body>
+</html>

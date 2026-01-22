@@ -1,0 +1,45 @@
+{
+  "fibre": {
+    "company": "Zero Ecosystem Demo",
+    "module": "Fibre DPP",
+    "updated_at": "2025-12-25",
+    "active_batches": 847,
+    "co2_month_t": 12.5,
+    "monthly_cost_eur": 85000,
+    "status": "Active",
+    "identity": {
+      "fibre_type": "Recycled Polyester",
+      "class": "Synthetic / Recycled",
+      "virgin_recycled": "Recycled",
+      "origin": "EU",
+      "supplier": "Demo Supplier A",
+      "certifications": ["GRS", "OEKO-TEX"]
+    },
+    "metrics": {
+      "co2_kg_per_kg": 2.10,
+      "water_l_per_kg": 18,
+      "energy_kwh_per_kg": 6.2,
+      "chemical_risk": "Medium"
+    },
+    "risk": {
+      "supply_risk": 38,
+      "price_volatility_risk": 52,
+      "compliance_risk": 24,
+      "overall_risk_score": 41
+    },
+    "monthly_series": [
+      {"m":"Jan","co2_t":11.2,"cost_k":78},
+      {"m":"Feb","co2_t":12.0,"cost_k":80},
+      {"m":"Mar","co2_t":11.6,"cost_k":79},
+      {"m":"Apr","co2_t":12.8,"cost_k":86},
+      {"m":"May","co2_t":12.1,"cost_k":83},
+      {"m":"Jun","co2_t":13.0,"cost_k":88},
+      {"m":"Jul","co2_t":12.7,"cost_k":87},
+      {"m":"Aug","co2_t":12.2,"cost_k":84},
+      {"m":"Sep","co2_t":12.9,"cost_k":89},
+      {"m":"Oct","co2_t":12.4,"cost_k":85},
+      {"m":"Nov","co2_t":12.6,"cost_k":86},
+      {"m":"Dec","co2_t":12.5,"cost_k":85}
+    ]
+  }
+}
