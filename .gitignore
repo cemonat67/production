@@ -1,27 +1,20 @@
-# Python venv
-.venv/
-
-# Node modules
+.DS_Store
+*.log
+*.tmp
+*.swp
+*.bak_*
+*_snapshots/
+__pycache__/
+.env
+.env.*
 node_modules/
 
-# Local backups and snapshots
-dist/site/_snapshots/
-dist/site/data/_snapshots/
-dist/site/data/*_BACKUP_*.json
-dist/site/data/*BROKEN*.json
-ops/n8n/backups/
-ops/n8n/_snapshots_*/
-
-# Generated archives and zips
-*.tar.gz
-*.zip
-
-# Editor and OS files
-.DS_Store
+# local/dev
+.secrets/
+.venv/
 .vscode/
+dist/
+zip_files/
 
-# Temporary and patch tools
-dist/site/_tools_patch_ugurlular.py
-
-# Build artifacts not needed in repo
-dist/site/productiozaedeploy.zip
+# n8n local backups (do not commit)
+ops/n8n/backups/

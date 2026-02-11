@@ -1513,5 +1513,37 @@ async function exportExecutivePdfPrint(){
 }
 .zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
 </style>
+
+<!-- DPP_BATCH_SECTION_V1_START -->
+<section id="dppBatchPassports" style="margin:32px auto; max-width: 1200px; padding: 0 16px;">
+  <h2 style="margin:0 0 10px 0;">DPP Batch Passports</h2>
+  <p class="dpp-status" style="margin:0 0 10px 0; opacity:.75;">Ready.</p>
+
+  <div style="display:flex; gap:10px; align-items:center; justify-content:flex-end; margin: 10px 0 12px 0;">
+    <button id="loadDppBatchPassports" style="padding:10px 14px;border-radius:12px;border:1px solid #e5e7eb;background:#0b1f49;color:#fff;font-weight:600;">
+      Load Passports
+    </button>
+  </div>
+
+  <div style="border:1px solid #e5e7eb;border-radius:14px; overflow:hidden; background:#fff;">
+    <table data-dpp="batch-passports" style="width:100%; border-collapse:collapse;">
+      <thead style="background:#f8fafc;">
+        <tr>
+          <th style="text-align:left;padding:10px;">Action</th>
+          <th style="text-align:left;padding:10px;">passport_id</th>
+          <th style="text-align:left;padding:10px;">status</th>
+          <th style="text-align:left;padding:10px;">total_co2_kg</th>
+          <th style="text-align:left;padding:10px;">co2_kg_per_kg</th>
+          <th style="text-align:left;padding:10px;">wastewater_risk</th>
+          <th style="text-align:left;padding:10px;">facility</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+<!-- DPP_BATCH_SECTION_V1_END -->
+
+  <script src="assets/js/dpp-batch-passports.js"></script>
 </body>
 </html>

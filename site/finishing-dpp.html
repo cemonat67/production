@@ -185,7 +185,35 @@
           <tbody id="finModulesTbody"></tbody>
         </table>
       </section>
-    </main>
+    <!-- DPP Batch Passports (embedded) -->
+<section id="dppBatchPassports" style="margin:18px 0;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.04);">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+    <h2 style="margin:0;">DPP Batch Passports</h2>
+    <button id="btnLoadDppBatch" style="padding:10px 14px;border-radius:12px;border:1px solid #e5e7eb;background:#0b1f49;color:#fff;font-weight:600;">
+      Load Passports
+    </button>
+  </div>
+  <p class="dpp-status" style="margin:8px 0 10px 0;opacity:.8;">Ready.</p>
+
+  <div style="overflow:auto;border-radius:14px;border:1px solid rgba(255,255,255,.10);">
+    <table data-dpp="batch-passports" style="width:100%;border-collapse:collapse;min-width:880px;">
+      <thead>
+        <tr style="text-align:left;opacity:.85;">
+          <th style="padding:10px;">Action</th>
+          <th style="padding:10px;">Passport</th>
+          <th style="padding:10px;">Status</th>
+          <th style="padding:10px;">CO₂ (kg)</th>
+          <th style="padding:10px;">CO₂ / kg</th>
+          <th style="padding:10px;">Wastewater Risk</th>
+          <th style="padding:10px;">Facility</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+</main>
 
     <!-- ZERO: MODAL -->
     <div class="zero-modal" id="finExecModal" aria-hidden="true"> 
@@ -830,5 +858,8 @@
 }
 .zero-back-btn:hover{ filter:brightness(0.95); transform:translateY(-1px); }
 </style>
+<!-- DPP Batch Passports scripts -->
+<script src="assets/js/supabase.fabric.config.js"></script>
+<script src="assets/js/dpp-batch-passports.js?v=FINISHING_EMBED_V1"></script>
 </body>
 </html>
