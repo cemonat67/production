@@ -1547,5 +1547,20 @@ async function exportExecutivePdfPrint(){
   <script src="assets/js/supabase.fabric.config.js"></script>
   <script src="assets/js/supabase.fabric.loader.js"></script>
   <script src="assets/js/dpp-batch-passports.js"></script>
+<script>
+(async()=>{
+  try{
+    const r = await fetch("assets/data/emission_factors_pilot5000.csv",{cache:"no-store"});
+    const ok = r.ok;
+    const txt = ok ? await r.text() : "";
+    const lines = ok ? txt.trim().split(/\n/).length-1 : 0;
+    const pill = document.createElement("div");
+    pill.textContent = ok ? `EF loaded:  rows` : "EF load failed";
+    pill.style.cssText = "position:fixed;right:14px;bottom:14px;z-index:9999;padding:8px 10px;border-radius:999px;font:12px/1.1 system-ui;-webkit-backdrop-filter:saturate(180%) blur(10px);backdrop-filter:saturate(180%) blur(10px);background:rgba(2,21,78,.85);color:#fff;border:1px solid rgba(255,255,255,.12)";
+    document.body.appendChild(pill);
+    setTimeout(()=>pill.remove(), 8000);
+  }catch(e){}
+})();
+</script>
 </body>
 </html>
