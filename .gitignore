@@ -18,3 +18,8 @@ zip_files/
 
 # n8n local backups (do not commit)
 ops/n8n/backups/
+
+.env.local
+
+# local generated csv (do not deploy)
+site/assets/data/dpp_batch_passports.csv

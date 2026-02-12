@@ -181,23 +181,7 @@
         <td style="padding:10px;">${r.facility || "—"}</td>
       `;
       tbody.appendChild(tr);
-    }
-
-    // delegate click for View buttons
-    tbody.addEventListener("click", (ev) => {
-      const btn = ev.target && ev.target.closest ? ev.target.closest(".dpp-view-btn") : null;
-      if (!btn) return;
-      const pid = btn.getAttribute("data-passport-id") || "";
-      if (!pid) return;
-
-      // View behavior: open modal
-      if (typeof window.openDppPassportModal === "function") {
-        window.openDppPassportModal(pid);
-      } else {
-        console.warn("[DPP] Modal not available, pid=", pid);
-      }
-    }, { once: true });
-  }
+    }  }
 
   async function load() {
     try {
