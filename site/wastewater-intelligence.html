@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wastewater Intelligence — Zero@Production</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase.fabric.config.js"></script>
+<script src="assets/js/chart.umd.min.js"></script>
+
+<style>
+body { font-family: Arial; margin: 40px; }
+.card { padding:20px; border-radius:12px; box-shadow:0 5px 20px rgba(0,0,0,0.08); margin-bottom:20px;}
+.badge { padding:6px 12px; border-radius:20px; font-weight:bold;}
+.green{background:#e6f6ed;color:#0b6b3a;}
+.red{background:#fde7e7;color:#a11414;}
+</style>
+</head>
+
+<body>
+
+<h2>Wastewater Intelligence</h2>
+
+<div class="card">
+    <div>30 Day Avg COD: <strong id="cod"></strong></div>
+    <div>30 Day Avg TSS: <strong id="tss"></strong></div>
+    <div>Worst Risk: <span id="risk" class="badge"></span></div>
+</div>
+
+<canvas id="chart" height="100"></canvas>
+
+<script>
+const client = supabase.createClient(
+  window.SUPABASE_URL,
+  window.SUPABASE_ANON_KEY,
+  { db: { schema: (window.SUPABASE_SCHEMA || "public") } }
+);
+
+async function loadSummary() {
+  const { data, error } = await client
+    .from('v_wastewater_summary')
+    .select('*')
+    .limit(1);
+
+  if (error) { console.error(error); return; }
+
+  const row = data?.[0];
+  if (!row) return;
+
+  document.getElementById('cod').innerText =
+    (row.avg_cod_30 ?? 0).toFixed(2) + " mg/L";
+
+  document.getElementById('tss').innerText =
+    (row.avg_tss_30 ?? 0).toFixed(2) + " mg/L";
+
+  const riskEl = document.getElementById('risk');
+  riskEl.innerText = row.worst_risk_30 || "N/A";
+  riskEl.className = "badge " + ((row.worst_risk_30 === 'HIGH') ? 'red' : 'green');
+}
+
+async function loadChart() {
+  const { data, error } = await client
+    .from('v_wastewater_daily')
+    .select('sample_date,cod_mg_l')
+    .order('sample_date', { ascending: false })
+    .limit(30);
+
+  if (error) { console.error(error); return; }
+
+  const labels = (data || []).map(d => d.sample_date).reverse();
+  const values = (data || []).map(d => Number(d.cod_mg_l || 0)).reverse();
+
+  new Chart(document.getElementById('chart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{ label: 'COD mg/L', data: values }]
+    }
+  });
+}
+
+loadSummary();
+loadChart();
+</script>
+
+</body>
+</html>
