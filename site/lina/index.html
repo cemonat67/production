@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#F7F8FA">
+  <title>Zero@System — Lina</title>
+  <link rel="stylesheet" href="lina.css">
+</head>
+<body>
+  <a class="skip-link" href="#linaInput">Girişe atla</a>
+
+  <div class="lina-shell" id="linaShell" data-panel="closed">
+
+    <header class="lina-header">
+      <a class="lina-brand" href="../index.html" aria-label="Zero@System ana sayfa">Zero<span class="at">@</span>System</a>
+      <nav class="lina-nodes" id="linaNodes" aria-label="Cihaz durumu"></nav>
+    </header>
+
+    <main class="lina-main" id="linaMain">
+      <section class="lina-center" aria-labelledby="linaHeadline">
+        <div class="lina-presence" id="linaPresence" role="img" aria-label="Lina, hazır" data-state="idle"></div>
+        <div class="lina-voice-activity" id="linaVoiceActivity" aria-hidden="true"></div>
+
+        <h1 class="lina-headline" id="linaHeadline">Merhaba.</h1>
+        <div class="lina-summary" id="linaSummary" aria-live="polite" aria-atomic="true"></div>
+
+        <div class="lina-contexts" id="linaContexts" role="tablist" aria-label="Bağlam">
+          <button type="button" role="tab" class="lina-chip" data-surface="now" aria-selected="false">Şimdi</button>
+          <button type="button" role="tab" class="lina-chip" data-surface="work" aria-selected="false">İş</button>
+          <button type="button" role="tab" class="lina-chip" data-surface="memory" aria-selected="false">Hafıza</button>
+        </div>
+      </section>
+
+      <section class="lina-surface" id="linaSurface" role="tabpanel" aria-live="polite" hidden></section>
+    </main>
+
+    <div class="lina-panel-backdrop" id="linaPanelBackdrop" hidden></div>
+    <aside class="lina-panel" id="linaPanel" role="dialog" aria-modal="false" aria-labelledby="linaPanelTitle" hidden>
+      <div class="lina-panel-head">
+        <h2 class="lina-panel-title" id="linaPanelTitle"></h2>
+        <button type="button" class="lina-icon-btn" id="linaPanelClose" aria-label="Paneli kapat">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+        </button>
+      </div>
+      <div class="lina-panel-body" id="linaPanelBody"></div>
+    </aside>
+
+    <footer class="lina-inputbar">
+      <form class="lina-input" id="linaForm" autocomplete="off">
+        <button type="button" class="lina-icon-btn" id="linaPlus" aria-label="Bağlam seç" aria-haspopup="menu" aria-expanded="false">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>
+        </button>
+        <label class="sr-only" for="linaInput">Lina’ya söyle</label>
+        <input id="linaInput" name="q" type="text" placeholder="Lina’ya söyle..." enterkeyhint="send" inputmode="text">
+        <button type="button" class="lina-icon-btn lina-mic" id="linaMic" aria-label="Sesle söyle" aria-pressed="false">
+          <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+            <rect x="5.5" y="1.5" width="5" height="8" rx="2.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+            <path d="M3.5 7.5a4.5 4.5 0 0 0 9 0M8 12v2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          </svg>
+        </button>
+        <div class="lina-menu" id="linaMenu" role="menu" hidden></div>
+      </form>
+      <p class="lina-hint" id="linaHint"></p>
+    </footer>
+
+    <div class="sr-only" id="linaAnnounce" role="status" aria-live="polite"></div>
+  </div>
+
+  <!-- Existing site modules reused as-is (real capabilities, not new code) -->
+  <script src="../js/audit-log.js"></script>
+  <script src="../assets/js/supabase.fabric.config.js"></script>
+
+  <!-- Lina shell -->
+  <script src="js/state.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/presence.js"></script>
+  <script src="js/voice.js"></script>
+  <script src="js/brain.js"></script>
+  <script src="js/surfaces.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/shell.js"></script>
+</body>
+</html>

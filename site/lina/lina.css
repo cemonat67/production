@@ -1,0 +1,394 @@
+/* ============================================================
+   Zero@System — Lina shell
+   One screen. One assistant. One context.
+   No gradients. Navy structure, orange accent, neutral canvas.
+   ============================================================ */
+
+:root {
+  /* Canonical Zero@ palette (exact) */
+  --zero-green:  #005530;
+  --zero-red:    #D51635;
+  --zero-navy:   #02154E;
+  --zero-orange: #F9BA00;
+
+  /* Base tokens */
+  --background:     #F7F8FA;
+  --surface:        #FFFFFF;
+  --surface-soft:   #F3F5F8;
+  --border:         #E4E8EF;
+  --text-primary:   #02154E;
+  --text-secondary: #65708A;
+  --text-muted:     #8E97AA;
+
+  --lina:           var(--zero-navy);
+  --accent:         var(--zero-orange);
+  --ok:             var(--zero-green);
+  --danger:         var(--zero-red);
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow-soft: 0 1px 2px rgba(2, 21, 78, 0.04), 0 8px 24px rgba(2, 21, 78, 0.06);
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur: 240ms;
+
+  --inputbar-h: 96px;
+  --panel-w: 400px;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link {
+  position: absolute; left: 12px; top: -48px; z-index: 100;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 8px 12px; text-decoration: none;
+}
+.skip-link:focus { top: 12px; }
+
+/* Focus: visible, not colour-only (offset ring) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* ------------------------------------------------------------
+   Shell layout
+   ------------------------------------------------------------ */
+.lina-shell {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.lina-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 24px 0;
+  min-height: 52px;
+}
+.lina-brand {
+  font-weight: 500; font-size: 15px; letter-spacing: 0.01em;
+  color: var(--text-primary); text-decoration: none;
+}
+.lina-brand .at { color: var(--accent); }
+
+.lina-nodes { display: flex; gap: 18px; align-items: center; font-size: 13px; color: var(--text-secondary); }
+.lina-node { display: inline-flex; align-items: center; gap: 7px; }
+.lina-node-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  border: 1.5px solid var(--text-muted); background: transparent;
+}
+.lina-node[data-state="online"]  .lina-node-dot { background: var(--ok);     border-color: var(--ok); }
+.lina-node[data-state="offline"] .lina-node-dot { background: var(--danger); border-color: var(--danger); }
+.lina-node[data-state="unknown"] { color: var(--text-muted); }
+.lina-nodes-empty { color: var(--text-muted); font-size: 12px; }
+
+.lina-main {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 24px calc(var(--inputbar-h) + 24px);
+  transition: padding-right var(--dur) var(--ease);
+}
+
+/* Centre stack: presence + words. Generous whitespace by design. */
+.lina-center {
+  width: 100%; max-width: 640px;
+  margin-top: clamp(48px, 14vh, 140px);
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+.lina-headline {
+  margin: 28px 0 8px;
+  font-size: clamp(24px, 3.2vw, 32px);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+.lina-summary {
+  font-size: 16px; font-weight: 400;
+  color: var(--text-secondary);
+  min-height: 1.5em;
+  max-width: 44ch;
+}
+.lina-summary p { margin: 0 0 4px; }
+.lina-summary .is-ok     { color: var(--ok); }
+.lina-summary .is-danger { color: var(--danger); }
+
+.lina-contexts { display: flex; gap: 8px; margin-top: 26px; flex-wrap: wrap; justify-content: center; }
+.lina-chip {
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-secondary); border-radius: 999px;
+  padding: 7px 14px; font-size: 13px; font-weight: 500; line-height: 1;
+  min-height: 34px;
+  transition: border-color var(--dur) var(--ease), color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.lina-chip:hover { border-color: var(--text-muted); color: var(--text-primary); }
+.lina-chip[aria-selected="true"] {
+  color: var(--text-primary); border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* ------------------------------------------------------------
+   Presence (the @ mark) — states via data-state
+   ------------------------------------------------------------ */
+.lina-presence {
+  width: 84px; height: 84px;
+  display: grid; place-items: center;
+  position: relative;
+}
+.lina-presence svg { width: 84px; height: 84px; overflow: visible; display: block; }
+.lina-presence .lp-ring, .lina-presence .lp-inner, .lina-presence .lp-stem {
+  fill: none; stroke: var(--lina); stroke-width: 2.4; stroke-linecap: round;
+  transition: stroke var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+.lina-presence .lp-mark { transform-origin: 32px 32px; }
+.lina-presence .lp-echo { fill: none; stroke: var(--accent); stroke-width: 1.4; opacity: 0; transform-origin: 32px 32px; }
+.lina-presence .lp-dot  { fill: var(--lina); opacity: 0; }
+.lina-presence .lp-arrow { fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+.lina-presence .lp-badge { opacity: 0; transition: opacity var(--dur) var(--ease); }
+.lina-presence .lp-badge circle { fill: var(--accent); }
+.lina-presence .lp-badge text { font: 600 9px var(--font); fill: var(--zero-navy); text-anchor: middle; }
+.lina-presence .lp-err { opacity: 0; fill: var(--danger); transition: opacity var(--dur) var(--ease); }
+
+/* idle: slow breath */
+.lina-presence[data-state="idle"] .lp-mark { animation: lp-breathe 4.8s ease-in-out infinite; }
+
+/* listening: two soft echoes, accent stem */
+.lina-presence[data-state="listening"] .lp-stem { stroke: var(--accent); }
+.lina-presence[data-state="listening"] .lp-echo { animation: lp-echo 2.2s ease-out infinite; }
+.lina-presence[data-state="listening"] .lp-echo.e2 { animation-delay: 1.1s; }
+
+/* thinking: two dots alternating */
+.lina-presence[data-state="thinking"] .lp-dot { animation: lp-dot 1.4s ease-in-out infinite; }
+.lina-presence[data-state="thinking"] .lp-dot.r { animation-delay: 0.7s; }
+
+/* acting: small arrow slides right */
+.lina-presence[data-state="acting"] .lp-arrow { animation: lp-arrow 1.2s var(--ease) infinite; }
+
+/* approval: accent badge */
+.lina-presence[data-state="approval_required"] .lp-badge { opacity: 1; }
+
+/* error: muted mark, red dot */
+.lina-presence[data-state="error"] .lp-ring,
+.lina-presence[data-state="error"] .lp-inner,
+.lina-presence[data-state="error"] .lp-stem { opacity: 0.55; }
+.lina-presence[data-state="error"] .lp-err { opacity: 1; }
+
+@keyframes lp-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+@keyframes lp-echo    { 0% { opacity: 0.55; transform: scale(1); } 100% { opacity: 0; transform: scale(1.55); } }
+@keyframes lp-dot     { 0%,100% { opacity: 0.15; } 50% { opacity: 0.9; } }
+@keyframes lp-arrow   { 0% { opacity: 0; transform: translateX(-3px); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateX(5px); } }
+
+/* Voice activity: five restrained bars driven by real audio level */
+.lina-voice-activity { height: 18px; margin-top: 10px; display: flex; gap: 4px; align-items: center; opacity: 0; transition: opacity var(--dur) var(--ease); }
+.lina-voice-activity.is-on { opacity: 1; }
+.lina-voice-activity i {
+  display: block; width: 3px; height: 4px; border-radius: 2px; background: var(--accent);
+  transition: height 90ms linear;
+}
+
+/* ------------------------------------------------------------
+   Context surface (centre) — Now / Work / Memory
+   ------------------------------------------------------------ */
+.lina-surface {
+  width: 100%; max-width: 640px;
+  margin-top: 36px;
+  animation: lina-rise var(--dur) var(--ease);
+}
+@keyframes lina-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.lina-surface-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin: 0 0 12px; gap: 12px;
+}
+.lina-surface-title { margin: 0; font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.lina-surface-meta  { font-size: 12px; color: var(--text-muted); }
+
+.lina-list { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-soft); overflow: hidden; }
+.lina-row {
+  display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: center;
+  width: 100%; text-align: left; padding: 14px 16px; background: transparent; border: 0;
+  border-top: 1px solid var(--border);
+  min-height: 52px;
+}
+.lina-list > li:first-child .lina-row { border-top: 0; }
+button.lina-row:hover { background: var(--surface-soft); }
+.lina-row-title { grid-column: 1; grid-row: 1; font-weight: 500; color: var(--text-primary); }
+.lina-row-sub   { grid-column: 1; grid-row: 2; font-size: 13px; color: var(--text-secondary); }
+.lina-row-side  { grid-column: 2; grid-row: 1 / span 2; font-size: 12px; color: var(--text-muted); text-align: right; white-space: nowrap; }
+a.lina-row      { text-decoration: none; }
+a.lina-row:hover { background: var(--surface-soft); }
+
+.lina-tag { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; border: 1px solid var(--border); color: var(--text-secondary); background: var(--surface-soft); }
+.lina-tag.ok      { color: var(--ok);     border-color: rgba(0,85,48,.25);  background: rgba(0,85,48,.06); }
+.lina-tag.danger  { color: var(--danger); border-color: rgba(213,22,53,.25); background: rgba(213,22,53,.06); }
+.lina-tag.accent  { color: var(--text-primary); border-color: var(--accent); background: rgba(249,186,0,.12); }
+
+.lina-empty {
+  padding: 22px 18px; text-align: center; color: var(--text-secondary);
+  background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius);
+}
+.lina-empty small { display: block; margin-top: 4px; color: var(--text-muted); font-size: 12px; }
+
+/* Approval card */
+.lina-approval {
+  background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: var(--radius); padding: 18px 20px; box-shadow: var(--shadow-soft); text-align: left;
+}
+.lina-approval h3 { margin: 0 0 6px; font-size: 16px; font-weight: 500; }
+.lina-approval p  { margin: 0 0 16px; color: var(--text-secondary); }
+.lina-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.lina-btn {
+  min-height: 40px; padding: 0 18px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-primary); font-weight: 500;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.lina-btn:hover { background: var(--surface-soft); }
+.lina-btn.primary { background: var(--lina); border-color: var(--lina); color: #fff; }
+.lina-btn.primary:hover { background: #0a2466; }
+
+/* ------------------------------------------------------------
+   Context panel — drawer on desktop, sheet on small screens
+   ------------------------------------------------------------ */
+.lina-panel {
+  position: fixed; top: 0; right: 0; bottom: 0; width: var(--panel-w); max-width: 100%;
+  background: var(--surface); border-left: 1px solid var(--border);
+  box-shadow: -8px 0 32px rgba(2,21,78,0.06);
+  display: flex; flex-direction: column; z-index: 40;
+  transform: translateX(100%); transition: transform var(--dur) var(--ease);
+}
+.lina-panel[hidden] { display: none; }
+.lina-shell[data-panel="open"] .lina-panel { transform: none; }
+.lina-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 20px 12px; border-bottom: 1px solid var(--border); }
+.lina-panel-title { margin: 0; font-size: 16px; font-weight: 500; }
+.lina-panel-body { padding: 16px 20px 24px; overflow: auto; flex: 1; }
+.lina-panel-backdrop { position: fixed; inset: 0; background: rgba(2,21,78,0.18); z-index: 39; }
+.lina-panel-backdrop[hidden] { display: none; }
+
+.lina-kv { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; font-size: 14px; }
+.lina-kv dt { color: var(--text-muted); }
+.lina-kv dd { margin: 0; color: var(--text-primary); word-break: break-word; }
+.lina-panel-body h3 { font-size: 13px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin: 20px 0 8px; }
+.lina-panel-body h3:first-child { margin-top: 0; }
+.lina-panel-body pre { font-size: 12px; background: var(--surface-soft); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; overflow: auto; }
+.lina-link { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); text-decoration: none; font-weight: 500; }
+.lina-link:hover { background: var(--surface-soft); }
+
+@media (min-width: 1100px) {
+  .lina-shell[data-panel="open"] .lina-main { padding-right: calc(var(--panel-w) + 24px); }
+  .lina-shell[data-panel="open"] .lina-panel-backdrop { display: none; }
+}
+
+/* ------------------------------------------------------------
+   Input bar
+   ------------------------------------------------------------ */
+.lina-inputbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  background: var(--background);
+  transition: padding-right var(--dur) var(--ease);
+}
+@media (min-width: 1100px) { .lina-shell[data-panel="open"] .lina-inputbar { padding-right: calc(var(--panel-w) + 16px); } }
+
+.lina-input {
+  position: relative;
+  max-width: 640px; margin: 0 auto;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 4px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+  padding: 6px 6px 6px 8px;
+  box-shadow: var(--shadow-soft);
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.lina-input:focus-within { border-color: var(--text-muted); }
+.lina-input input {
+  border: 0; background: transparent; outline: none; min-height: 40px; padding: 0 8px; width: 100%;
+  color: var(--text-primary);
+}
+.lina-input input::placeholder { color: var(--text-muted); }
+.lina-input input:focus-visible { outline: none; }
+
+.lina-icon-btn {
+  width: 40px; height: 40px; border-radius: 50%; border: 0; background: transparent;
+  display: grid; place-items: center; color: var(--text-secondary);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.lina-icon-btn:hover { background: var(--surface-soft); color: var(--text-primary); }
+.lina-mic[aria-pressed="true"] { background: var(--accent); color: var(--zero-navy); }
+.lina-mic[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+.lina-hint { max-width: 640px; margin: 8px auto 0; text-align: center; font-size: 12px; color: var(--text-muted); min-height: 1.2em; }
+
+.lina-menu {
+  position: absolute; left: 0; bottom: calc(100% + 8px); min-width: 220px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-soft); padding: 6px; z-index: 31;
+}
+.lina-menu[hidden] { display: none; }
+.lina-menu-label { padding: 6px 10px 4px; font-size: 11px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.lina-menu button { display: block; width: 100%; text-align: left; border: 0; background: transparent; padding: 9px 10px; border-radius: 8px; min-height: 36px; }
+.lina-menu button:hover { background: var(--surface-soft); }
+
+/* ------------------------------------------------------------
+   Responsive — small screens are their own layout, not a scale-down
+   ------------------------------------------------------------ */
+@media (max-width: 720px) {
+  :root { --inputbar-h: 88px; }
+  .lina-header { padding: 14px 16px 0; }
+  .lina-nodes { gap: 12px; font-size: 12px; }
+  .lina-node span { display: none; }            /* device status collapses to dots */
+  .lina-node[data-state="unknown"] span { display: none; }
+  .lina-main { padding-left: 16px; padding-right: 16px; }
+  .lina-center { margin-top: clamp(32px, 10vh, 72px); }
+  .lina-presence, .lina-presence svg { width: 68px; height: 68px; }
+  .lina-headline { font-size: 24px; }
+  .lina-summary { font-size: 15px; }
+  .lina-surface { margin-top: 28px; }
+  .lina-row { padding: 14px; }
+
+  /* Panel becomes a bottom sheet */
+  .lina-panel {
+    top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 82dvh;
+    border-left: 0; border-top: 1px solid var(--border); border-radius: 18px 18px 0 0;
+    transform: translateY(100%);
+  }
+  .lina-panel-head { padding-top: 14px; }
+  .lina-panel-head::before {
+    content: ""; position: absolute; top: 6px; left: 50%; width: 36px; height: 4px; margin-left: -18px;
+    border-radius: 2px; background: var(--border);
+  }
+  .lina-panel { padding-top: 6px; }
+  .lina-panel-body { padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 380px) { .lina-nodes-empty { display: none; } }
+
+/* ------------------------------------------------------------
+   Reduced motion
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+  .lina-presence[data-state="listening"] .lp-echo { opacity: 0.4; transform: scale(1.25); }
+  .lina-presence[data-state="thinking"] .lp-dot { opacity: 0.7; }
+  .lina-presence[data-state="acting"] .lp-arrow { opacity: 1; }
+}
