@@ -64,8 +64,9 @@ const ZeroGovernance = (function() {
                      demo_mode: (sessionStorage.getItem("zero_demo_mode")==="ON") ? "ON" : "OFF"
                 };
                 
-                await window.zeroOrchSend("OVERRIDE", payload);
+                return await window.zeroOrchSend("OVERRIDE", payload);
             }
+            return null;
         },
 
         /**
