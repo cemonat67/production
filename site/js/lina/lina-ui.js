@@ -399,6 +399,7 @@ ZeroLina.UI = (function () {
     render: render,
     setInputText: function (t) { el.input.value = t; },
     focusInput: function () { el.input.focus(); },
-    resetPreview: function () { previewKey = null; }
+    resetPreview: function () { previewKey = null; },
+    scrollStageTop: function () { const st = document.querySelector('.lina-stage'); if (st) st.scrollTop = 0; }
   };
 })();

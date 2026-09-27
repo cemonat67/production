@@ -226,6 +226,7 @@ ZeroLina.App = (function () {
       if (!a) return;
       S.set({ pendingApproval: a, thread: [] });
       S.setLina('approval_required', 'Onay gerekiyor.');
+      UI.scrollStageTop();
     },
 
     approve: async function (justification) {
