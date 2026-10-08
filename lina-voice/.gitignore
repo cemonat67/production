@@ -1,0 +1,10 @@
+.venv/
+models/
+!models/README.md
+out/
+*.wav
+*.aiff
+__pycache__/
+*.egg-info/
+.pytest_cache/
+state/

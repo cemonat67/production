@@ -1,0 +1,43 @@
+[project]
+name = "lina-voice"
+version = "0.1.0"
+description = "Lina — local Turkish voice engine for Zero@System (TTS, STT, VAD, speaker gate, barge-in turn loop, local server)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+  "numpy>=1.26",
+  "soundfile>=0.12",
+  "pyyaml>=6",
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.29",
+  "websockets>=12",
+  "httpx>=0.27",
+  "sherpa-onnx>=1.10",
+]
+
+[project.optional-dependencies]
+# Primary Turkish TTS (Kyutai Pocket TTS runtime, MIT; Turkish weights CC BY 4.0)
+tts = ["pocket-tts>=0.3"]
+# STT on CPU (CTranslate2 Whisper). On Apple Silicon this works; mlx-whisper is an optional faster path.
+stt = ["faster-whisper>=1.0"]
+# Local microphone / speaker when the engine owns audio I/O (otherwise the host app streams PCM over WebSocket)
+audio = ["sounddevice>=0.4"]
+mac = ["mlx-whisper>=0.4", "pocket-tts-mlx>=0.2"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[project.scripts]
+lina-voice = "lina_voice.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["lina_voice*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = ["slow: needs downloaded models and minutes of CPU"]
+addopts = "-m 'not slow'"

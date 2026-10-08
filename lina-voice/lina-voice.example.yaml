@@ -1,0 +1,57 @@
+# Copy to lina-voice.yaml (or set LINA_VOICE_CONFIG). Only keys you change are needed.
+audio:
+  sample_rate: 16000
+  frame_ms: 32
+  input_device: null        # sounddevice name, e.g. "MacBook Pro Microphone"
+  output_device: null
+
+vad:
+  model: models/silero_vad.onnx
+  threshold: 0.5
+  min_silence_ms: 700
+  min_speech_ms: 250
+  max_utterance_s: 15
+
+stt:
+  backend: faster-whisper   # faster-whisper | mlx-whisper
+  model: large-v3-turbo     # Apple Silicon: fine with faster-whisper int8; mlx-whisper is faster
+  language: tr
+  compute_type: int8
+  beam_size: 1
+
+tts:
+  backends: [pocket, macos-say, piper]   # first available wins; later ones take over on failure
+  pocket_config: models/pocket-tts-tr/config.local.yaml
+  pocket_voice: models/voices/lina-ref.wav   # 10–20 s clean Turkish reference clip for Lina's voice
+  pocket_temperature: 0.3
+  pocket_quantize: true       # int8 on CPU; set false to compare quality
+  macos_voice: Yelda          # install "Yelda (Premium)" in System Settings › Accessibility › Spoken Content
+  sample_rate_out: 24000
+
+speaker:
+  enabled: true
+  model: models/3dspeaker_speech_eres2net_sv_en_voxceleb_16k.onnx
+  threshold: 0.55             # tune: `lina-voice verify cem-*.wav other-*.wav`
+  profile_name: cem
+  min_seconds: 0.8
+
+barge_in:
+  enabled: true
+  min_speech_ms: 400
+  ignore_after_play_start_ms: 300
+  echo_window_s: 8
+  echo_similarity: 0.8
+
+brain:
+  backend: ollama             # ollama | http (the app's Chatty route) | echo
+  ollama_url: http://127.0.0.1:11434
+  ollama_model: gemma3:4b     # Turkish is noticeably better with qwen3:8b or gemma3:12b if RAM allows
+  http_url: http://127.0.0.1:3000/api/chatty/local
+  timeout_s: 60
+
+cloud:
+  enabled: false              # stays off unless you decide otherwise
+
+server:
+  host: 127.0.0.1
+  port: 8765

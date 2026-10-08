@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.zeroatsystem.lina-voice</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__ROOT__/.venv/bin/lina-voice</string>
+    <string>run</string>
+    <string>--audio</string>
+    <string>ws</string>
+  </array>
+  <key>WorkingDirectory</key><string>__ROOT__</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>LINA_VOICE_CONFIG</key><string>__ROOT__/lina-voice.yaml</string>
+    <key>LINA_VOICE_STATE</key><string>__HOME__/Library/Application Support/ZeroRelationship/voice-engine</string>
+    <key>OMP_NUM_THREADS</key><string>4</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>__HOME__/Library/Application Support/ZeroRelationship/voice-engine/lina-voice.log</string>
+  <key>StandardErrorPath</key><string>__HOME__/Library/Application Support/ZeroRelationship/voice-engine/lina-voice.log</string>
+</dict>
+</plist>
